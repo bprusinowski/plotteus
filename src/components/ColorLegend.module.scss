@@ -1,0 +1,8 @@
+.root {
+  .item {
+    pointer-events: none;
+    .itemLabel {
+      dominant-baseline: hanging;
+    }
+  }
+}

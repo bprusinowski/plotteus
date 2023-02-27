@@ -1,0 +1,12 @@
+{
+  "preset": "ts-jest",
+  "testEnvironment": "jsdom",
+  "transform": {
+    "^.+\\.ts?$": "ts-jest"
+  },
+  "moduleNameMapper": {
+    "^d3-(.*)$": "d3-$1/dist/d3-$1",
+    "\\.scss$": "<rootDir>/tests/scssMock.ts"
+  },
+  "transformIgnorePatterns": ["<rootDir>/node_modules/"]
+}

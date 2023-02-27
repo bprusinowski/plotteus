@@ -1,0 +1,20 @@
+@import "../variables.scss";
+
+.node {
+  .group {
+    .label {
+      dominant-baseline: hanging;
+      text-anchor: middle;
+      paint-order: stroke;
+      stroke: white;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      fill: $color-dark;
+      user-select: none;
+      pointer-events: none;
+    }
+    .background {
+      fill: $color-light;
+    }
+  }
+}

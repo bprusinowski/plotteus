@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Plotteus</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;500&display=swap"
+    />
+    <style>
+      body {
+        margin: 0px;
+        padding: 0px;
+        font-family: "Open Sans", sans-serif;
+      }
+
+      #main {
+        display: grid;
+        grid-template-columns: 0fr 1fr;
+        gap: 0px;
+        margin: 0 auto;
+        max-width: 1300px;
+      }
+
+      #scrollable {
+        margin-bottom: 100vh;
+      }
+
+      .scroll {
+        margin-top: 15vh;
+        min-height: 40vh;
+        margin-bottom: 15vh;
+      }
+
+      .scroll-title {
+        font-size: 32px;
+      }
+
+      #chart-container {
+        position: sticky;
+        top: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 100vh;
+      }
+
+      #chart {
+        width: 100%;
+        height: 60%;
+        max-width: 690px;
+        padding: 24px 96px;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="main">
+      <div id="scrollable">
+        <div class="scroll" data-step="zero"></div>
+        <div class="scroll" data-step="one"></div>
+        <div class="scroll" data-step="two"></div>
+        <div class="scroll" data-step="three"></div>
+        <div class="scroll" data-step="four"></div>
+      </div>
+      <div id="chart-container">
+        <div id="chart"></div>
+      </div>
+    </div>
+
+    <script type="module">
+      import { makeStory } from "https://cdn.jsdelivr.net/npm/plotteus";
+
+      const groups = [
+        {
+          key: "Alice",
+          data: [
+            { key: "A", value: 0.4 },
+            { key: "B", value: 6 },
+            { key: "C", value: 2.5 },
+          ],
+        },
+        {
+          key: "Bob",
+          data: [
+            { key: "A", value: 3 },
+            { key: "B", value: 3.5 },
+            { key: "C", value: 3 },
+          ],
+        },
+        {
+          key: "Cecile",
+          data: [
+            { key: "A", value: 2.5 },
+            { key: "B", value: 2 },
+            { key: "C", value: 1.5 },
+          ],
+        },
+      ];
+      const showValues = true;
+      const showDatumLabels = true;
+      const palette = "default";
+      const steps = [
+        {
+          key: "zero",
+          chartType: "bar",
+          title: "Plotteus",
+          titleAnchor: "middle",
+          subtitle: "A data storytelling library.",
+          subtitleAnchor: "middle",
+          showValues,
+          showDatumLabels,
+          palette,
+          groups,
+        },
+        {
+          key: "one",
+          chartType: "pie",
+          title: "Plotteus",
+          titleAnchor: "middle",
+          subtitle: "A data storytelling library.",
+          subtitleAnchor: "middle",
+          showValues,
+          showDatumLabels,
+          palette,
+          groups,
+        },
+        {
+          key: "two",
+          chartType: "bubble",
+          title: "Plotteus",
+          titleAnchor: "middle",
+          subtitle: "A data storytelling library.",
+          subtitleAnchor: "middle",
+          showValues,
+          showDatumLabels,
+          palette,
+          groups,
+        },
+        {
+          key: "three",
+          chartType: "bar",
+          chartSubtype: "stacked",
+          title: "Plotteus",
+          titleAnchor: "middle",
+          subtitle: "A data storytelling library.",
+          subtitleAnchor: "middle",
+          showValues,
+          showDatumLabels,
+          palette,
+          groups,
+        },
+        {
+          key: "four",
+          chartType: "treemap",
+          title: "Plotteus",
+          titleAnchor: "middle",
+          subtitle: "A data storytelling library.",
+          subtitleAnchor: "middle",
+          showValues,
+          showDatumLabels,
+          palette,
+          groups,
+        },
+      ];
+      const story = makeStory(document.querySelector("#chart"), steps);
+
+      const createScrollListener = () => {
+        let lastScroll;
+        let precedingStep;
+        let lastUpdatedStep;
+        let scrollElements;
+
+        window.addEventListener("scroll", () => {
+          const { scrollY } = window;
+          let currentStep;
+
+          if (!lastScroll) {
+            scrollElements = Array.from(
+              document.querySelectorAll(".scroll")
+            ).map((el) => {
+              const { top, bottom, height } = el.getBoundingClientRect();
+              const step = el.getAttribute("data-step");
+
+              return {
+                top: top + scrollY,
+                bottom: bottom + scrollY,
+                height,
+                step,
+              };
+            });
+          }
+
+          scrollElements.every((el, i) => {
+            const { top, bottom, height, step } = el;
+
+            if (top <= scrollY && bottom >= scrollY) {
+              const t = 1 - (bottom - scrollY) / height;
+              currentStep = step;
+              precedingStep = scrollElements[i - 1]?.step;
+
+              story.render(step, -(Math.cos(Math.PI * t) - 1) / 2);
+
+              lastScroll = scrollY;
+              lastUpdatedStep = currentStep;
+
+              return false;
+            }
+
+            return true;
+          });
+
+          if (!currentStep && lastUpdatedStep) {
+            if (lastScroll < scrollY) {
+              story.render(lastUpdatedStep, 1);
+            } else {
+              if (precedingStep) {
+                story.render(precedingStep, 1);
+              } else {
+                story.render(lastUpdatedStep, 0);
+              }
+            }
+
+            lastScroll = scrollY;
+            lastUpdatedStep = currentStep;
+          }
+        });
+      };
+
+      createScrollListener();
+    </script>
+  </body>
+</html>

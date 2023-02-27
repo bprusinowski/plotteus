@@ -1,0 +1,15 @@
+@import "../variables.scss";
+
+.node {
+  .label {
+    dominant-baseline: hanging;
+    transform: translate(-2px, 0px);
+    text-anchor: end;
+  }
+  .boldLine {
+    stroke: $color-gray;
+  }
+  .lightLine {
+    stroke: $color-lightgray;
+  }
+}
