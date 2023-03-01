@@ -67,7 +67,9 @@ export const getPieGetters = ({
 
     data.map((datum, i) => {
       const { key, value, fill } = datum.data.data;
-      const angleExtent = datum.endAngle - datum.startAngle;
+      // Angle extent can't be 0, as otherwise NaNs will be introduced
+      // in the path, which will break label clipping.
+      const angleExtent = datum.endAngle - datum.startAngle || 0.001;
       let rotate = (angleExtent - Math.PI) * 0.5;
       const _datum = data?.[i - 1];
 
