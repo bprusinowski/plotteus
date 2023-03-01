@@ -4,7 +4,12 @@ import { BAR, getPathData } from "../coords";
 import { InputGroup } from "../types";
 import { FONT_SIZE, getTextColor } from "../utils";
 import { TreemapHierarchyRoot } from "./types";
-import { getGroupLabelStrokeWidth, getRotate, TEXT_MARGIN } from "./utils";
+import {
+  getGroupLabelStrokeWidth,
+  getRotate,
+  STROKE_WIDTH,
+  TEXT_MARGIN,
+} from "./utils";
 
 const PADDING = 2;
 
@@ -94,6 +99,7 @@ export const getTreemapGetters = ({
           const x = s(0, datum.x0 - group.x0 - (groupWidth - dWidth) * 0.5);
           const y = s(0, datum.y0 - group.y0 - (groupHeight - dHeight) * 0.5);
           const rotate = getRotate(_g?.rotate);
+          const strokeWidth = s(0, value ? STROKE_WIDTH : 0);
           const labelWidth = svg.measureText(key, "datumLabel").width;
           const labelX = s(0, (labelWidth - dWidth) * 0.5 + TEXT_MARGIN);
           const labelY = s(0, -(dHeight * 0.5 + textDims.datumLabel.yShift));
@@ -112,8 +118,9 @@ export const getTreemapGetters = ({
             clipPath,
             x,
             y,
-            fill: datumFill,
             rotate,
+            fill: datumFill,
+            strokeWidth,
             labelX,
             labelY,
             labelFontSize,
