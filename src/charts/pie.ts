@@ -5,7 +5,7 @@ import { BUBBLE, getPathData } from "../coords";
 import { InputDatum, InputGroup } from "../types";
 import { FONT_SIZE, getTextColor, radiansToDegrees } from "../utils";
 import { HierarchyRoot } from "./types";
-import { getGroupLabelStrokeWidth, PADDING } from "./utils";
+import { getGroupLabelStrokeWidth, PADDING, STROKE_WIDTH } from "./utils";
 
 export const getPieGetters = ({
   groups,
@@ -67,7 +67,9 @@ export const getPieGetters = ({
 
     data.map((datum, i) => {
       const { key, value, fill } = datum.data.data;
-      const angleExtent = datum.endAngle - datum.startAngle;
+      // Angle extent can't be 0, as otherwise NaNs will be introduced
+      // in the path, which will break label clipping.
+      const angleExtent = datum.endAngle - datum.startAngle || 0.001;
       let rotate = (angleExtent - Math.PI) * 0.5;
       const _datum = data?.[i - 1];
 
@@ -109,6 +111,7 @@ export const getPieGetters = ({
           const clipPath = d;
           const x = s(0, datumX - (singlePie ? group.r * 0.5 : 0));
           const y = s(0, datumY);
+          const strokeWidth = s(0, value ? STROKE_WIDTH : 0);
           const labelX = s(
             x,
             -x + group.r * 0.5 * Math.sin(rotate + Math.PI * 0.5)
@@ -137,7 +140,12 @@ export const getPieGetters = ({
             clipPath,
             x,
             y,
+            rotate:
+              rotateDegrees - (_g?.rotate ?? 0) >= 180
+                ? rotateDegrees - 360
+                : rotateDegrees,
             fill: datumFill,
+            strokeWidth,
             labelX,
             labelY,
             labelFontSize,
@@ -145,10 +153,6 @@ export const getPieGetters = ({
             valueX,
             valueY,
             valueFontSize,
-            rotate:
-              rotateDegrees - (_g?.rotate ?? 0) >= 180
-                ? rotateDegrees - 360
-                : rotateDegrees,
             valueFill,
             opacity,
           };

@@ -4,7 +4,12 @@ import { BUBBLE, getPathData } from "../coords";
 import { InputGroup } from "../types";
 import { FONT_SIZE, getTextColor } from "../utils";
 import { HierarchyRoot } from "./types";
-import { getGroupLabelStrokeWidth, getRotate, PADDING } from "./utils";
+import {
+  getGroupLabelStrokeWidth,
+  getRotate,
+  PADDING,
+  STROKE_WIDTH,
+} from "./utils";
 
 export const getBubbleGetters = ({
   groups,
@@ -89,6 +94,7 @@ export const getBubbleGetters = ({
           const x = s(0, group.x - datum.x);
           const y = s(0, group.y - datum.y);
           const rotate = getRotate(_g?.rotate, cartoonize);
+          const strokeWidth = s(0, value ? STROKE_WIDTH : 0);
           const labelX = 0;
           const labelY =
             textDims.datumLabel.yShift -
@@ -113,8 +119,9 @@ export const getBubbleGetters = ({
             clipPath,
             x,
             y,
-            fill: datumFill,
             rotate,
+            fill: datumFill,
+            strokeWidth,
             labelX,
             labelY,
             labelFontSize,

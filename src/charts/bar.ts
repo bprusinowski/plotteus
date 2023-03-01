@@ -3,7 +3,12 @@ import { Datum, Group } from "../components";
 import { BAR, getPathData } from "../coords";
 import { BarChartSubtype, MaxValue } from "../types";
 import { FONT_SIZE, getTextColor } from "../utils";
-import { getGroupLabelStrokeWidth, getRotate, TEXT_MARGIN } from "./utils";
+import {
+  getGroupLabelStrokeWidth,
+  getRotate,
+  STROKE_WIDTH,
+  TEXT_MARGIN,
+} from "./utils";
 
 const PADDING_X0 = 0.1;
 const PADDING_X1 = 0.05;
@@ -110,6 +115,7 @@ export const getBarGetters = (
           const x = s(0, datumX + (x1bw - x0bw) * 0.5);
           const y = s(0, (datumY - height) * 0.5 - currentAccHeight);
           const rotate = getRotate(_g?.rotate);
+          const strokeWidth = s(0, value ? STROKE_WIDTH : 0);
           const labelX = isGrouped
             ? 0
             : s(
@@ -146,8 +152,9 @@ export const getBarGetters = (
             clipPath,
             x,
             y,
-            fill: datumFill,
             rotate,
+            fill: datumFill,
+            strokeWidth,
             labelX,
             labelY,
             labelFontSize,

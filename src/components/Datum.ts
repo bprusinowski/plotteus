@@ -11,8 +11,9 @@ type G = {
   clipPath: string;
   x: number;
   y: number;
-  fill: string;
   rotate: number;
+  fill: string;
+  strokeWidth: number;
   labelX: number;
   labelY: number;
   labelFontSize: number;
@@ -106,6 +107,7 @@ export const render = ({
     .join("path")
     .attr("class", style.path)
     .attr("d", (d) => d.d)
+    .style("stroke-width", (d) => d.strokeWidth)
     .style("fill", (d) => d.fill);
 
   const clipPathSelection = dataSelection
