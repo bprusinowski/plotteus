@@ -45,7 +45,7 @@ export const getters = ({
     x: number;
     y: number;
   }[] = [];
-  const ITEM_MARGIN = BASE_MARGIN + R;
+  const itemMargin = BASE_MARGIN + R;
 
   let rowIndex = 0;
   let rowWidth = 0;
@@ -69,7 +69,7 @@ export const getters = ({
     const { width: itemWidth } = svg.measureText(key, "legendItem");
 
     // Move to a next row.
-    if (rowWidth + itemWidth + ITEM_MARGIN > width) {
+    if (rowWidth + itemWidth + itemMargin > width) {
       rowWidth = 0;
 
       switch (anchor) {
@@ -106,7 +106,7 @@ export const getters = ({
         colorsWithCoords
           .filter((d) => d.rowIndex === rowIndex)
           .forEach((d) => {
-            d.x -= (itemWidth + ITEM_MARGIN) * 0.5;
+            d.x -= (itemWidth + itemMargin) * 0.5;
           });
 
         break;
@@ -117,7 +117,7 @@ export const getters = ({
         colorsWithCoords
           .filter((d) => d.rowIndex === rowIndex)
           .forEach((d) => {
-            d.x -= itemWidth + ITEM_MARGIN;
+            d.x -= itemWidth + itemMargin;
           });
 
         break;
@@ -133,16 +133,16 @@ export const getters = ({
 
     switch (anchor) {
       case "start":
-        x += itemWidth + ITEM_MARGIN;
+        x += itemWidth + itemMargin;
         break;
       case "middle":
-        x += (itemWidth + ITEM_MARGIN) * 0.5;
+        x += (itemWidth + itemMargin) * 0.5;
         break;
       case "end":
         break;
     }
 
-    rowWidth += itemWidth + ITEM_MARGIN;
+    rowWidth += itemWidth + itemMargin;
   }
 
   for (const { key, x, y, color } of colorsWithCoords) {
