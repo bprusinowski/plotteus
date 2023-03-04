@@ -82,12 +82,6 @@ export type TextDims = {
   };
 };
 
-export type ColorMapEntry = {
-  ax: number;
-  ay: number;
-  color: string;
-};
-
 export type MaxValue = {
   data: number;
   scale: number | undefined;
