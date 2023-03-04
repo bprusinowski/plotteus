@@ -36,12 +36,19 @@ export const getter = ({
   return {
     key: text,
     g: ({ s, _g }) => {
-      const x =
-        anchor === "start"
-          ? margin.left
-          : anchor === "middle"
-          ? (fullWidth - textWidth) * 0.5
-          : fullWidth - textWidth - margin.right;
+      let x: number;
+
+      switch (anchor) {
+        case "start":
+          x = margin.left;
+          break;
+        case "middle":
+          x = (fullWidth - textWidth) * 0.5;
+          break;
+        case "end":
+          x = fullWidth - textWidth - margin.right;
+          break;
+      }
 
       return {
         x: s(x, null, _g?.x),
