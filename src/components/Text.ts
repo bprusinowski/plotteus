@@ -1,9 +1,9 @@
 import { ResolvedDimensions } from "../dims";
-import { Anchor, GenericInt, GProps, State, TextType } from "../types";
+import { Anchor, GenericInt, State, Stateful, TextType } from "../types";
 import { FONT_SIZE, FONT_WEIGHT } from "../utils";
 import { Svg } from "./Svg";
 import style from "./Text.module.scss";
-import { prepareInts } from "./utils";
+import { getInts } from "./utils";
 
 type G = {
   x: number;
@@ -15,20 +15,20 @@ type G = {
 
 export type Getter = {
   key: string;
-  g: (props: GProps<G>) => G;
+  g: (props: Stateful<G>) => G;
 };
 
 export const getter = ({
-  svg,
   text,
   textType,
   anchor,
+  svg,
   dims: { fullWidth, margin },
 }: {
-  svg: Svg;
   text: string;
   textType: TextType;
   anchor: Anchor;
+  svg: Svg;
   dims: ResolvedDimensions;
 }): Getter => {
   const { width: textWidth } = svg.measureText(text, textType);
@@ -37,7 +37,6 @@ export const getter = ({
     key: text,
     g: ({ s, _g }) => {
       let x: number;
-
       switch (anchor) {
         case "start":
           x = margin.left;
@@ -68,27 +67,31 @@ export type Int = {
 };
 
 export const ints = ({
-  text,
-  _text,
-  _textInts,
+  getter,
+  _getter,
+  _ints,
 }: {
-  text: Getter | undefined;
-  _text: Getter | undefined;
-  _textInts: Int[] | undefined;
+  getter: Getter | undefined;
+  _getter: Getter | undefined;
+  _ints: Int[] | undefined;
 }): Int[] => {
-  const exitingText =
-    _text !== undefined && _text.key !== text?.key ? [_text] : [];
-  const texts = text !== undefined ? [text, ...exitingText] : exitingText;
-  const textInts: Int[] = texts.map(({ key, g }) => {
-    const exiting = text?.key !== key;
-    const _int = _textInts?.find((d) => d.key === key);
-    const { state, i } = prepareInts({ _int, exiting, g });
-    const textInt: Int = { key, state, i };
+  const exitingGetter =
+    _getter !== undefined && getter?.key !== _getter.key ? [_getter] : [];
+  const getters =
+    getter !== undefined ? [getter, ...exitingGetter] : exitingGetter;
+  const ints: Int[] = getters.map(({ key, g }) => {
+    const exiting = getter?.key !== key;
+    const _int = _ints?.find((d) => d.key === key);
+    const { state, i } = getInts({ _int, exiting, g });
 
-    return textInt;
+    return {
+      key,
+      state,
+      i,
+    };
   });
 
-  return textInts;
+  return ints;
 };
 
 export type Resolved = {

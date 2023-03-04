@@ -92,13 +92,23 @@ export type MaxValue = {
   kc: number;
 };
 
-// Getters.
-export type GProps<T> = {
-  s: <Z>(enter: Z, update?: Z | null, exit?: Z | null) => Z;
-  _g?: T;
+/**
+ * Provides access to a stateful function and previous G.
+ */
+export type Stateful<G> = {
+  /**
+   * Stateful function.
+   *
+   * Returns an `enter`, `update` or `exit` value,
+   * depending on the current state.
+   */
+  s: <T>(enter: T, update?: T | null, exit?: T | null) => T;
+  /**
+   * Previous G.
+   */
+  _g?: G;
 };
 
-// Interpolators.
 export type State = "enter" | "update" | "exit";
 
 export type GenericInt<T> = (t: number) => T;

@@ -1,6 +1,5 @@
 import { HALF_FONT_K } from "./charts/utils";
 import { Svg } from "./components";
-import { stateValue } from "./components/utils";
 import { State, TextDims, TextType } from "./types";
 
 export const unique = <T>(array: T[]): T[] => {
@@ -47,7 +46,14 @@ export const radiansToDegrees = (radians: number): number => {
 };
 
 const getStateOrder = (state: State): 0 | 1 | 2 => {
-  return stateValue(state, [1, 2, 0]);
+  switch (state) {
+    case "enter":
+      return 1;
+    case "update":
+      return 2;
+    case "exit":
+      return 0;
+  }
 };
 
 export const stateOrderComparator = <T extends { state: State }>(

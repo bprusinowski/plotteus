@@ -2,10 +2,10 @@ import { scaleLinear } from "d3-scale";
 import { Selection } from "d3-selection";
 import { HALF_FONT_K } from "../charts/utils";
 import { ResolvedDimensions } from "../dims";
-import { GenericInt, GProps, State } from "../types";
-import { FONT_SIZE, FONT_WEIGHT, stateOrderComparator } from "../utils";
+import { GenericInt, State, Stateful } from "../types";
+import { FONT_SIZE, FONT_WEIGHT } from "../utils";
 import style from "./Tick.module.scss";
-import { prepareInts } from "./utils";
+import { getInts } from "./utils";
 import * as VerticalAxis from "./VerticalAxis";
 
 export const WIDTH = 12;
@@ -21,7 +21,7 @@ type G = {
 
 export type Getter = {
   key: string;
-  g: (props: GProps<G>) => G;
+  g: (props: Stateful<G>) => G;
 };
 
 export const getters = ({
@@ -77,29 +77,29 @@ export type Int = {
 };
 
 export const ints = ({
-  ticks,
-  _ticks,
-  _tickInts,
+  getters = [],
+  _getters,
+  _ints,
 }: {
-  ticks: Getter[];
-  _ticks: Getter[] | undefined;
-  _tickInts: Int[] | undefined;
+  getters: Getter[] | undefined;
+  _getters: Getter[] | undefined;
+  _ints: Int[] | undefined;
 }): Int[] => {
-  const keys = ticks.map((d) => d.key);
-  const exitingTicks = _ticks?.filter((d) => !keys.includes(d.key)) ?? [];
-  const allTicks = ticks.concat(exitingTicks);
-  const tickInts: Int[] = allTicks
-    .map(({ key, g }) => {
-      const exiting = !keys.includes(key);
-      const _int = _tickInts?.find((d) => d.key === key);
-      const { state, i } = prepareInts({ _int, exiting, g });
-      const tickInt: Int = { key, state, i };
+  const keys = getters.map((d) => d.key);
+  const exitingGetters = _getters?.filter((d) => !keys.includes(d.key)) ?? [];
+  const ints: Int[] = getters.concat(exitingGetters).map(({ key, g }) => {
+    const exiting = !keys.includes(key);
+    const _int = _ints?.find((d) => d.key === key);
+    const { state, i } = getInts({ _int, exiting, g });
 
-      return tickInt;
-    })
-    .sort(stateOrderComparator);
+    return {
+      key,
+      state,
+      i,
+    };
+  });
 
-  return tickInts;
+  return ints;
 };
 
 export type Resolved = {

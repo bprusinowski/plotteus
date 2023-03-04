@@ -1,11 +1,11 @@
 import { scaleLinear } from "d3-scale";
 import { Text } from ".";
 import { Margin, ResolvedDimensions } from "../dims";
-import { GenericInt, GProps, State } from "../types";
+import { GenericInt, State, Stateful } from "../types";
 import { FONT_WEIGHT, max } from "../utils";
 import { Svg } from "./Svg";
 import * as Tick from "./Tick";
-import { prepareInts } from "./utils";
+import { getInts } from "./utils";
 import style from "./VerticalAxis.module.scss";
 
 type G = {
@@ -16,8 +16,8 @@ type G = {
 
 export type Getter = {
   title: Text.Getter;
-  g: (props: GProps<G>) => G;
   ticks: Tick.Getter[];
+  g: (props: Stateful<G>) => G;
 };
 
 export const getters = ({
@@ -64,50 +64,45 @@ export const getters = ({
 };
 
 export type Int = {
-  titles: Text.Int[];
   state: State;
   i: GenericInt<G>;
+  titles: Text.Int[];
   ticks: Tick.Int[];
 };
 
 export const ints = ({
-  verticalAxis,
-  _verticalAxis,
-  _verticalAxisInts,
+  getter,
+  _getter,
+  _ints,
 }: {
-  verticalAxis: Getter | undefined;
-  _verticalAxis: Getter | undefined;
-  _verticalAxisInts: Int[] | undefined;
+  getter: Getter | undefined;
+  _getter: Getter | undefined;
+  _ints: Int[] | undefined;
 }): Int[] => {
-  const exitingVerticalAxis = _verticalAxis ? [_verticalAxis] : [];
-  const allVerticalAxes = verticalAxis ? [verticalAxis] : exitingVerticalAxis;
-  const verticalAxisInts: Int[] = allVerticalAxes.map(({ title, g, ticks }) => {
-    const exiting = verticalAxis === undefined;
-    const _int = _verticalAxisInts?.find((d) => d.state !== "exit");
-    const {
+  const exiting = getter === undefined;
+  const exitingVerticalAxis = _getter ? [_getter] : [];
+  const allVerticalAxes = getter ? [getter] : exitingVerticalAxis;
+  const ints: Int[] = allVerticalAxes.map(({ title, g, ticks }) => {
+    const _int = _ints?.find((d) => d.state !== "exit");
+    const { state, i, _updateInt } = getInts({ _int, exiting, g });
+
+    return {
       state,
       i,
-      _updateInt: _verticalAxisInt,
-    } = prepareInts({ _int, exiting, g });
-    const verticalAxisInt: Int = {
       titles: Text.ints({
-        text: title,
-        _text: _verticalAxis?.title,
-        _textInts: _verticalAxisInt?.titles,
+        getter: title,
+        _getter: _getter?.title,
+        _ints: _updateInt?.titles,
       }),
-      state,
-      i,
       ticks: Tick.ints({
-        ticks,
-        _ticks: _verticalAxis?.ticks,
-        _tickInts: _verticalAxisInt?.ticks,
+        getters: ticks,
+        _getters: _getter?.ticks,
+        _ints: _updateInt?.ticks,
       }),
     };
-
-    return verticalAxisInt;
   });
 
-  return verticalAxisInts;
+  return ints;
 };
 
 export type Resolved = {
@@ -119,8 +114,8 @@ export const resolve = (ints: Int[], t: number): Resolved[] => {
   return ints.map(({ titles, i, ticks }) => {
     return {
       titles: Text.resolve(titles, t),
-      ...i(t),
       ticks: Tick.resolve(ticks, t),
+      ...i(t),
     };
   });
 };

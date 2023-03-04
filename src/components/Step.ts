@@ -267,33 +267,33 @@ export const intsMap = ({
     const _stepGetters: Getter | undefined = steps[i - 1];
 
     const titlesInts = Text.ints({
-      text: title,
-      _text: _stepGetters?.title,
-      _textInts: _titleInts,
+      getter: title,
+      _getter: _stepGetters?.title,
+      _ints: _titleInts,
     });
 
     const subtitlesInts = Text.ints({
-      text: subtitle,
-      _text: _stepGetters?.subtitle,
-      _textInts: _subtitleInts,
+      getter: subtitle,
+      _getter: _stepGetters?.subtitle,
+      _ints: _subtitleInts,
     });
 
     const colorLegendsInts = ColorLegend.ints({
-      colorLegends,
-      _colorLegends: _stepGetters?.colorLegends,
-      _colorLegendInts,
+      getters: colorLegends,
+      _getters: _stepGetters?.colorLegends,
+      _ints: _colorLegendInts,
     });
 
     const verticalAxesInts = VerticalAxis.ints({
-      verticalAxis,
-      _verticalAxis: _stepGetters?.verticalAxis,
-      _verticalAxisInts,
+      getter: verticalAxis,
+      _getter: _stepGetters?.verticalAxis,
+      _ints: _verticalAxisInts,
     });
 
     const groupsInts = Group.ints({
-      groups,
-      _groups: _stepGetters?.groups,
-      _groupInts,
+      getters: groups,
+      _getters: _stepGetters?.groups,
+      _ints: _groupInts,
     });
 
     intsMap.set(key, {

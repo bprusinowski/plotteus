@@ -1,10 +1,10 @@
 import { interpolate } from "d3-interpolate";
 import { select, Selection } from "d3-selection";
-import { GenericInt, GProps, State } from "../types";
+import { GenericInt, State, Stateful } from "../types";
 import { FONT_WEIGHT } from "../utils";
 import style from "./Datum.module.scss";
 import * as Group from "./Group";
-import { prepareInts } from "./utils";
+import { getInts } from "./utils";
 
 type G = {
   d: string;
@@ -30,7 +30,7 @@ export type Getter = {
   teleportKey: string;
   teleportFrom: string | undefined;
   value: number;
-  g: (props: GProps<G>) => G;
+  g: (props: Stateful<G>) => G;
 };
 
 // Getters are defined per chart type in GroupsGetters.
@@ -70,11 +70,17 @@ export const int = ({
           _g.y += _gt.y - g.y;
         }
       : undefined;
-  const { state, i, _updateInt } = prepareInts({ _int, exiting, g, _gAlter });
+  const { state, i, _updateInt } = getInts({ _int, exiting, g, _gAlter });
   const _value = _updateInt?.value ?? value;
-  const datumInt: Int = { key, teleportKey, state, value, _value, i };
 
-  return datumInt;
+  return {
+    key,
+    teleportKey,
+    state,
+    value,
+    _value,
+    i,
+  };
 };
 
 export type Resolved = {

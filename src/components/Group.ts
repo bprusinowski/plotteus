@@ -8,10 +8,10 @@ import {
   BarChartSubtype,
   ChartType,
   GenericInt,
-  GProps,
   InputGroup,
   MaxValue,
   State,
+  Stateful,
   TextDims,
 } from "../types";
 import { FONT_WEIGHT, stateOrderComparator } from "../utils";
@@ -20,7 +20,7 @@ import datumStyle from "./Datum.module.scss";
 import style from "./Group.module.scss";
 import { Svg } from "./Svg";
 import { Tooltip } from "./Tooltip";
-import { prepareInts } from "./utils";
+import { getInts } from "./utils";
 
 type G = {
   d: string;
@@ -35,7 +35,7 @@ type G = {
 
 export type Getter = {
   key: string;
-  g: (props: GProps<G>) => G;
+  g: (props: Stateful<G>) => G;
   data: Datum.Getter[];
 };
 
@@ -84,34 +84,30 @@ export type Int = {
 };
 
 export const ints = ({
-  groups = [],
-  _groups,
-  _groupInts,
+  getters = [],
+  _getters,
+  _ints,
 }: {
-  groups: Getter[] | undefined;
-  _groups: Getter[] | undefined;
-  _groupInts: Int[] | undefined;
+  getters: Getter[] | undefined;
+  _getters: Getter[] | undefined;
+  _ints: Int[] | undefined;
 }): Int[] => {
-  const keys = groups.map((d) => d.key);
-  const exitingGroups = _groups?.filter((d) => !keys.includes(d.key)) ?? [];
-  const allGroups = groups.concat(exitingGroups);
-  const groupsInts: Int[] = allGroups.map(({ key, g, data }) => {
+  const keys = getters.map((d) => d.key);
+  const exitingGroups = _getters?.filter((d) => !keys.includes(d.key)) ?? [];
+  const allGroups = getters.concat(exitingGroups);
+  const ints: Int[] = allGroups.map(({ key, g, data }) => {
     const exiting = !keys.includes(key);
-    const _int = _groupInts?.find((d) => d.key === key);
-    const {
-      state,
-      i,
-      _updateInt: _groupInt,
-    } = prepareInts({ _int, exiting, g });
+    const _int = _ints?.find((d) => d.key === key);
+    const { state, i, _updateInt: _groupInt } = getInts({ _int, exiting, g });
     const groupInt: Int = { key, state, i, data: [] };
     const dataKeys = exiting ? [] : data.map((d) => d.key);
-    const _data = _groups?.find((d) => d.key === key)?.data;
+    const _data = _getters?.find((d) => d.key === key)?.data;
     const exitingData = _data?.filter((d) => !dataKeys.includes(d.key)) ?? [];
     const allData = data.concat(exitingData);
     groupInt.data = allData
       .map((datum) => {
         let _teleportInt: Datum.Int | undefined;
-        const _groupTeleportInt = _groupInts?.find((d) => {
+        const _groupTeleportInt = _ints?.find((d) => {
           return (_teleportInt = d.data.find(
             (d) => d.teleportKey === datum.teleportFrom
           ));
@@ -133,20 +129,20 @@ export const ints = ({
     return groupInt;
   });
 
-  const allDataTeleportFrom = groups
+  const allDataTeleportFrom = getters
     .map((d) => d.data)
     .flat()
     .filter((d) => d.teleportFrom !== undefined)
     .map((d) => d.teleportFrom) as string[];
 
   // Remove teleported data from original groups.
-  groupsInts.forEach((groupInts) => {
+  ints.forEach((groupInts) => {
     groupInts.data = groupInts.data.filter((datumInts) => {
       return !allDataTeleportFrom.includes(datumInts.teleportKey);
     });
   });
 
-  return groupsInts;
+  return ints;
 };
 
 export type Resolved = {
