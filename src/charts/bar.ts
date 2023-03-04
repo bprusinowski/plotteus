@@ -202,7 +202,7 @@ const getScales = ({
   const x0Scale = scaleBand()
     .domain(groupsKeys)
     .range([0, width])
-    .paddingInner(singleGroup || dataKeys.length === 1 ? 0 : PADDING_X0);
+    .paddingInner(singleGroup ? 0 : PADDING_X0);
   const x0bw = x0Scale.bandwidth();
   const yScale = scaleLinear()
     .domain([0, maxValue.actual])
