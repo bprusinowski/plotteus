@@ -1,12 +1,10 @@
 import { scaleLinear } from "d3-scale";
 import { Text } from ".";
 import { Margin, ResolvedDimensions } from "../dims";
-import { GenericInt, GProps, State } from "../types";
-import { FONT_WEIGHT, max } from "../utils";
-import { Svg } from "./Svg";
+import { max } from "../utils";
+import * as Generic from "./Generic";
+import { Svg, SVGSelection } from "./Svg";
 import * as Tick from "./Tick";
-import { prepareInts } from "./utils";
-import style from "./VerticalAxis.module.scss";
 
 type G = {
   x: number;
@@ -14,150 +12,138 @@ type G = {
   opacity: number;
 };
 
-export type Getter = {
-  title: Text.Getter;
-  g: (props: GProps<G>) => G;
-  ticks: Tick.Getter[];
-};
+export type Getter = Generic.Getter<
+  G,
+  { title: Text.Getter | undefined; ticks: Tick.Getter[] }
+>;
 
 export const getters = ({
-  svg,
   title,
+  titleMargin,
+  svg,
+  dims,
+  tickHeight,
   maxValue,
   _maxValue,
-  dims,
-  titleMargin,
-  tickHeight,
 }: {
-  svg: Svg;
   title: string;
+  titleMargin: Margin;
+  svg: Svg;
+  dims: ResolvedDimensions;
+  tickHeight: number;
   maxValue: number;
   _maxValue: number | undefined;
-  dims: ResolvedDimensions;
-  // As we are using Text to get title getter, we need to pass a custom margin
-  // relative to vertical axis.
-  titleMargin: Margin;
-  tickHeight: number;
 }): Getter => {
   const ticks = scaleLinear().domain([0, maxValue]).ticks(5);
 
   return {
-    title: Text.getter({
-      svg,
-      text: title,
-      textType: "verticalAxisTitle",
-      anchor: "start",
-      dims: { ...dims, margin: titleMargin },
-    }),
+    key: "verticalAxis",
     g: ({ s, _g }) => {
-      const x = dims.margin.left;
-      const y = dims.margin.top;
-
       return {
-        x: s(x, null, _g?.x),
-        y: s(y, null, _g?.y),
+        x: s(dims.margin.left, null, _g?.x),
+        y: s(dims.margin.top, null, _g?.y),
         opacity: s(0, 1),
       };
     },
-    ticks: Tick.getters({ ticks, maxValue, _maxValue, dims, tickHeight }),
+    title: title
+      ? Text.getter({
+          text: title,
+          textType: "verticalAxisTitle",
+          anchor: "start",
+          svg,
+          dims: { ...dims, margin: titleMargin },
+        })
+      : undefined,
+    ticks: Tick.getters({
+      ticks,
+      maxValue,
+      _maxValue,
+      tickHeight,
+      dims,
+    }),
   };
 };
 
-export type Int = {
-  titles: Text.Int[];
-  state: State;
-  i: GenericInt<G>;
-  ticks: Tick.Int[];
-};
+export type Int = Generic.Int<G, { titles: Text.Int[]; ticks: Tick.Int[] }>;
 
 export const ints = ({
-  verticalAxis,
-  _verticalAxis,
-  _verticalAxisInts,
-}: {
-  verticalAxis: Getter | undefined;
-  _verticalAxis: Getter | undefined;
-  _verticalAxisInts: Int[] | undefined;
-}): Int[] => {
-  const exitingVerticalAxis = _verticalAxis ? [_verticalAxis] : [];
-  const allVerticalAxes = verticalAxis ? [verticalAxis] : exitingVerticalAxis;
-  const verticalAxisInts: Int[] = allVerticalAxes.map(({ title, g, ticks }) => {
-    const exiting = verticalAxis === undefined;
-    const _int = _verticalAxisInts?.find((d) => d.state !== "exit");
-    const {
-      state,
-      i,
-      _updateInt: _verticalAxisInt,
-    } = prepareInts({ _int, exiting, g });
-    const verticalAxisInt: Int = {
-      titles: Text.ints({
-        text: title,
-        _text: _verticalAxis?.title,
-        _textInts: _verticalAxisInt?.titles,
-      }),
-      state,
-      i,
-      ticks: Tick.ints({
-        ticks,
-        _ticks: _verticalAxis?.ticks,
-        _tickInts: _verticalAxisInt?.ticks,
-      }),
-    };
+  getters,
+  _getters,
+  _ints,
+}: Generic.IntsProps<G, Getter, Int>) => {
+  return Generic.ints<G, Getter, Int>()({
+    getters,
+    _getters,
+    _ints,
+    modifyInt: ({ getter, int, _updateInt }) => {
+      const _titleGetter = _getters?.find((d) => d.key === getter.key)?.title;
+      const _tickGetters = _getters?.find((d) => d.key === getter.key)?.ticks;
 
-    return verticalAxisInt;
+      return {
+        ...int,
+        titles: Text.ints({
+          getters: getter.title ? [getter.title] : [],
+          _getters: _titleGetter ? [_titleGetter] : [],
+          _ints: _updateInt?.titles,
+        }),
+        ticks: Tick.ints({
+          getters: getter.ticks,
+          _getters: _tickGetters,
+          _ints: _updateInt?.ticks,
+        }),
+      };
+    },
   });
-
-  return verticalAxisInts;
 };
 
-export type Resolved = {
-  titles: Text.Resolved[];
-  ticks: Tick.Resolved[];
-} & G;
+export type Resolved = Generic.Resolved<
+  G,
+  { titles: Text.Resolved[]; ticks: Tick.Resolved[] }
+>;
 
-export const resolve = (ints: Int[], t: number): Resolved[] => {
-  return ints.map(({ titles, i, ticks }) => {
-    return {
-      titles: Text.resolve(titles, t),
-      ...i(t),
-      ticks: Tick.resolve(ticks, t),
-    };
+export const resolve = ({ ints, t }: { ints: Int[]; t: number }) => {
+  return Generic.resolve<G, Resolved, Int>()({
+    ints,
+    t,
+    modifyResolved: ({ int, resolved }) => {
+      return {
+        ...resolved,
+        titles: Text.resolve({ ints: int.titles, t }),
+        ticks: Tick.resolve({ ints: int.ticks, t }),
+      };
+    },
   });
 };
 
 export const render = ({
   resolved,
-  svg,
+  selection,
 }: {
   resolved: Resolved[];
-  svg: Svg;
-}): void => {
-  const verticalAxisSelection = svg.selection
-    .selectAll<SVGGElement, Resolved>(`.${style.node}`)
+  selection: SVGSelection;
+}) => {
+  const titles = resolved.flatMap((d) => d.titles);
+  const ticks = resolved.flatMap((d) => d.ticks);
+
+  const verticalAxisSelection = selection
+    .selectAll<SVGGElement, Resolved>(".vertical-axis")
     .data(resolved)
     .join("g")
-    .attr("class", style.node)
+    .attr("class", "vertical-axis")
     .attr("transform", (d) => `translate(${d.x}, ${d.y})`)
     .style("opacity", (d) => d.opacity)
     // Vertical axis needs to be the first element in SVG, so it doesn't overlap bars.
     .lower();
 
-  const titlesSelection = verticalAxisSelection
-    .selectAll(`.${style.titleNode}`)
-    .data((d) => [d])
-    .join("g")
-    .attr("class", style.titleNode)
-    .selectAll(`.${style.title}`)
-    .data((d) => d.titles)
-    .join("text")
-    .attr("class", style.title)
-    .attr("transform", (d) => `translate(${d.x}, ${d.y})`)
-    .style("font-size", (d) => d.fontSize)
-    .style("font-weight", FONT_WEIGHT.verticalAxisTitle)
-    .style("opacity", (d) => d.opacity)
-    .text((d) => d.key);
-
-  Tick.render(verticalAxisSelection);
+  Text.render({
+    resolved: titles,
+    key: "verticalAxisTitle",
+    selection: verticalAxisSelection,
+  });
+  Tick.render({
+    resolved: ticks,
+    selection: verticalAxisSelection,
+  });
 };
 
 export const getWidth = ({

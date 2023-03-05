@@ -2,10 +2,8 @@ import { scaleLinear } from "d3-scale";
 import { Selection } from "d3-selection";
 import { HALF_FONT_K } from "../charts/utils";
 import { ResolvedDimensions } from "../dims";
-import { GenericInt, GProps, State } from "../types";
-import { FONT_SIZE, FONT_WEIGHT, stateOrderComparator } from "../utils";
-import style from "./Tick.module.scss";
-import { prepareInts } from "./utils";
+import { FONT_SIZE, FONT_WEIGHT } from "../utils";
+import * as Generic from "./Generic";
 import * as VerticalAxis from "./VerticalAxis";
 
 export const WIDTH = 12;
@@ -19,10 +17,7 @@ type G = {
   opacity: number;
 };
 
-export type Getter = {
-  key: string;
-  g: (props: GProps<G>) => G;
-};
+export type Getter = Generic.Getter<G>;
 
 export const getters = ({
   ticks,
@@ -70,91 +65,65 @@ export const getters = ({
   });
 };
 
-export type Int = {
-  key: string;
-  state: State;
-  i: GenericInt<G>;
-};
+export type Int = Generic.Int<G>;
 
-export const ints = ({
-  ticks,
-  _ticks,
-  _tickInts,
+export const ints = Generic.ints<G, Getter, Int>();
+
+export type Resolved = Generic.Resolved<G>;
+
+export const resolve = Generic.resolve<G, Resolved, Int>();
+
+export const render = ({
+  selection,
+  resolved,
 }: {
-  ticks: Getter[];
-  _ticks: Getter[] | undefined;
-  _tickInts: Int[] | undefined;
-}): Int[] => {
-  const keys = ticks.map((d) => d.key);
-  const exitingTicks = _ticks?.filter((d) => !keys.includes(d.key)) ?? [];
-  const allTicks = ticks.concat(exitingTicks);
-  const tickInts: Int[] = allTicks
-    .map(({ key, g }) => {
-      const exiting = !keys.includes(key);
-      const _int = _tickInts?.find((d) => d.key === key);
-      const { state, i } = prepareInts({ _int, exiting, g });
-      const tickInt: Int = { key, state, i };
-
-      return tickInt;
-    })
-    .sort(stateOrderComparator);
-
-  return tickInts;
-};
-
-export type Resolved = {
-  key: string;
-} & G;
-
-export const resolve = (ints: Int[], t: number): Resolved[] => {
-  return ints.map(({ key, i }) => ({ key, ...i(t) }));
-};
-
-export const render = (
-  verticalAxis: Selection<
+  selection: Selection<
     SVGGElement,
     VerticalAxis.Resolved,
     SVGSVGElement,
     unknown
-  >
-): void => {
-  verticalAxis
-    .selectAll<SVGGElement, Resolved>(`.${style.node}`)
-    .data(
-      (d) => d.ticks,
-      (d) => d.key
-    )
+  >;
+  resolved: Resolved[];
+}): void => {
+  selection
+    .selectAll<SVGGElement, Resolved>(".tick")
+    .data(resolved, (d) => d.key)
     .join("g")
-    .attr("class", style.node)
+    .attr("class", "tick")
     .attr("transform", (d) => `translate(${d.x}, ${d.y})`)
     .style("opacity", (d) => d.opacity)
     .call((g) =>
       g
-        .selectAll(`.${style.label}`)
+        .selectAll(`.label`)
         .data((d) => [d])
         .join("text")
-        .attr("class", style.label)
+        .attr("class", "label")
+        .attr("transform", `translate(-2, 0)`)
         .attr("dy", (d) => -d.height * HALF_FONT_K)
+        .style("text-anchor", "end")
         .style("font-size", (d) => d.fontSize)
         .style("font-weight", FONT_WEIGHT.tick)
+        .style("dominant-baseline", "hanging")
         .text((d) => d.key)
     )
     .call((g) =>
       g
-        .selectAll(`.${style.boldLine}`)
+        .selectAll(".bold-line")
         .data((d) => [d])
         .join("line")
-        .attr("class", style.boldLine)
+        .attr("class", "bold-line")
         .attr("x1", 2)
         .attr("x2", 7)
+        .style("stroke", "#696969")
     )
     .call((g) =>
       g
-        .selectAll(`.${style.lightLine}`)
+        .selectAll(".light-line")
         .data((d) => [d])
         .join("line")
-        .attr("class", style.lightLine)
+        .attr("class", "light-line")
         .attr("x1", 7)
         .attr("x2", (d) => d.width)
+        .style("stroke", "#ededed")
     );
 };

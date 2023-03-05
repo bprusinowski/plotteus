@@ -1,22 +1,22 @@
 import { interpolate } from "d3-interpolate";
-import { ChartType, GenericInt, GProps, State } from "../types";
+import { ChartType, Interpolator, State, Stateful } from "../types";
 
-export const prepareInts = <
+export const getInts = <
   G extends object,
   I extends {
     state: State;
-    i: GenericInt<G>;
+    i: Interpolator<G>;
   }
 >({
   exiting,
   g,
   _int,
-  _gAlter,
+  modifyPreviousG,
 }: {
   exiting: boolean;
-  g: (props: GProps<G>) => G;
+  g: (props: Stateful<G>) => G;
   _int?: I;
-  _gAlter?: (_g: G) => void;
+  modifyPreviousG?: (_g: G) => void;
 }) => {
   // State.
   const updating = _int !== undefined && _int.state !== "exit";
@@ -26,9 +26,7 @@ export const prepareInts = <
 
   const _g = _updateInt?.i(1);
 
-  if (_gAlter && _g) {
-    _gAlter(_g);
-  }
+  if (_g) modifyPreviousG?.(_g);
 
   const from = _g ?? g({ s: (enter) => enter });
   const to = g({
@@ -38,20 +36,6 @@ export const prepareInts = <
   const i = interpolate(from, to);
 
   return { state, i, _updateInt };
-};
-
-export const stateValue = <T>(
-  state: State,
-  [enter, update, exit]: [T, T?, T?]
-): T => {
-  switch (state) {
-    case "enter":
-      return enter;
-    case "update":
-      return update ?? enter;
-    case "exit":
-      return exit ?? enter;
-  }
 };
 
 export const shouldShareDomain = (type: ChartType): boolean => {

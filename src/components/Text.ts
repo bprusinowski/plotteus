@@ -1,9 +1,9 @@
+import { Selection } from "d3-selection";
 import { ResolvedDimensions } from "../dims";
-import { Anchor, GenericInt, GProps, State, TextType } from "../types";
+import { Anchor, TextType } from "../types";
 import { FONT_SIZE, FONT_WEIGHT } from "../utils";
+import * as Generic from "./Generic";
 import { Svg } from "./Svg";
-import style from "./Text.module.scss";
-import { prepareInts } from "./utils";
 
 type G = {
   x: number;
@@ -13,22 +13,19 @@ type G = {
   opacity: number;
 };
 
-export type Getter = {
-  key: string;
-  g: (props: GProps<G>) => G;
-};
+export type Getter = Generic.Getter<G>;
 
 export const getter = ({
-  svg,
   text,
   textType,
   anchor,
+  svg,
   dims: { fullWidth, margin },
 }: {
-  svg: Svg;
   text: string;
   textType: TextType;
   anchor: Anchor;
+  svg: Svg;
   dims: ResolvedDimensions;
 }): Getter => {
   const { width: textWidth } = svg.measureText(text, textType);
@@ -36,12 +33,18 @@ export const getter = ({
   return {
     key: text,
     g: ({ s, _g }) => {
-      const x =
-        anchor === "start"
-          ? margin.left
-          : anchor === "middle"
-          ? (fullWidth - textWidth) * 0.5
-          : fullWidth - textWidth - margin.right;
+      let x: number;
+      switch (anchor) {
+        case "start":
+          x = margin.left;
+          break;
+        case "middle":
+          x = (fullWidth - textWidth) * 0.5;
+          break;
+        case "end":
+          x = fullWidth - textWidth - margin.right;
+          break;
+      }
 
       return {
         x: s(x, null, _g?.x),
@@ -54,63 +57,34 @@ export const getter = ({
   };
 };
 
-export type Int = {
-  key: string;
-  state: State;
-  i: GenericInt<G>;
-};
+export type Int = Generic.Int<G>;
 
-export const ints = ({
-  text,
-  _text,
-  _textInts,
-}: {
-  text: Getter | undefined;
-  _text: Getter | undefined;
-  _textInts: Int[] | undefined;
-}): Int[] => {
-  const exitingText =
-    _text !== undefined && _text.key !== text?.key ? [_text] : [];
-  const texts = text !== undefined ? [text, ...exitingText] : exitingText;
-  const textInts: Int[] = texts.map(({ key, g }) => {
-    const exiting = text?.key !== key;
-    const _int = _textInts?.find((d) => d.key === key);
-    const { state, i } = prepareInts({ _int, exiting, g });
-    const textInt: Int = { key, state, i };
+export const ints = Generic.ints<G, Getter, Int>();
 
-    return textInt;
-  });
+export type Resolved = Generic.Resolved<G>;
 
-  return textInts;
-};
-
-export type Resolved = {
-  key: string;
-} & G;
-
-export const resolve = (ints: Int[], t: number): Resolved[] => {
-  return ints.map(({ key, i }) => ({ key, ...i(t) }));
-};
+export const resolve = Generic.resolve<G, Resolved, Int>();
 
 export const render = ({
+  selection,
   resolved,
-  svg,
   key,
 }: {
+  selection: Selection<any, any, Element, unknown>;
   resolved: Resolved[];
-  svg: Svg;
   key: string;
 }): void => {
-  const className = `${style.node} ${key}`;
+  const className = `text ${key}`;
 
-  svg.selection
-    .selectAll<SVGTextElement, Resolved>(`.${style.node}.${key}`)
+  selection
+    .selectAll<SVGTextElement, Resolved>(`.text.${key}`)
     .data(resolved, (d) => d.key)
     .join("text")
     .attr("class", className)
     .attr("transform", (d) => `translate(${d.x}, ${d.y})`)
     .style("font-size", (d) => d.fontSize)
     .style("font-weight", (d) => d.fontWeight)
+    .style("dominant-baseline", "hanging")
     .style("opacity", (d) => d.opacity)
     .text((d) => d.key);
 };

@@ -178,13 +178,7 @@ export const getters = ({
         dims.addTop(titleHeight + titleMargin).addLeft(width);
 
         verticalAxisGetters = VerticalAxis.getters({
-          svg,
           title,
-          maxValue: maxValue.actual,
-          // Only pass previous max value when vertical axis was present in previous step.
-          // Otherwise animate the ticks from bottom.
-          _maxValue: _showVerticalAxis ? _maxValue : undefined,
-          dims: dims.resolve(),
           titleMargin: {
             top: -(
               titleHeight +
@@ -195,7 +189,11 @@ export const getters = ({
             bottom: 0,
             left: -width,
           },
+          svg,
+          dims: dims.resolve(),
           tickHeight: textDims.tick.height,
+          maxValue: maxValue.actual,
+          _maxValue: _showVerticalAxis ? _maxValue : undefined,
         });
       }
 
@@ -267,33 +265,35 @@ export const intsMap = ({
     const _stepGetters: Getter | undefined = steps[i - 1];
 
     const titlesInts = Text.ints({
-      text: title,
-      _text: _stepGetters?.title,
-      _textInts: _titleInts,
+      getters: title ? [title] : [],
+      _getters: _stepGetters?.title ? [_stepGetters.title] : undefined,
+      _ints: _titleInts,
     });
 
     const subtitlesInts = Text.ints({
-      text: subtitle,
-      _text: _stepGetters?.subtitle,
-      _textInts: _subtitleInts,
+      getters: subtitle ? [subtitle] : [],
+      _getters: _stepGetters?.subtitle ? [_stepGetters.subtitle] : undefined,
+      _ints: _subtitleInts,
     });
 
     const colorLegendsInts = ColorLegend.ints({
-      colorLegends,
-      _colorLegends: _stepGetters?.colorLegends,
-      _colorLegendInts,
+      getters: colorLegends,
+      _getters: _stepGetters?.colorLegends,
+      _ints: _colorLegendInts,
     });
 
     const verticalAxesInts = VerticalAxis.ints({
-      verticalAxis,
-      _verticalAxis: _stepGetters?.verticalAxis,
-      _verticalAxisInts,
+      getters: verticalAxis ? [verticalAxis] : [],
+      _getters: _stepGetters?.verticalAxis
+        ? [_stepGetters.verticalAxis]
+        : undefined,
+      _ints: _verticalAxisInts,
     });
 
     const groupsInts = Group.ints({
-      groups,
-      _groups: _stepGetters?.groups,
-      _groupInts,
+      getters: groups,
+      _getters: _stepGetters?.groups,
+      _ints: _groupInts,
     });
 
     intsMap.set(key, {
@@ -321,11 +321,11 @@ export const resolve = (ints: Int, t: number) => {
   const { titles, subtitles, groups, colorLegends, verticalAxes } = ints;
 
   return {
-    titles: Text.resolve(titles, t),
-    subtitles: Text.resolve(subtitles, t),
-    groups: Group.resolve(groups, t),
-    colors: ColorLegend.resolve(colorLegends, t),
-    verticalAxes: VerticalAxis.resolve(verticalAxes, t),
+    titles: Text.resolve({ ints: titles, t }),
+    subtitles: Text.resolve({ ints: subtitles, t }),
+    groups: Group.resolve({ ints: groups, t }),
+    colors: ColorLegend.resolve({ ints: colorLegends, t }),
+    verticalAxes: VerticalAxis.resolve({ ints: verticalAxes, t }),
   };
 };
 
@@ -342,26 +342,32 @@ export const render = ({
   finished: boolean;
   indicateProgress: boolean;
 }) => {
+  const { titles, subtitles, colors, verticalAxes, groups } = resolved;
+
   Text.render({
-    resolved: resolved.titles,
-    svg,
+    selection: svg.selection,
+    resolved: titles,
     key: "title",
   });
+
   Text.render({
-    resolved: resolved.subtitles,
-    svg,
+    selection: svg.selection,
+    resolved: subtitles,
     key: "subtitle",
   });
+
   ColorLegend.render({
-    resolved: resolved.colors,
-    svg,
+    resolved: colors,
+    selection: svg.selection,
   });
+
   VerticalAxis.render({
-    resolved: resolved.verticalAxes,
-    svg,
+    resolved: verticalAxes,
+    selection: svg.selection,
   });
+
   Group.render({
-    resolved: resolved.groups,
+    resolved: groups,
     svg,
     tooltip: finished ? tooltip : undefined,
   });

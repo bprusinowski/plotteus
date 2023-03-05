@@ -1,7 +1,6 @@
 import { select, Selection } from "d3-selection";
 import { TextType } from "../types";
 import { FONT_SIZE, FONT_WEIGHT } from "../utils";
-import style from "./Svg.module.scss";
 
 export type Svg = {
   selection: SVGSelection;
@@ -9,7 +8,7 @@ export type Svg = {
   measureText: (text: string | number, textType: TextType) => DOMRect;
 };
 
-type SVGSelection = Selection<
+export type SVGSelection = Selection<
   SVGSVGElement,
   unknown,
   HTMLDivElement,
@@ -21,7 +20,11 @@ export const makeSvg = (div: HTMLDivElement): Svg => {
     .selectAll("svg")
     .data([null])
     .join("svg")
-    .attr("class", style.node) as SVGSelection;
+    .style("width", "100%")
+    .style("height", "100%")
+    .style("transform", "translate3d(0, 0, 0)")
+    .style("border-left", "3px solid transparent")
+    .style("transition", "border-left 0.3s ease") as SVGSelection;
 
   const measure = (): DOMRect => {
     return (selection.node() as SVGSVGElement).getBoundingClientRect();

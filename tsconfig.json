@@ -10,7 +10,6 @@
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "allowSyntheticDefaultImports": true,
-    "plugins": [{ "name": "typescript-plugin-css-modules" }],
     "typeRoots": ["./node_modules/@types", "./types"]
   },
   "include": ["src/**/*.ts"],

@@ -4,5 +4,6 @@ export * as Group from "./Group";
 export * as Step from "./Step";
 export * from "./Svg";
 export * as Text from "./Text";
+export * as Tick from "./Tick";
 export * from "./Tooltip";
 export * as VerticalAxis from "./VerticalAxis";

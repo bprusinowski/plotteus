@@ -7,20 +7,15 @@ import { ResolvedDimensions } from "../dims";
 import {
   BarChartSubtype,
   ChartType,
-  GenericInt,
-  GProps,
   InputGroup,
   MaxValue,
-  State,
   TextDims,
 } from "../types";
 import { FONT_WEIGHT, stateOrderComparator } from "../utils";
 import * as Datum from "./Datum";
-import datumStyle from "./Datum.module.scss";
-import style from "./Group.module.scss";
+import * as Generic from "./Generic";
 import { Svg } from "./Svg";
 import { Tooltip } from "./Tooltip";
-import { prepareInts } from "./utils";
 
 type G = {
   d: string;
@@ -33,11 +28,7 @@ type G = {
   opacity: number;
 };
 
-export type Getter = {
-  key: string;
-  g: (props: GProps<G>) => G;
-  data: Datum.Getter[];
-};
+export type Getter = Generic.Getter<G, { data: Datum.Getter[] }>;
 
 export type GetterProps = {
   // Data.
@@ -76,87 +67,83 @@ export const getters = (
   }
 };
 
-export type Int = {
-  key: string;
-  state: State;
-  i: GenericInt<G>;
-  data: Datum.Int[];
-};
+export type Int = Generic.Int<G, { data: Datum.Int[] }>;
 
 export const ints = ({
-  groups = [],
-  _groups,
-  _groupInts,
-}: {
-  groups: Getter[] | undefined;
-  _groups: Getter[] | undefined;
-  _groupInts: Int[] | undefined;
-}): Int[] => {
-  const keys = groups.map((d) => d.key);
-  const exitingGroups = _groups?.filter((d) => !keys.includes(d.key)) ?? [];
-  const allGroups = groups.concat(exitingGroups);
-  const groupsInts: Int[] = allGroups.map(({ key, g, data }) => {
-    const exiting = !keys.includes(key);
-    const _int = _groupInts?.find((d) => d.key === key);
-    const {
-      state,
-      i,
-      _updateInt: _groupInt,
-    } = prepareInts({ _int, exiting, g });
-    const groupInt: Int = { key, state, i, data: [] };
-    const dataKeys = exiting ? [] : data.map((d) => d.key);
-    const _data = _groups?.find((d) => d.key === key)?.data;
-    const exitingData = _data?.filter((d) => !dataKeys.includes(d.key)) ?? [];
-    const allData = data.concat(exitingData);
-    groupInt.data = allData
-      .map((datum) => {
-        let _teleportInt: Datum.Int | undefined;
-        const _groupTeleportInt = _groupInts?.find((d) => {
-          return (_teleportInt = d.data.find(
-            (d) => d.teleportKey === datum.teleportFrom
-          ));
-        });
-        const _int =
-          _teleportInt ?? _groupInt?.data?.find((d) => d.key === datum.key);
+  getters = [],
+  _getters,
+  _ints,
+}: Generic.IntsProps<G, Getter, Int>): Int[] => {
+  const ints = Generic.ints<G, Getter, Int>()({
+    getters,
+    _getters,
+    _ints,
+    modifyInt: ({ getter, int, exiting, _updateInt }) => {
+      const _data = _getters?.find((d) => d.key === getter.key)?.data;
+      const newInt: Int = {
+        ...int,
+        data: [],
+      };
 
-        return Datum.int({
-          datum,
-          _int,
-          groupInt,
-          _groupTeleportInt,
-          exiting: !dataKeys.includes(datum.key),
-          teleported: _teleportInt !== undefined,
-        });
-      })
-      .sort(stateOrderComparator);
+      newInt.data = Datum.ints({
+        getters: exiting ? [] : getter.data,
+        _getters: _data,
+        _ints: _updateInt?.data,
+        getModifyPreviousG: ({ getter }) => {
+          let _teleportInt: Datum.Int | undefined;
+          const _groupTeleportInt = _ints?.find((d) => {
+            return (_teleportInt = d.data.find(
+              (d) => d.teleportKey === getter.teleportFrom
+            ));
+          });
 
-    return groupInt;
+          // Update datum's x and y by their groups' coords when teleporting.
+          const modifyPreviousG =
+            _teleportInt && _groupTeleportInt
+              ? (_g: Datum.G) => {
+                  const g = newInt.i(1);
+                  const _gt = _groupTeleportInt.i(1);
+                  _g.x += _gt.x - g.x;
+                  _g.y += _gt.y - g.y;
+                }
+              : undefined;
+
+          return modifyPreviousG;
+        },
+      }).sort(stateOrderComparator);
+
+      return newInt;
+    },
   });
 
-  const allDataTeleportFrom = groups
+  const allDataTeleportFrom = getters
     .map((d) => d.data)
     .flat()
     .filter((d) => d.teleportFrom !== undefined)
     .map((d) => d.teleportFrom) as string[];
 
   // Remove teleported data from original groups.
-  groupsInts.forEach((groupInts) => {
+  ints.forEach((groupInts) => {
     groupInts.data = groupInts.data.filter((datumInts) => {
       return !allDataTeleportFrom.includes(datumInts.teleportKey);
     });
   });
 
-  return groupsInts;
+  return ints;
 };
 
-export type Resolved = {
-  key: string;
-  data: Datum.Resolved[];
-} & G;
+export type Resolved = Generic.Resolved<G, { data: Datum.Resolved[] }>;
 
-export const resolve = (ints: Int[], t: number): Resolved[] => {
-  return ints.map(({ key, i, data }) => {
-    return { key, ...i(t), data: Datum.resolve(data, t) };
+export const resolve = ({ ints, t }: { ints: Int[]; t: number }) => {
+  return Generic.resolve<G, Resolved, Int>()({
+    ints,
+    t,
+    modifyResolved: ({ int, resolved }) => {
+      return {
+        ...resolved,
+        data: Datum.resolve({ ints: int.data, t }),
+      };
+    },
   });
 };
 
@@ -170,42 +157,43 @@ export const render = ({
   tooltip?: Tooltip;
 }): void => {
   const groupsSelection = svg.selection
-    .selectAll<SVGGElement, null>(`.${style.node}`)
+    .selectAll<SVGGElement, null>(".groups")
     .data([null])
     .join("g")
-    .attr("class", style.node)
-    .selectAll<SVGGElement, Resolved>(`.${style.group}`)
+    .attr("class", "groups")
+    .selectAll<SVGGElement, Resolved>(".group")
     .data(resolved, (d) => d.key)
     .join("g")
-    .attr("class", style.group)
+    .attr("class", "group")
     .attr("transform", (d) => `translate(${d.x}, ${d.y})`)
     .style("opacity", (d) => d.opacity);
 
   const backgroundsSelection = groupsSelection
-    .selectAll<SVGPathElement, Resolved>(`.${style.background}`)
+    .selectAll<SVGPathElement, Resolved>(".background")
     .data(
       (d) => [d],
       (d) => d.key
     )
     .join("path")
-    .attr("class", style.background)
+    .attr("class", "background")
+    .style("fill", "#f5f5f5")
     .attr("d", (d) => d.d);
 
   const dataSelection = groupsSelection
-    .selectAll<SVGGElement, Resolved>(`.${datumStyle.node}`)
+    .selectAll<SVGGElement, Resolved>(".data")
     .data(
       (d) => [d],
       (d) => d.key
     )
     .join("g")
-    .attr("class", datumStyle.node)
-    .selectAll<SVGGElement, Resolved>(`.${datumStyle.datum}`)
+    .attr("class", "data")
+    .selectAll<SVGGElement, Resolved>(".datum")
     .data(
       (d) => d.data,
       (d) => d.key
     )
     .join("g")
-    .attr("class", datumStyle.datum)
+    .attr("class", "datum")
     .attr("transform", (d) => `translate(${d.x}, ${d.y}) rotate(${d.rotate})`)
     .style("opacity", (d) => d.opacity);
 
@@ -227,18 +215,27 @@ export const render = ({
   }
 
   const labelsSelection = groupsSelection
-    .selectAll<SVGTextElement, Resolved>(`.${style.label}`)
+    .selectAll<SVGTextElement, Resolved>(".label")
     .data(
       (d) => [d],
       (d) => d.key
     )
     .join("text")
-    .attr("class", style.label)
+    .attr("class", "label")
     .attr("x", (d) => d.labelX)
     .attr("y", (d) => d.labelY)
+    .style("fill", "#333333")
+    .style("paint-order", "stroke")
+    .style("stroke", "white")
+    .style("stroke-width", (d) => d.labelStrokeWidth)
+    .style("stroke-linecap", "round")
+    .style("stroke-linejoin", "round")
     .style("font-size", (d) => d.labelFontSize)
     .style("font-weight", FONT_WEIGHT.groupLabel)
-    .style("stroke-width", (d) => d.labelStrokeWidth)
+    .style("text-anchor", "middle")
+    .style("dominant-baseline", "hanging")
+    .style("user-select", "none")
+    .style("pointer-events", "none")
     .text((d) => d.key);
 
   Datum.render({ dataSelection });

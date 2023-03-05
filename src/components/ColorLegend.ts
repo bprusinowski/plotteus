@@ -1,10 +1,9 @@
 import { ColorMap } from "../colors";
 import { ResolvedDimensions } from "../dims";
-import { Anchor, GenericInt, GProps, State } from "../types";
+import { Anchor } from "../types";
 import { FONT_SIZE, FONT_WEIGHT, max } from "../utils";
-import style from "./ColorLegend.module.scss";
-import { Svg } from "./Svg";
-import { prepareInts } from "./utils";
+import * as Generic from "./Generic";
+import { Svg, SVGSelection } from "./Svg";
 
 const R = FONT_SIZE.legendItem / 3;
 
@@ -13,16 +12,12 @@ type G = {
   y: number;
   labelX: number;
   labelY: number;
+  labelFontSize: number;
   fill: string;
   opacity: number;
 };
 
-export type Getter = {
-  key: string;
-  rowIndex: number;
-  fontSize: number;
-  g: (props: GProps<G>) => G;
-};
+export type Getter = Generic.Getter<G, { rowIndex: number }>;
 
 export const getters = ({
   colorMap,
@@ -45,7 +40,7 @@ export const getters = ({
     x: number;
     y: number;
   }[] = [];
-  const ITEM_MARGIN = BASE_MARGIN + R;
+  const itemMargin = BASE_MARGIN + R;
 
   let rowIndex = 0;
   let rowWidth = 0;
@@ -69,7 +64,7 @@ export const getters = ({
     const { width: itemWidth } = svg.measureText(key, "legendItem");
 
     // Move to a next row.
-    if (rowWidth + itemWidth + ITEM_MARGIN > width) {
+    if (rowWidth + itemWidth + itemMargin > width) {
       rowWidth = 0;
 
       switch (anchor) {
@@ -106,7 +101,7 @@ export const getters = ({
         colorsWithCoords
           .filter((d) => d.rowIndex === rowIndex)
           .forEach((d) => {
-            d.x -= (itemWidth + ITEM_MARGIN) * 0.5;
+            d.x -= (itemWidth + itemMargin) * 0.5;
           });
 
         break;
@@ -117,7 +112,7 @@ export const getters = ({
         colorsWithCoords
           .filter((d) => d.rowIndex === rowIndex)
           .forEach((d) => {
-            d.x -= itemWidth + ITEM_MARGIN;
+            d.x -= itemWidth + itemMargin;
           });
 
         break;
@@ -133,29 +128,29 @@ export const getters = ({
 
     switch (anchor) {
       case "start":
-        x += itemWidth + ITEM_MARGIN;
+        x += itemWidth + itemMargin;
         break;
       case "middle":
-        x += (itemWidth + ITEM_MARGIN) * 0.5;
+        x += (itemWidth + itemMargin) * 0.5;
         break;
       case "end":
         break;
     }
 
-    rowWidth += itemWidth + ITEM_MARGIN;
+    rowWidth += itemWidth + itemMargin;
   }
 
   for (const { key, x, y, color } of colorsWithCoords) {
     getters.push({
       key,
       rowIndex,
-      fontSize: FONT_SIZE.legendItem,
       g: ({ s, _g }) => {
         return {
           x: s(margin.left + x, null, _g?.x),
           y: s(height + margin.top + y, null, _g?.y),
           labelX: R * 2,
           labelY: (-itemHeight + R) * 0.5,
+          labelFontSize: FONT_SIZE.legendItem,
           fill: color,
           opacity: s(0, 1),
         };
@@ -166,64 +161,30 @@ export const getters = ({
   return getters;
 };
 
-export type Int = {
-  key: string;
-  state: State;
-  fontSize: number;
-  i: GenericInt<G>;
-};
+export type Int = Generic.Int<G>;
 
-export const ints = ({
-  colorLegends = [],
-  _colorLegends,
-  _colorLegendInts,
-}: {
-  colorLegends: Getter[] | undefined;
-  _colorLegends: Getter[] | undefined;
-  _colorLegendInts: Int[] | undefined;
-}): Int[] => {
-  const keys = colorLegends.map((d) => d.key);
-  const exitingColors =
-    _colorLegends?.filter((d) => !keys.includes(d.key)) ?? [];
-  const colorLegendInts: Int[] = colorLegends
-    .concat(exitingColors)
-    .map(({ key, fontSize, g }) => {
-      const exiting = !keys.includes(key);
-      const _int = _colorLegendInts?.find((d) => d.key === key);
-      const { state, i } = prepareInts({ _int, exiting, g });
-      const colorLegendInt: Int = { key, fontSize, state, i };
+export const ints = Generic.ints<G, Getter, Int>();
 
-      return colorLegendInt;
-    });
+export type Resolved = Generic.Resolved<G>;
 
-  return colorLegendInts;
-};
-
-export type Resolved = {
-  key: string;
-  fontSize: number;
-} & G;
-
-export const resolve = (ints: Int[], t: number): Resolved[] => {
-  return ints.map(({ key, fontSize, i }) => ({ key, fontSize, ...i(t) }));
-};
+export const resolve = Generic.resolve<G, Resolved, Int>();
 
 export const render = ({
-  svg,
   resolved,
+  selection,
 }: {
-  svg: Svg;
   resolved: Resolved[];
+  selection: SVGSelection;
 }): void => {
-  svg.selection
-    .selectAll<SVGGElement, undefined>(`.${style.root}`)
+  selection
+    .selectAll<SVGGElement, undefined>(".color-legend")
     .data([null])
     .join("g")
-    .attr("class", style.root)
-    .selectAll<SVGGElement, Resolved>(`.${style.item}`)
+    .attr("class", "color-legend")
+    .selectAll<SVGGElement, Resolved>(".item")
     .data(resolved, (d) => d.key)
     .join("g")
-    .attr("class", style.item)
+    .attr("class", "item")
     .attr("transform", (d) => `translate(${d.x}, ${d.y})`)
     .style("opacity", (d) => d.opacity)
     .call((g) =>
@@ -236,14 +197,15 @@ export const render = ({
     )
     .call((g) =>
       g
-        .selectAll(`.${style.itemLabel}`)
+        .selectAll(".label")
         .data((d) => [d])
         .join("text")
-        .attr("class", style.itemLabel)
+        .attr("class", "label")
         .attr("x", (d) => d.labelX)
         .attr("y", (d) => d.labelY)
-        .style("font-size", (d) => d.fontSize)
+        .style("font-size", (d) => d.labelFontSize)
         .style("font-weight", FONT_WEIGHT.legendItem)
+        .style("dominant-baseline", "hanging")
         .text((d) => d.key)
     );
 };

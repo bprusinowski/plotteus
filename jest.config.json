@@ -5,8 +5,7 @@
     "^.+\\.ts?$": "ts-jest"
   },
   "moduleNameMapper": {
-    "^d3-(.*)$": "d3-$1/dist/d3-$1",
-    "\\.scss$": "<rootDir>/tests/scssMock.ts"
+    "^d3-(.*)$": "d3-$1/dist/d3-$1"
   },
   "transformIgnorePatterns": ["<rootDir>/node_modules/"]
 }
