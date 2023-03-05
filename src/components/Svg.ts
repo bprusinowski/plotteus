@@ -8,7 +8,7 @@ export type Svg = {
   measureText: (text: string | number, textType: TextType) => DOMRect;
 };
 
-type SVGSelection = Selection<
+export type SVGSelection = Selection<
   SVGSVGElement,
   unknown,
   HTMLDivElement,

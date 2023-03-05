@@ -59,11 +59,11 @@ export const getter = ({
 
 export type Int = Generic.Int<G>;
 
-export const ints = Generic.ints;
+export const ints = Generic.ints<G, Getter, Int>();
 
 export type Resolved = Generic.Resolved<G>;
 
-export const resolve = Generic.resolve;
+export const resolve = Generic.resolve<G, Resolved, Int>();
 
 export const render = ({
   selection,

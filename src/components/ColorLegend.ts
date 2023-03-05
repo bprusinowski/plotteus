@@ -3,7 +3,7 @@ import { ResolvedDimensions } from "../dims";
 import { Anchor } from "../types";
 import { FONT_SIZE, FONT_WEIGHT, max } from "../utils";
 import * as Generic from "./Generic";
-import { Svg } from "./Svg";
+import { Svg, SVGSelection } from "./Svg";
 
 const R = FONT_SIZE.legendItem / 3;
 
@@ -17,9 +17,7 @@ type G = {
   opacity: number;
 };
 
-export type Getter = Generic.Getter<G> & {
-  rowIndex: number;
-};
+export type Getter = Generic.Getter<G, { rowIndex: number }>;
 
 export const getters = ({
   colorMap,
@@ -165,20 +163,20 @@ export const getters = ({
 
 export type Int = Generic.Int<G>;
 
-export const ints = Generic.ints;
+export const ints = Generic.ints<G, Getter, Int>();
 
 export type Resolved = Generic.Resolved<G>;
 
-export const resolve = Generic.resolve;
+export const resolve = Generic.resolve<G, Resolved, Int>();
 
 export const render = ({
-  svg,
   resolved,
+  selection,
 }: {
-  svg: Svg;
   resolved: Resolved[];
+  selection: SVGSelection;
 }): void => {
-  svg.selection
+  selection
     .selectAll<SVGGElement, undefined>(".color-legend")
     .data([null])
     .join("g")

@@ -111,4 +111,4 @@ export type Stateful<G> = {
 
 export type State = "enter" | "update" | "exit";
 
-export type GenericInt<T> = (t: number) => T;
+export type Interpolator<T> = (t: number) => T;

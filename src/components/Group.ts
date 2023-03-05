@@ -16,7 +16,6 @@ import * as Datum from "./Datum";
 import * as Generic from "./Generic";
 import { Svg } from "./Svg";
 import { Tooltip } from "./Tooltip";
-import { getInts } from "./utils";
 
 type G = {
   d: string;
@@ -29,9 +28,7 @@ type G = {
   opacity: number;
 };
 
-export type Getter = Generic.Getter<G> & {
-  data: Datum.Getter[];
-};
+export type Getter = Generic.Getter<G, { data: Datum.Getter[] }>;
 
 export type GetterProps = {
   // Data.
@@ -70,60 +67,53 @@ export const getters = (
   }
 };
 
-export type Int = Generic.Int<G> & {
-  data: Datum.Int[];
-};
+export type Int = Generic.Int<G, { data: Datum.Int[] }>;
 
 export const ints = ({
   getters = [],
   _getters,
   _ints,
-}: {
-  getters: Getter[] | undefined;
-  _getters: Getter[] | undefined;
-  _ints: Int[] | undefined;
-}): Int[] => {
-  const keys = getters.map((d) => d.key);
-  const exitingGroups = _getters?.filter((d) => !keys.includes(d.key)) ?? [];
-  const allGroups = getters.concat(exitingGroups);
-  const ints: Int[] = allGroups.map(({ key, g, data }) => {
-    const exiting = !keys.includes(key);
-    const _int = _ints?.find((d) => d.key === key);
-    const { state, i, _updateInt: _groupInt } = getInts({ _int, exiting, g });
-    const groupInt: Int = {
-      key,
-      state,
-      i,
-      data: [],
-    };
+}: Generic.IntsProps<G, Getter, Int>): Int[] => {
+  const ints = Generic.ints<G, Getter, Int>()({
+    getters,
+    _getters,
+    _ints,
+    modifyInt: ({ getter, int, exiting, _updateInt }) => {
+      const _data = _getters?.find((d) => d.key === getter.key)?.data;
+      const newInt: Int = {
+        ...int,
+        data: [],
+      };
 
-    const dataKeys = exiting ? [] : data.map((d) => d.key);
-    const _data = _getters?.find((d) => d.key === key)?.data;
-    const exitingData = _data?.filter((d) => !dataKeys.includes(d.key)) ?? [];
-    const allData = data.concat(exitingData);
-    groupInt.data = allData
-      .map((datum) => {
-        let _teleportInt: Datum.Int | undefined;
-        const _groupTeleportInt = _ints?.find((d) => {
-          return (_teleportInt = d.data.find(
-            (d) => d.teleportKey === datum.teleportFrom
-          ));
-        });
-        const _int =
-          _teleportInt ?? _groupInt?.data?.find((d) => d.key === datum.key);
+      newInt.data = Datum.ints({
+        getters: exiting ? [] : getter.data,
+        _getters: _data,
+        _ints: _updateInt?.data,
+        getModifyPreviousG: ({ getter }) => {
+          let _teleportInt: Datum.Int | undefined;
+          const _groupTeleportInt = _ints?.find((d) => {
+            return (_teleportInt = d.data.find(
+              (d) => d.teleportKey === getter.teleportFrom
+            ));
+          });
 
-        return Datum.int({
-          datum,
-          _int,
-          groupInt,
-          _groupTeleportInt,
-          exiting: !dataKeys.includes(datum.key),
-          teleported: _teleportInt !== undefined,
-        });
-      })
-      .sort(stateOrderComparator);
+          // Update datum's x and y by their groups' coords when teleporting.
+          const modifyPreviousG =
+            _teleportInt && _groupTeleportInt
+              ? (_g: Datum.G) => {
+                  const g = newInt.i(1);
+                  const _gt = _groupTeleportInt.i(1);
+                  _g.x += _gt.x - g.x;
+                  _g.y += _gt.y - g.y;
+                }
+              : undefined;
 
-    return groupInt;
+          return modifyPreviousG;
+        },
+      }).sort(stateOrderComparator);
+
+      return newInt;
+    },
   });
 
   const allDataTeleportFrom = getters
@@ -142,13 +132,18 @@ export const ints = ({
   return ints;
 };
 
-export type Resolved = Generic.Resolved<G> & {
-  data: Datum.Resolved[];
-};
+export type Resolved = Generic.Resolved<G, { data: Datum.Resolved[] }>;
 
-export const resolve = (ints: Int[], t: number): Resolved[] => {
-  return ints.map(({ key, i, data }) => {
-    return { key, ...i(t), data: Datum.resolve(data, t) };
+export const resolve = ({ ints, t }: { ints: Int[]; t: number }) => {
+  return Generic.resolve<G, Resolved, Int>()({
+    ints,
+    t,
+    modifyResolved: ({ int, resolved }) => {
+      return {
+        ...resolved,
+        data: Datum.resolve({ ints: int.data, t }),
+      };
+    },
   });
 };
 

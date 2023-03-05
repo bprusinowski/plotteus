@@ -3,9 +3,8 @@ import { select, Selection } from "d3-selection";
 import { FONT_WEIGHT } from "../utils";
 import * as Generic from "./Generic";
 import * as Group from "./Group";
-import { getInts } from "./utils";
 
-type G = {
+export type G = {
   d: string;
   clipPath: string;
   x: number;
@@ -24,71 +23,66 @@ type G = {
   opacity: number;
 };
 
-export type Getter = Generic.Getter<G> & {
-  teleportKey: string;
-  teleportFrom: string | undefined;
-  value: number;
-};
+export type Getter = Generic.Getter<
+  G,
+  {
+    teleportKey: string;
+    teleportFrom: string | undefined;
+    value: number;
+  }
+>;
 
 // Getters are defined per chart type in GroupsGetters.
 
-export type Int = Generic.Int<G> & {
-  teleportKey: string;
-  value: number;
-  _value: number;
+export type Int = Generic.Int<
+  G,
+  {
+    teleportKey: string;
+    value: number;
+    _value: number;
+  }
+>;
+
+export const ints = ({
+  getters = [],
+  _getters,
+  _ints,
+  getModifyPreviousG,
+}: Generic.IntsProps<G, Getter, Int>) => {
+  return Generic.ints<G, Getter, Int>()({
+    getters,
+    _getters,
+    _ints,
+    modifyInt: ({ getter, int, _updateInt }) => {
+      return {
+        ...int,
+        teleportKey: getter.teleportKey,
+        value: getter.value,
+        _value: _updateInt?.value ?? getter.value,
+      };
+    },
+    getModifyPreviousG,
+  });
 };
 
-export const int = ({
-  datum,
-  _int,
-  groupInt,
-  _groupTeleportInt,
-  exiting,
-  teleported,
+export type Resolved = Generic.Resolved<G, { value: number }>;
+
+export const resolve = ({
+  ints,
+  t,
 }: {
-  datum: Getter;
-  _int: Int | undefined;
-  groupInt: Group.Int;
-  _groupTeleportInt: Group.Int | undefined;
-  exiting: boolean;
-  teleported: boolean;
-}): Int => {
-  const { key, teleportKey, value, g } = datum;
-  // Update datum's x and y by their groups' coords when teleporting.
-  const _gAlter =
-    teleported && _groupTeleportInt && _int
-      ? (_g: G) => {
-          const g = groupInt.i(1);
-          const _gt = _groupTeleportInt.i(1);
-          _g.x += _gt.x - g.x;
-          _g.y += _gt.y - g.y;
-        }
-      : undefined;
-  const { state, i, _updateInt } = getInts({ _int, exiting, g, _gAlter });
-  const _value = _updateInt?.value ?? value;
-
-  return {
-    key,
-    state,
-    teleportKey,
-    value,
-    _value,
-    i,
-  };
-};
-
-export type Resolved = Generic.Resolved<G> & {
-  value: number;
-  fill: string;
-};
-
-export const resolve = (ints: Int[], t: number): Resolved[] => {
-  return ints.map(({ key, value, _value, i }) => {
-    return {
-      key,
-      value: interpolate(_value, value)(Math.round(t)),
-      ...i(t),
-    };
+  ints: Int[];
+  t: number;
+}): Resolved[] => {
+  return Generic.resolve<G, Resolved, Int>()({
+    ints,
+    t,
+    modifyResolved: ({ int, resolved }) => {
+      return {
+        ...resolved,
+        value: interpolate(int._value, int.value)(Math.round(t)),
+      };
+    },
   });
 };
 
