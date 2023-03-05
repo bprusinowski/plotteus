@@ -61,14 +61,14 @@ describe("Text", () => {
 
     describe("resolve", () => {
       test("0", () => {
-        const { key, ...r } = Text.resolve(enterInts, 0)[0];
+        const { key, ...r } = Text.resolve({ ints: enterInts, t: 0 })[0];
         const g = enterGetter.g({ s: (enter) => enter });
 
         expect(r).toEqual(g);
       });
 
       test("0.5", () => {
-        const { key, ...r } = Text.resolve(enterInts, 0.5)[0];
+        const { key, ...r } = Text.resolve({ ints: enterInts, t: 0.5 })[0];
 
         expect(r).toEqual({
           x: 400,
@@ -80,7 +80,7 @@ describe("Text", () => {
       });
 
       test("1", () => {
-        const { key, ...r } = Text.resolve(enterInts, 1)[0];
+        const { key, ...r } = Text.resolve({ ints: enterInts, t: 1 })[0];
         const g = enterGetter.g({ s: (enter, update) => update ?? enter });
 
         expect(r).toEqual(g);
@@ -145,14 +145,14 @@ describe("Text", () => {
 
     describe("resolve", () => {
       test("0", () => {
-        const { key, ...r } = Text.resolve(updateInts, 0)[0];
+        const { key, ...r } = Text.resolve({ ints: updateInts, t: 0 })[0];
         const g = enterGetter.g({ s: (enter, update) => update ?? enter });
 
         expect(r).toEqual(g);
       });
 
       test("0.5", () => {
-        const { key, ...r } = Text.resolve(updateInts, 0.5)[0];
+        const { key, ...r } = Text.resolve({ ints: updateInts, t: 0.5 })[0];
 
         expect(r).toEqual({
           x: 208,
@@ -167,7 +167,7 @@ describe("Text", () => {
       });
 
       test("1", () => {
-        const { key, ...r } = Text.resolve(updateInts, 1)[0];
+        const { key, ...r } = Text.resolve({ ints: updateInts, t: 1 })[0];
         const g = updateGetter.g({ s: (enter, update) => update ?? enter });
 
         expect(r).toEqual(g);
@@ -192,14 +192,14 @@ describe("Text", () => {
 
     describe("resolve", () => {
       test("0", () => {
-        const { key, ...r } = Text.resolve(exitInts, 0)[0];
+        const { key, ...r } = Text.resolve({ ints: exitInts, t: 0 })[0];
         const g = updateGetter.g({ s: (enter, update) => update ?? enter });
 
         expect(r).toEqual(g);
       });
 
       test("0.5", () => {
-        const { key, ...r } = Text.resolve(exitInts, 0.5)[0];
+        const { key, ...r } = Text.resolve({ ints: exitInts, t: 0.5 })[0];
 
         expect(r).toEqual({
           x: 16,
@@ -211,7 +211,7 @@ describe("Text", () => {
       });
 
       test("1", () => {
-        const { key, ...r } = Text.resolve(exitInts, 1)[0];
+        const { key, ...r } = Text.resolve({ ints: exitInts, t: 1 })[0];
         const g = updateGetter.g({ s: (enter, _, exit) => exit ?? enter });
 
         expect(r).toEqual(g);
