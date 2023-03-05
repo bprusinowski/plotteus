@@ -4,7 +4,6 @@ import { HALF_FONT_K } from "../charts/utils";
 import { ResolvedDimensions } from "../dims";
 import { FONT_SIZE, FONT_WEIGHT } from "../utils";
 import * as Generic from "./Generic";
-import style from "./Tick.module.scss";
 import * as VerticalAxis from "./VerticalAxis";
 
 export const WIDTH = 12;
@@ -87,39 +86,44 @@ export const render = ({
   resolved: Resolved[];
 }): void => {
   verticalAxisSelection
-    .selectAll<SVGGElement, Resolved>(`.${style.node}`)
+    .selectAll<SVGGElement, Resolved>(".tick")
     .data(resolved, (d) => d.key)
     .join("g")
-    .attr("class", style.node)
+    .attr("class", "tick")
     .attr("transform", (d) => `translate(${d.x}, ${d.y})`)
     .style("opacity", (d) => d.opacity)
     .call((g) =>
       g
-        .selectAll(`.${style.label}`)
+        .selectAll(`.label`)
         .data((d) => [d])
         .join("text")
-        .attr("class", style.label)
+        .attr("class", "label")
+        .attr("transform", `translate(-2, 0)`)
         .attr("dy", (d) => -d.height * HALF_FONT_K)
+        .style("text-anchor", "end")
         .style("font-size", (d) => d.fontSize)
         .style("font-weight", FONT_WEIGHT.tick)
+        .style("dominant-baseline", "hanging")
         .text((d) => d.key)
     )
     .call((g) =>
       g
-        .selectAll(`.${style.boldLine}`)
+        .selectAll(".bold-line")
         .data((d) => [d])
         .join("line")
-        .attr("class", style.boldLine)
+        .attr("class", "bold-line")
         .attr("x1", 2)
         .attr("x2", 7)
+        .style("stroke", "#696969")
     )
     .call((g) =>
       g
-        .selectAll(`.${style.lightLine}`)
+        .selectAll(".light-line")
         .data((d) => [d])
         .join("line")
-        .attr("class", style.lightLine)
+        .attr("class", "light-line")
         .attr("x1", 7)
         .attr("x2", (d) => d.width)
+        .style("stroke", "#ededed")
     );
 };

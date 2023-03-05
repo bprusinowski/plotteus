@@ -4,7 +4,6 @@ import { max } from "../utils";
 import * as Generic from "./Generic";
 import { Svg } from "./Svg";
 import * as Tick from "./Tick";
-import style from "./VerticalAxis.module.scss";
 
 type G = {
   x: number;
@@ -44,10 +43,10 @@ export const render = ({
 }) => {
   return (
     svg.selection
-      .selectAll<SVGGElement, Resolved>(`.${style.node}`)
+      .selectAll<SVGGElement, Resolved>(".vertical-axis")
       .data(resolved)
       .join("g")
-      .attr("class", style.node)
+      .attr("class", "vertical-axis")
       .attr("transform", (d) => `translate(${d.x}, ${d.y})`)
       .style("opacity", (d) => d.opacity)
       // Vertical axis needs to be the first element in SVG, so it doesn't overlap bars.

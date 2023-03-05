@@ -424,7 +424,10 @@ export const render = ({
     resolved: resolved.verticalAxisTitles,
     key: "verticalAxisTitle",
   });
-  Tick.render({ verticalAxisSelection, resolved: resolved.ticks });
+  Tick.render({
+    verticalAxisSelection,
+    resolved: resolved.ticks,
+  });
   Group.render({
     resolved: resolved.groups,
     svg,

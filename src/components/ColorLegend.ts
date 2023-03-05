@@ -2,7 +2,6 @@ import { ColorMap } from "../colors";
 import { ResolvedDimensions } from "../dims";
 import { Anchor } from "../types";
 import { FONT_SIZE, FONT_WEIGHT, max } from "../utils";
-import style from "./ColorLegend.module.scss";
 import * as Generic from "./Generic";
 import { Svg } from "./Svg";
 
@@ -180,14 +179,14 @@ export const render = ({
   resolved: Resolved[];
 }): void => {
   svg.selection
-    .selectAll<SVGGElement, undefined>(`.${style.root}`)
+    .selectAll<SVGGElement, undefined>(".color-legend")
     .data([null])
     .join("g")
-    .attr("class", style.root)
-    .selectAll<SVGGElement, Resolved>(`.${style.item}`)
+    .attr("class", "color-legend")
+    .selectAll<SVGGElement, Resolved>(".item")
     .data(resolved, (d) => d.key)
     .join("g")
-    .attr("class", style.item)
+    .attr("class", "item")
     .attr("transform", (d) => `translate(${d.x}, ${d.y})`)
     .style("opacity", (d) => d.opacity)
     .call((g) =>
@@ -200,14 +199,15 @@ export const render = ({
     )
     .call((g) =>
       g
-        .selectAll(`.${style.itemLabel}`)
+        .selectAll(".label")
         .data((d) => [d])
         .join("text")
-        .attr("class", style.itemLabel)
+        .attr("class", "label")
         .attr("x", (d) => d.labelX)
         .attr("y", (d) => d.labelY)
         .style("font-size", (d) => d.labelFontSize)
         .style("font-weight", FONT_WEIGHT.legendItem)
+        .style("dominant-baseline", "hanging")
         .text((d) => d.key)
     );
 };

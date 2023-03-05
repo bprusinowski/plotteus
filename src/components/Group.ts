@@ -13,9 +13,7 @@ import {
 } from "../types";
 import { FONT_WEIGHT, stateOrderComparator } from "../utils";
 import * as Datum from "./Datum";
-import datumStyle from "./Datum.module.scss";
 import * as Generic from "./Generic";
-import style from "./Group.module.scss";
 import { Svg } from "./Svg";
 import { Tooltip } from "./Tooltip";
 import { getInts } from "./utils";
@@ -92,7 +90,13 @@ export const ints = ({
     const exiting = !keys.includes(key);
     const _int = _ints?.find((d) => d.key === key);
     const { state, i, _updateInt: _groupInt } = getInts({ _int, exiting, g });
-    const groupInt: Int = { key, state, i, data: [] };
+    const groupInt: Int = {
+      key,
+      state,
+      i,
+      data: [],
+    };
+
     const dataKeys = exiting ? [] : data.map((d) => d.key);
     const _data = _getters?.find((d) => d.key === key)?.data;
     const exitingData = _data?.filter((d) => !dataKeys.includes(d.key)) ?? [];
@@ -158,42 +162,43 @@ export const render = ({
   tooltip?: Tooltip;
 }): void => {
   const groupsSelection = svg.selection
-    .selectAll<SVGGElement, null>(`.${style.node}`)
+    .selectAll<SVGGElement, null>(".groups")
     .data([null])
     .join("g")
-    .attr("class", style.node)
-    .selectAll<SVGGElement, Resolved>(`.${style.group}`)
+    .attr("class", "groups")
+    .selectAll<SVGGElement, Resolved>(".group")
     .data(resolved, (d) => d.key)
     .join("g")
-    .attr("class", style.group)
+    .attr("class", "group")
     .attr("transform", (d) => `translate(${d.x}, ${d.y})`)
     .style("opacity", (d) => d.opacity);
 
   const backgroundsSelection = groupsSelection
-    .selectAll<SVGPathElement, Resolved>(`.${style.background}`)
+    .selectAll<SVGPathElement, Resolved>(".background")
     .data(
       (d) => [d],
       (d) => d.key
     )
     .join("path")
-    .attr("class", style.background)
+    .attr("class", "background")
+    .style("fill", "#f5f5f5")
     .attr("d", (d) => d.d);
 
   const dataSelection = groupsSelection
-    .selectAll<SVGGElement, Resolved>(`.${datumStyle.node}`)
+    .selectAll<SVGGElement, Resolved>(".data")
     .data(
       (d) => [d],
       (d) => d.key
     )
     .join("g")
-    .attr("class", datumStyle.node)
-    .selectAll<SVGGElement, Resolved>(`.${datumStyle.datum}`)
+    .attr("class", "data")
+    .selectAll<SVGGElement, Resolved>(".datum")
     .data(
       (d) => d.data,
       (d) => d.key
     )
     .join("g")
-    .attr("class", datumStyle.datum)
+    .attr("class", "datum")
     .attr("transform", (d) => `translate(${d.x}, ${d.y}) rotate(${d.rotate})`)
     .style("opacity", (d) => d.opacity);
 
@@ -215,18 +220,27 @@ export const render = ({
   }
 
   const labelsSelection = groupsSelection
-    .selectAll<SVGTextElement, Resolved>(`.${style.label}`)
+    .selectAll<SVGTextElement, Resolved>(".label")
     .data(
       (d) => [d],
       (d) => d.key
     )
     .join("text")
-    .attr("class", style.label)
+    .attr("class", "label")
     .attr("x", (d) => d.labelX)
     .attr("y", (d) => d.labelY)
+    .style("fill", "#333333")
+    .style("paint-order", "stroke")
+    .style("stroke", "white")
+    .style("stroke-width", (d) => d.labelStrokeWidth)
+    .style("stroke-linecap", "round")
+    .style("stroke-linejoin", "round")
     .style("font-size", (d) => d.labelFontSize)
     .style("font-weight", FONT_WEIGHT.groupLabel)
-    .style("stroke-width", (d) => d.labelStrokeWidth)
+    .style("text-anchor", "middle")
+    .style("dominant-baseline", "hanging")
+    .style("user-select", "none")
+    .style("pointer-events", "none")
     .text((d) => d.key);
 
   Datum.render({ dataSelection });

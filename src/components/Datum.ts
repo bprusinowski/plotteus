@@ -1,7 +1,6 @@
 import { interpolate } from "d3-interpolate";
 import { select, Selection } from "d3-selection";
 import { FONT_WEIGHT } from "../utils";
-import style from "./Datum.module.scss";
 import * as Generic from "./Generic";
 import * as Group from "./Group";
 import { getInts } from "./utils";
@@ -70,8 +69,8 @@ export const int = ({
 
   return {
     key,
-    teleportKey,
     state,
+    teleportKey,
     value,
     _value,
     i,
@@ -99,19 +98,20 @@ export const render = ({
   dataSelection: Selection<SVGGElement, Resolved, SVGGElement, Group.Resolved>;
 }): void => {
   const pathSelection = dataSelection
-    .selectAll<SVGPathElement, Resolved>(`.${style.path}`)
+    .selectAll<SVGPathElement, Resolved>(".shape")
     .data(
       (d) => [d],
       (d) => d.key
     )
     .join("path")
-    .attr("class", style.path)
+    .attr("class", "shape")
     .attr("d", (d) => d.d)
+    .style("stroke", "white")
     .style("stroke-width", (d) => d.strokeWidth)
     .style("fill", (d) => d.fill);
 
   const clipPathSelection = dataSelection
-    .selectAll<SVGClipPathElement, Resolved>(`.${style.clipPath}`)
+    .selectAll<SVGClipPathElement, Resolved>(".clip-path")
     .data(
       (d) => [d],
       (d) => d.key
@@ -122,7 +122,7 @@ export const render = ({
       const g = select(parentEl).datum() as Group.Resolved;
       return `clip${g.key}${d.key}`.replace(/[^a-zA-Z0-9]/g, "");
     })
-    .attr("class", style.clipPath)
+    .attr("class", "clip-path")
     .selectAll<SVGPathElement, Resolved>("path")
     .data(
       (d) => [d],
@@ -132,13 +132,13 @@ export const render = ({
     .attr("d", (d) => d.clipPath);
 
   const labelsSelection = dataSelection
-    .selectAll<SVGGElement, Resolved>(`.${style.labels}`)
+    .selectAll<SVGGElement, Resolved>(".labels")
     .data(
       (d) => [d],
       (d) => d.key
     )
     .join("g")
-    .attr("class", style.labels)
+    .attr("class", "labels")
     .style("clip-path", function (d) {
       const parentEl = this.parentNode?.parentNode as SVGGElement;
       const g = select(parentEl).datum() as Group.Resolved;
@@ -147,34 +147,43 @@ export const render = ({
     });
 
   const labelSelection = labelsSelection
-    .selectAll<SVGTextElement, Resolved>(`.${style.label}`)
+    .selectAll<SVGTextElement, Resolved>(".label")
     .data(
       (d) => [d],
       (d) => d.key
     )
     .join("text")
-    .attr("class", style.label)
+    .attr("class", "label")
     .attr("x", (d) => d.labelX)
     .attr("y", (d) => d.labelY)
     .attr("transform", (d) => `rotate(${360 - d.rotate})`)
     .style("font-size", (d) => d.labelFontSize)
     .style("font-weight", FONT_WEIGHT.datumLabel)
+    .style("text-anchor", "middle")
+    .style("dominant-baseline", "hanging")
+    .style("user-select", "none")
+    .style("pointer-events", "none")
+    .style("letter-spacing", 1.5)
     .style("fill", (d) => d.labelFill)
     .text((d) => d.key);
 
   const valueSelection = labelsSelection
-    .selectAll<SVGTextElement, Resolved>(`.${style.value}`)
+    .selectAll<SVGTextElement, Resolved>(".value")
     .data(
       (d) => [d],
       (d) => d.key
     )
     .join("text")
-    .attr("class", style.value)
+    .attr("class", "value")
     .attr("x", (d) => d.valueX)
     .attr("y", (d) => d.valueY)
     .attr("transform", (d) => `rotate(${360 - d.rotate})`)
     .style("font-size", (d) => d.valueFontSize)
     .style("font-weight", FONT_WEIGHT.datumValue)
+    .style("text-anchor", "middle")
+    .style("dominant-baseline", "hanging")
+    .style("user-select", "none")
+    .style("pointer-events", "none")
     .style("fill", (d) => d.valueFill)
     .text((d) => d.value);
 };

@@ -4,7 +4,6 @@ import { Anchor, TextType } from "../types";
 import { FONT_SIZE, FONT_WEIGHT } from "../utils";
 import * as Generic from "./Generic";
 import { Svg } from "./Svg";
-import style from "./Text.module.scss";
 
 type G = {
   x: number;
@@ -71,20 +70,21 @@ export const render = ({
   resolved,
   key,
 }: {
-  selection: Selection<any, any, any, any>;
+  selection: Selection<any, any, Element, unknown>;
   resolved: Resolved[];
   key: string;
 }): void => {
-  const className = `${style.node} ${key}`;
+  const className = `text ${key}`;
 
   selection
-    .selectAll<SVGTextElement, Resolved>(`.${style.node}.${key}`)
+    .selectAll<SVGTextElement, Resolved>(`.text.${key}`)
     .data(resolved, (d) => d.key)
     .join("text")
     .attr("class", className)
     .attr("transform", (d) => `translate(${d.x}, ${d.y})`)
     .style("font-size", (d) => d.fontSize)
     .style("font-weight", (d) => d.fontWeight)
+    .style("dominant-baseline", "hanging")
     .style("opacity", (d) => d.opacity)
     .text((d) => d.key);
 };

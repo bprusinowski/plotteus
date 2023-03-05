@@ -1,7 +1,5 @@
 import { nodeResolve } from "@rollup/plugin-node-resolve";
 import typescript from "@rollup/plugin-typescript";
-import autoprefixer from "autoprefixer";
-import postcss from "rollup-plugin-postcss";
 import { terser } from "rollup-plugin-terser";
 
 export default [
@@ -13,10 +11,6 @@ export default [
     },
     plugins: [
       nodeResolve(),
-      postcss({
-        modules: true,
-        plugins: [autoprefixer()],
-      }),
       terser({
         format: {
           comments: false,
