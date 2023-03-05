@@ -1,4 +1,5 @@
-import { ColorLegend, Group, Svg, Text, Tooltip, VerticalAxis } from ".";
+import { scaleLinear } from "d3-scale";
+import { ColorLegend, Group, Svg, Text, Tick, Tooltip, VerticalAxis } from ".";
 import { ColorMap } from "../colors";
 import { Dimensions } from "../dims";
 import { InputStep, MaxValue } from "../types";
@@ -12,6 +13,8 @@ export type Getter = {
   groups: Group.Getter[];
   colorLegends: ColorLegend.Getter[] | undefined;
   verticalAxis: VerticalAxis.Getter | undefined;
+  verticalAxisTitle: Text.Getter | undefined;
+  ticks: Tick.Getter[] | undefined;
 };
 
 export const getters = ({
@@ -157,6 +160,8 @@ export const getters = ({
     dims.addBottom(dims.BASE_MARGIN);
 
     let verticalAxisGetters: VerticalAxis.Getter | undefined;
+    let verticalAxisTitleGetters: Text.Getter | undefined;
+    let tickGetters: Tick.Getter[] | undefined;
 
     if (chartType === "bar") {
       if (showValues) {
@@ -178,24 +183,33 @@ export const getters = ({
         dims.addTop(titleHeight + titleMargin).addLeft(width);
 
         verticalAxisGetters = VerticalAxis.getters({
+          dims: dims.resolve(),
+        });
+        verticalAxisTitleGetters = Text.getter({
           svg,
-          title,
+          text: title,
+          textType: "verticalAxisTitle",
+          anchor: "start",
+          dims: {
+            ...dims.resolve(),
+            margin: {
+              top: -(
+                titleHeight +
+                titleMargin +
+                (title && showValues ? dims.BASE_MARGIN : 0)
+              ),
+              right: 0,
+              bottom: 0,
+              left: -width,
+            },
+          },
+        });
+        tickGetters = Tick.getters({
+          ticks: scaleLinear().domain([0, maxValue.actual]).ticks(5),
+          tickHeight: textDims.tick.height,
           maxValue: maxValue.actual,
-          // Only pass previous max value when vertical axis was present in previous step.
-          // Otherwise animate the ticks from bottom.
           _maxValue: _showVerticalAxis ? _maxValue : undefined,
           dims: dims.resolve(),
-          titleMargin: {
-            top: -(
-              titleHeight +
-              titleMargin +
-              (title && showValues ? dims.BASE_MARGIN : 0)
-            ),
-            right: 0,
-            bottom: 0,
-            left: -width,
-          },
-          tickHeight: textDims.tick.height,
         });
       }
 
@@ -229,6 +243,8 @@ export const getters = ({
       subtitle: subtitleGetter,
       colorLegends: colorLegendsGetters,
       verticalAxis: verticalAxisGetters,
+      verticalAxisTitle: verticalAxisTitleGetters,
+      ticks: tickGetters,
       groups: groupsGetters,
     });
 
@@ -244,6 +260,8 @@ export type Int = {
   groups: Group.Int[];
   colorLegends: ColorLegend.Int[];
   verticalAxes: VerticalAxis.Int[];
+  verticalAxisTitles: Text.Int[];
+  ticks: Tick.Int[];
 };
 
 export type IntsMap = Map<string, Int>;
@@ -261,20 +279,31 @@ export const intsMap = ({
   let _groupInts: Group.Int[] | undefined;
   let _colorLegendInts: ColorLegend.Int[] | undefined;
   let _verticalAxisInts: VerticalAxis.Int[] | undefined;
+  let _verticalAxisTitleInts: Text.Int[] | undefined;
+  let _tickInts: Tick.Int[] | undefined;
 
   steps.forEach((step, i) => {
-    const { key, title, subtitle, groups, colorLegends, verticalAxis } = step;
+    const {
+      key,
+      title,
+      subtitle,
+      groups,
+      colorLegends,
+      verticalAxis,
+      verticalAxisTitle,
+      ticks,
+    } = step;
     const _stepGetters: Getter | undefined = steps[i - 1];
 
     const titlesInts = Text.ints({
-      getter: title,
-      _getter: _stepGetters?.title,
+      getters: title ? [title] : [],
+      _getters: _stepGetters?.title ? [_stepGetters.title] : undefined,
       _ints: _titleInts,
     });
 
     const subtitlesInts = Text.ints({
-      getter: subtitle,
-      _getter: _stepGetters?.subtitle,
+      getters: subtitle ? [subtitle] : [],
+      _getters: _stepGetters?.subtitle ? [_stepGetters.subtitle] : undefined,
       _ints: _subtitleInts,
     });
 
@@ -285,9 +314,25 @@ export const intsMap = ({
     });
 
     const verticalAxesInts = VerticalAxis.ints({
-      getter: verticalAxis,
-      _getter: _stepGetters?.verticalAxis,
+      getters: verticalAxis ? [verticalAxis] : [],
+      _getters: _stepGetters?.verticalAxis
+        ? [_stepGetters.verticalAxis]
+        : undefined,
       _ints: _verticalAxisInts,
+    });
+
+    const verticalAxisTitlesInts = Text.ints({
+      getters: verticalAxisTitle ? [verticalAxisTitle] : [],
+      _getters: _stepGetters?.verticalAxisTitle
+        ? [_stepGetters.verticalAxisTitle]
+        : undefined,
+      _ints: _verticalAxisTitleInts,
+    });
+
+    const ticksInts = Tick.ints({
+      getters: ticks ?? [],
+      _getters: _stepGetters?.ticks ?? [],
+      _ints: _tickInts,
     });
 
     const groupsInts = Group.ints({
@@ -303,6 +348,8 @@ export const intsMap = ({
       groups: (_groupInts = groupsInts.sort(stateOrderComparator)),
       colorLegends: (_colorLegendInts = colorLegendsInts),
       verticalAxes: (_verticalAxisInts = verticalAxesInts),
+      verticalAxisTitles: (_verticalAxisTitleInts = verticalAxisTitlesInts),
+      ticks: (_tickInts = ticksInts),
     });
   });
 
@@ -315,10 +362,20 @@ export type Resolved = {
   groups: Group.Resolved[];
   colors: ColorLegend.Resolved[];
   verticalAxes: VerticalAxis.Resolved[];
+  verticalAxisTitles: Text.Resolved[];
+  ticks: Tick.Resolved[];
 };
 
 export const resolve = (ints: Int, t: number) => {
-  const { titles, subtitles, groups, colorLegends, verticalAxes } = ints;
+  const {
+    titles,
+    subtitles,
+    groups,
+    colorLegends,
+    verticalAxes,
+    verticalAxisTitles,
+    ticks,
+  } = ints;
 
   return {
     titles: Text.resolve(titles, t),
@@ -326,6 +383,8 @@ export const resolve = (ints: Int, t: number) => {
     groups: Group.resolve(groups, t),
     colors: ColorLegend.resolve(colorLegends, t),
     verticalAxes: VerticalAxis.resolve(verticalAxes, t),
+    verticalAxisTitles: Text.resolve(verticalAxisTitles, t),
+    ticks: Tick.resolve(ticks, t),
   };
 };
 
@@ -343,23 +402,29 @@ export const render = ({
   indicateProgress: boolean;
 }) => {
   Text.render({
+    selection: svg.selection,
     resolved: resolved.titles,
-    svg,
     key: "title",
   });
   Text.render({
+    selection: svg.selection,
     resolved: resolved.subtitles,
-    svg,
     key: "subtitle",
   });
   ColorLegend.render({
     resolved: resolved.colors,
     svg,
   });
-  VerticalAxis.render({
+  const verticalAxisSelection = VerticalAxis.render({
     resolved: resolved.verticalAxes,
     svg,
   });
+  Text.render({
+    selection: verticalAxisSelection,
+    resolved: resolved.verticalAxisTitles,
+    key: "verticalAxisTitle",
+  });
+  Tick.render({ verticalAxisSelection, resolved: resolved.ticks });
   Group.render({
     resolved: resolved.groups,
     svg,

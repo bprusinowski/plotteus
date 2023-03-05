@@ -1,10 +1,10 @@
 import { ColorMap } from "../colors";
 import { ResolvedDimensions } from "../dims";
-import { Anchor, GenericInt, State, Stateful } from "../types";
+import { Anchor } from "../types";
 import { FONT_SIZE, FONT_WEIGHT, max } from "../utils";
 import style from "./ColorLegend.module.scss";
+import * as Generic from "./Generic";
 import { Svg } from "./Svg";
-import { getInts } from "./utils";
 
 const R = FONT_SIZE.legendItem / 3;
 
@@ -18,10 +18,8 @@ type G = {
   opacity: number;
 };
 
-export type Getter = {
-  key: string;
+export type Getter = Generic.Getter<G> & {
   rowIndex: number;
-  g: (props: Stateful<G>) => G;
 };
 
 export const getters = ({
@@ -166,45 +164,13 @@ export const getters = ({
   return getters;
 };
 
-export type Int = {
-  key: string;
-  state: State;
-  i: GenericInt<G>;
-};
+export type Int = Generic.Int<G>;
 
-export const ints = ({
-  getters = [],
-  _getters,
-  _ints,
-}: {
-  getters: Getter[] | undefined;
-  _getters: Getter[] | undefined;
-  _ints: Int[] | undefined;
-}): Int[] => {
-  const keys = getters.map((d) => d.key);
-  const exitingGetters = _getters?.filter((d) => !keys.includes(d.key)) ?? [];
-  const ints: Int[] = getters.concat(exitingGetters).map(({ key, g }) => {
-    const exiting = !keys.includes(key);
-    const _int = _ints?.find((d) => d.key === key);
-    const { state, i } = getInts({ _int, exiting, g });
+export const ints = Generic.ints;
 
-    return {
-      key,
-      state,
-      i,
-    };
-  });
+export type Resolved = Generic.Resolved<G>;
 
-  return ints;
-};
-
-export type Resolved = {
-  key: string;
-} & G;
-
-export const resolve = (ints: Int[], t: number): Resolved[] => {
-  return ints.map(({ key, i }) => ({ key, ...i(t) }));
-};
+export const resolve = Generic.resolve;
 
 export const render = ({
   svg,

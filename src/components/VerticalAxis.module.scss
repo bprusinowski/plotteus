@@ -1,14 +1,3 @@
-@import "../variables.scss";
-
 .node {
   pointer-events: none;
-  .titleNode {
-    .title {
-      dominant-baseline: hanging;
-      fill: $color-dark;
-    }
-  }
-  .domain {
-    fill: $color-gray;
-  }
 }

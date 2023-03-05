@@ -2,10 +2,9 @@ import { scaleLinear } from "d3-scale";
 import { Selection } from "d3-selection";
 import { HALF_FONT_K } from "../charts/utils";
 import { ResolvedDimensions } from "../dims";
-import { GenericInt, State, Stateful } from "../types";
 import { FONT_SIZE, FONT_WEIGHT } from "../utils";
+import * as Generic from "./Generic";
 import style from "./Tick.module.scss";
-import { getInts } from "./utils";
 import * as VerticalAxis from "./VerticalAxis";
 
 export const WIDTH = 12;
@@ -19,10 +18,7 @@ type G = {
   opacity: number;
 };
 
-export type Getter = {
-  key: string;
-  g: (props: Stateful<G>) => G;
-};
+export type Getter = Generic.Getter<G>;
 
 export const getters = ({
   ticks,
@@ -70,60 +66,29 @@ export const getters = ({
   });
 };
 
-export type Int = {
-  key: string;
-  state: State;
-  i: GenericInt<G>;
-};
+export type Int = Generic.Int<G>;
 
-export const ints = ({
-  getters = [],
-  _getters,
-  _ints,
+export const ints = Generic.ints;
+
+export type Resolved = Generic.Resolved<G>;
+
+export const resolve = Generic.resolve;
+
+export const render = ({
+  verticalAxisSelection,
+  resolved,
 }: {
-  getters: Getter[] | undefined;
-  _getters: Getter[] | undefined;
-  _ints: Int[] | undefined;
-}): Int[] => {
-  const keys = getters.map((d) => d.key);
-  const exitingGetters = _getters?.filter((d) => !keys.includes(d.key)) ?? [];
-  const ints: Int[] = getters.concat(exitingGetters).map(({ key, g }) => {
-    const exiting = !keys.includes(key);
-    const _int = _ints?.find((d) => d.key === key);
-    const { state, i } = getInts({ _int, exiting, g });
-
-    return {
-      key,
-      state,
-      i,
-    };
-  });
-
-  return ints;
-};
-
-export type Resolved = {
-  key: string;
-} & G;
-
-export const resolve = (ints: Int[], t: number): Resolved[] => {
-  return ints.map(({ key, i }) => ({ key, ...i(t) }));
-};
-
-export const render = (
-  verticalAxis: Selection<
+  verticalAxisSelection: Selection<
     SVGGElement,
     VerticalAxis.Resolved,
     SVGSVGElement,
     unknown
-  >
-): void => {
-  verticalAxis
+  >;
+  resolved: Resolved[];
+}): void => {
+  verticalAxisSelection
     .selectAll<SVGGElement, Resolved>(`.${style.node}`)
-    .data(
-      (d) => d.ticks,
-      (d) => d.key
-    )
+    .data(resolved, (d) => d.key)
     .join("g")
     .attr("class", style.node)
     .attr("transform", (d) => `translate(${d.x}, ${d.y})`)

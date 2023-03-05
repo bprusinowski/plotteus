@@ -1,9 +1,10 @@
+import { Selection } from "d3-selection";
 import { ResolvedDimensions } from "../dims";
-import { Anchor, GenericInt, State, Stateful, TextType } from "../types";
+import { Anchor, TextType } from "../types";
 import { FONT_SIZE, FONT_WEIGHT } from "../utils";
+import * as Generic from "./Generic";
 import { Svg } from "./Svg";
 import style from "./Text.module.scss";
-import { getInts } from "./utils";
 
 type G = {
   x: number;
@@ -13,10 +14,7 @@ type G = {
   opacity: number;
 };
 
-export type Getter = {
-  key: string;
-  g: (props: Stateful<G>) => G;
-};
+export type Getter = Generic.Getter<G>;
 
 export const getter = ({
   text,
@@ -60,60 +58,26 @@ export const getter = ({
   };
 };
 
-export type Int = {
-  key: string;
-  state: State;
-  i: GenericInt<G>;
-};
+export type Int = Generic.Int<G>;
 
-export const ints = ({
-  getter,
-  _getter,
-  _ints,
-}: {
-  getter: Getter | undefined;
-  _getter: Getter | undefined;
-  _ints: Int[] | undefined;
-}): Int[] => {
-  const exitingGetter =
-    _getter !== undefined && getter?.key !== _getter.key ? [_getter] : [];
-  const getters =
-    getter !== undefined ? [getter, ...exitingGetter] : exitingGetter;
-  const ints: Int[] = getters.map(({ key, g }) => {
-    const exiting = getter?.key !== key;
-    const _int = _ints?.find((d) => d.key === key);
-    const { state, i } = getInts({ _int, exiting, g });
+export const ints = Generic.ints;
 
-    return {
-      key,
-      state,
-      i,
-    };
-  });
+export type Resolved = Generic.Resolved<G>;
 
-  return ints;
-};
-
-export type Resolved = {
-  key: string;
-} & G;
-
-export const resolve = (ints: Int[], t: number): Resolved[] => {
-  return ints.map(({ key, i }) => ({ key, ...i(t) }));
-};
+export const resolve = Generic.resolve;
 
 export const render = ({
+  selection,
   resolved,
-  svg,
   key,
 }: {
+  selection: Selection<any, any, any, any>;
   resolved: Resolved[];
-  svg: Svg;
   key: string;
 }): void => {
   const className = `${style.node} ${key}`;
 
-  svg.selection
+  selection
     .selectAll<SVGTextElement, Resolved>(`.${style.node}.${key}`)
     .data(resolved, (d) => d.key)
     .join("text")

@@ -7,16 +7,14 @@ import { ResolvedDimensions } from "../dims";
 import {
   BarChartSubtype,
   ChartType,
-  GenericInt,
   InputGroup,
   MaxValue,
-  State,
-  Stateful,
   TextDims,
 } from "../types";
 import { FONT_WEIGHT, stateOrderComparator } from "../utils";
 import * as Datum from "./Datum";
 import datumStyle from "./Datum.module.scss";
+import * as Generic from "./Generic";
 import style from "./Group.module.scss";
 import { Svg } from "./Svg";
 import { Tooltip } from "./Tooltip";
@@ -33,9 +31,7 @@ type G = {
   opacity: number;
 };
 
-export type Getter = {
-  key: string;
-  g: (props: Stateful<G>) => G;
+export type Getter = Generic.Getter<G> & {
   data: Datum.Getter[];
 };
 
@@ -76,10 +72,7 @@ export const getters = (
   }
 };
 
-export type Int = {
-  key: string;
-  state: State;
-  i: GenericInt<G>;
+export type Int = Generic.Int<G> & {
   data: Datum.Int[];
 };
 
@@ -145,10 +138,9 @@ export const ints = ({
   return ints;
 };
 
-export type Resolved = {
-  key: string;
+export type Resolved = Generic.Resolved<G> & {
   data: Datum.Resolved[];
-} & G;
+};
 
 export const resolve = (ints: Int[], t: number): Resolved[] => {
   return ints.map(({ key, i, data }) => {
