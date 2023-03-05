@@ -162,7 +162,7 @@ const getRoot = ({
   const leaves = descendants.filter((d) => !d.children);
   leaves.forEach((d: any, i) => (d.index = i));
   root.sort((a: any, b: any) => a.index - b.index);
-  pack().size([size, size]).padding(PADDING)(root);
+  pack().size([size, size]).padding(PADDING)(root as any);
 
   return root as any as HierarchyRoot;
 };

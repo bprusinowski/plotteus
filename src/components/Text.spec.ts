@@ -12,9 +12,9 @@ describe("Text", () => {
     dims: dims.resolve(),
   });
   const enterInts = Text.ints({
-    text: enterGetter,
-    _text: undefined,
-    _textInts: undefined,
+    getters: [enterGetter],
+    _getters: undefined,
+    _ints: undefined,
   });
 
   describe("enter", () => {
@@ -96,9 +96,9 @@ describe("Text", () => {
     dims: dims.resolve(),
   });
   const updateInts = Text.ints({
-    text: updateGetter,
-    _text: enterGetter,
-    _textInts: enterInts,
+    getters: [updateGetter],
+    _getters: [enterGetter],
+    _ints: enterInts,
   });
 
   describe("update", () => {
@@ -176,9 +176,9 @@ describe("Text", () => {
   });
 
   const exitInts = Text.ints({
-    text: undefined,
-    _text: updateGetter,
-    _textInts: updateInts,
+    getters: undefined,
+    _getters: [updateGetter],
+    _ints: updateInts,
   });
 
   describe("exit", () => {

@@ -167,7 +167,7 @@ const getRoot = ({
     .tile(treemapResquarify)
     .size([width, height])
     .paddingInner(PADDING)
-    .paddingOuter(PADDING)(root);
+    .paddingOuter(PADDING)(root as any);
 
   return root as any as TreemapHierarchyRoot;
 };
