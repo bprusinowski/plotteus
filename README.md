@@ -208,6 +208,7 @@ type Step = {
   // If true, shares the color domain between groups.
   shareDomain?: boolean;
   showLegend?: boolean;
+  legendTitle?: string;
   legendAnchor?: "start" | "middle" | "end";
   showValues?: boolean;
   // Artificial maximum value.

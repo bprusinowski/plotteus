@@ -13,6 +13,7 @@ type G = {
   labelX: number;
   labelY: number;
   labelFontSize: number;
+  labelFontWeight: number;
   fill: string;
   opacity: number;
 };
@@ -22,12 +23,14 @@ export type Getter = Generic.Getter<G, { rowIndex: number }>;
 export const getters = ({
   colorMap,
   anchor,
+  title,
   itemHeight,
   svg,
   dims: { width, height, margin, BASE_MARGIN },
 }: {
   colorMap: ColorMap;
   anchor: Anchor;
+  title: string;
   itemHeight: number;
   svg: Svg;
   dims: ResolvedDimensions;
@@ -36,6 +39,7 @@ export const getters = ({
   const colorsWithCoords: {
     key: string;
     rowIndex: number;
+    isTitle: boolean;
     color: string;
     x: number;
     y: number;
@@ -60,8 +64,29 @@ export const getters = ({
 
   let y = -itemHeight * 0.5;
 
-  for (const [key, color] of colorMap) {
-    const { width: itemWidth } = svg.measureText(key, "legendItem");
+  const entries = Array.from(colorMap).map(([key, color]) => ({
+    key,
+    color,
+    isTitle: false,
+  }));
+
+  if (title) {
+    entries.unshift({
+      key: title,
+      color: "transparent",
+      isTitle: true,
+    });
+  }
+
+  for (const { key, color, isTitle } of entries) {
+    let { width: itemWidth } = svg.measureText(
+      key,
+      isTitle ? "legendTitle" : "legendItem"
+    );
+
+    if (isTitle && width) {
+      itemWidth = itemWidth - R;
+    }
 
     // Move to a next row.
     if (rowWidth + itemWidth + itemMargin > width) {
@@ -121,6 +146,7 @@ export const getters = ({
     colorsWithCoords.push({
       key,
       rowIndex,
+      isTitle,
       color,
       x: itemX,
       y,
@@ -140,7 +166,7 @@ export const getters = ({
     rowWidth += itemWidth + itemMargin;
   }
 
-  for (const { key, x, y, color } of colorsWithCoords) {
+  for (const { key, isTitle, x, y, color } of colorsWithCoords) {
     getters.push({
       key,
       rowIndex,
@@ -148,9 +174,12 @@ export const getters = ({
         return {
           x: s(margin.left + x, null, _g?.x),
           y: s(height + margin.top + y, null, _g?.y),
-          labelX: R * 2,
+          labelX: isTitle ? 0 : R * 2,
           labelY: (-itemHeight + R) * 0.5,
-          labelFontSize: FONT_SIZE.legendItem,
+          labelFontSize: isTitle ? FONT_SIZE.legendTitle : FONT_SIZE.legendItem,
+          labelFontWeight: isTitle
+            ? FONT_WEIGHT.legendTitle
+            : FONT_WEIGHT.legendItem,
           fill: color,
           opacity: s(0, 1),
         };
@@ -204,7 +233,7 @@ export const render = ({
         .attr("x", (d) => d.labelX)
         .attr("y", (d) => d.labelY)
         .style("font-size", (d) => d.labelFontSize)
-        .style("font-weight", FONT_WEIGHT.legendItem)
+        .style("font-weight", (d) => d.labelFontWeight)
         .style("dominant-baseline", "hanging")
         .text((d) => d.key)
     );
