@@ -41,6 +41,7 @@ export const getters = ({
       subtitleAnchor = "start",
       shareDomain: inputShareDomain,
       showLegend: inputShowLegend,
+      legendTitle = "",
       legendAnchor = "middle",
       showValues = false,
       maxValue: inputMaxValue,
@@ -127,6 +128,7 @@ export const getters = ({
       colorLegendsGetters = ColorLegend.getters({
         colorMap,
         anchor: legendAnchor,
+        title: legendTitle,
         itemHeight: legendItemHeight,
         svg,
         dims: dims.resolve(),

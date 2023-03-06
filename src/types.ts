@@ -13,6 +13,7 @@ type BaseInputStep = {
   /** Legend. */
   shareDomain?: boolean;
   showLegend?: boolean;
+  legendTitle?: string;
   legendAnchor?: Anchor;
 
   /** Values & data labels. */
@@ -68,6 +69,7 @@ export type BarChartSubtype = "grouped" | "stacked";
 export type TextType =
   | "title"
   | "subtitle"
+  | "legendTitle"
   | "legendItem"
   | "verticalAxisTitle"
   | "groupLabel"

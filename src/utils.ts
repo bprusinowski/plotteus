@@ -13,6 +13,7 @@ export const max = (array: number[]): number | undefined => {
 export const FONT_SIZE: Record<TextType, number> = {
   title: 24,
   subtitle: 14,
+  legendTitle: 12,
   legendItem: 12,
   verticalAxisTitle: 12,
   groupLabel: 14,
@@ -24,6 +25,7 @@ export const FONT_SIZE: Record<TextType, number> = {
 export const FONT_WEIGHT: Record<TextType, number> = {
   title: 700,
   subtitle: 400,
+  legendTitle: 700,
   legendItem: 400,
   verticalAxisTitle: 400,
   groupLabel: 400,
