@@ -190,10 +190,7 @@ export const updateDims = ({
         .addBottom(tickHeight + Tick.SIZE + Tick.LABEL_MARGIN);
       break;
     case "vertical":
-      dims
-        .addLeft(width + Tick.SIZE + Tick.LABEL_MARGIN)
-        .addTop(dims.BASE_MARGIN)
-        .addTop(titleHeight);
+      dims.addLeft(width + Tick.SIZE + Tick.LABEL_MARGIN).addTop(titleHeight);
       break;
   }
 };

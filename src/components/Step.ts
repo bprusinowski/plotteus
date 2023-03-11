@@ -15,10 +15,6 @@ export type Getter = {
   horizontalAxis: Axis.Getter | undefined;
 };
 
-// one-dimensional (value) - bar, bubble, pie, treemap
-// two-dimensional (x, y) - scatter
-// three-dimensional (x, y, value) - bubble
-
 export const getters = ({
   steps: inputSteps,
   svg,
@@ -141,7 +137,7 @@ export const getters = ({
     }
 
     if (title || subtitle) {
-      dims.addTop(dims.BASE_MARGIN);
+      dims.addTop(dims.BASE_MARGIN * 2);
     }
 
     const colorMap = new ColorMap(domain, paletteName);
