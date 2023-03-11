@@ -1,8 +1,8 @@
-import { ColorLegend, Group, Svg, Text, Tooltip, VerticalAxis } from ".";
+import { Axis, AxisTick, ColorLegend, Group, Svg, Text, Tooltip } from ".";
 import { ColorMap } from "../colors";
 import { Dimensions } from "../dims";
-import { InputStep, MaxValue } from "../types";
-import { getTextDims, max, stateOrderComparator, unique } from "../utils";
+import { BarChartSubtype, InputStep, MaxValue, MaxXY } from "../types";
+import { getTextDims, max, stateOrderComparator, sum, unique } from "../utils";
 import { shouldShareDomain } from "./utils";
 
 export type Getter = {
@@ -11,7 +11,8 @@ export type Getter = {
   subtitle: Text.Getter | undefined;
   groups: Group.Getter[];
   colorLegends: ColorLegend.Getter[] | undefined;
-  verticalAxis: VerticalAxis.Getter | undefined;
+  verticalAxis: Axis.Getter | undefined;
+  horizontalAxis: Axis.Getter | undefined;
 };
 
 export const getters = ({
@@ -26,8 +27,10 @@ export const getters = ({
   height: number;
 }): Getter[] => {
   const steps: Getter[] = [];
+  let _showHorizontalAxis: boolean | undefined;
   let _showVerticalAxis: boolean | undefined;
-  let _maxValue: number | undefined;
+  let _maxHorizontalAxisValue: number | undefined;
+  let _maxVerticalAxisValue: number | undefined;
   const textDims = getTextDims(svg);
 
   for (const step of inputSteps) {
@@ -44,158 +47,270 @@ export const getters = ({
       legendTitle = "",
       legendAnchor = "middle",
       showValues = false,
-      maxValue: inputMaxValue,
       showDatumLabels = false,
       palette: paletteName = "default",
       cartoonize = false,
     } = step;
 
-    const chartSubtype =
-      step.chartType === "bar" ? step.chartSubtype ?? "grouped" : undefined;
-
-    // TODO: if bar is a preceding step to pie, it can already be pre-rotated,
-    // so animation will be smoother.
-
-    const groupsKeys = groups.map((d) => d.key);
-    const dataKeys = unique(groups.map((d) => d.data.map((d) => d.key)).flat());
-
-    let dataMaxValue = 0;
-
-    if (chartSubtype !== "stacked") {
-      dataMaxValue =
-        max(groups.map((d) => max(d.data.map((d) => d.value)) ?? 0)) ?? 0;
-    } else {
-      // Sum values by group for stacked bar chart.
-      for (const group of groups) {
-        const sum = group.data.map((d) => d.value).reduce((a, b) => a + b, 0);
-
-        if (sum > dataMaxValue) {
-          dataMaxValue = sum;
-        }
-      }
+    let chartSubtype: BarChartSubtype | undefined;
+    switch (step.chartType) {
+      case "bar":
+        chartSubtype = step.chartSubtype ?? "grouped";
+        break;
     }
 
-    const k = inputMaxValue !== undefined ? dataMaxValue / inputMaxValue : 1;
-    const maxValue: MaxValue = {
-      data: dataMaxValue,
-      scale: inputMaxValue,
-      actual: inputMaxValue ?? dataMaxValue,
-      k,
-      kc: 1 - k,
-    };
+    const groupsKeys = groups.map((d) => d.key);
+    const dataKeys = unique(groups.flatMap((d) => d.data.map((d) => d.key)));
+
+    let maxValue: MaxValue | MaxXY;
+    switch (chartType) {
+      case "scatter":
+        const xValues = groups.flatMap((d) => d.data.map((d) => d.x));
+        const yValues = groups.flatMap((d) => d.data.map((d) => d.y));
+
+        const xMax = max(xValues) ?? 0;
+        const yMax = max(yValues) ?? 0;
+
+        const inputXMaxValue = step.xScale?.maxValue;
+        const inputYMaxValue = step.yScale?.maxValue;
+        const kx = inputXMaxValue ? xMax / inputXMaxValue : 1;
+        const ky = inputYMaxValue ? yMax / inputYMaxValue : 1;
+        maxValue = {
+          type: "xy",
+          x: {
+            data: xMax,
+            scale: inputXMaxValue,
+            actual: inputXMaxValue ?? xMax,
+            k: kx,
+            kc: 1 - kx,
+          },
+          y: {
+            data: yMax,
+            scale: inputYMaxValue,
+            actual: inputYMaxValue ?? yMax,
+            k: ky,
+            kc: 1 - ky,
+          },
+        };
+        break;
+      default:
+        let valueMax = 0;
+
+        if (chartType === "bar" && chartSubtype === "stacked") {
+          // Sum values by group for stacked bar chart.
+          groups.forEach((d) => {
+            const groupSum = sum(d.data.map((d) => d.value));
+
+            if (groupSum > valueMax) {
+              valueMax = groupSum;
+            }
+          });
+        } else {
+          valueMax =
+            max(groups.flatMap((d) => d.data.map((d) => d.value))) ?? 0;
+        }
+
+        const inputValueMaxValue = step.valueScale?.maxValue;
+        const k = inputValueMaxValue ? valueMax / inputValueMaxValue : 1;
+        maxValue = {
+          type: "value",
+          value: {
+            data: valueMax,
+            scale: inputValueMaxValue,
+            actual: inputValueMaxValue ?? valueMax,
+            k,
+            kc: 1 - k,
+          },
+        };
+        break;
+    }
 
     const shareDomain = inputShareDomain ?? shouldShareDomain(chartType);
     const domain = shareDomain ? dataKeys : groupsKeys;
-
     const showLegend = inputShowLegend ?? domain.length > 1;
 
     const dims = new Dimensions(width, height);
 
     let titleGetter: Text.Getter | undefined;
-
     if (title !== undefined) {
       titleGetter = Text.getter({
         svg,
         text: title,
-        textType: "title",
+        type: "title",
         anchor: titleAnchor,
         dims: dims.resolve(),
       });
-      const { height } = svg.measureText(title, "title");
-      dims.addTop(height);
+      Text.updateDims({
+        dims,
+        svg,
+        textType: "title",
+        text: title,
+      });
     }
 
     let subtitleGetter: Text.Getter | undefined;
-
     if (subtitle !== undefined) {
       subtitleGetter = Text.getter({
         svg,
         text: subtitle,
-        textType: "subtitle",
+        type: "subtitle",
         anchor: subtitleAnchor,
         dims: dims.resolve(),
       });
-      const { height } = svg.measureText(subtitle, "subtitle");
-      dims.addTop(height);
+      Text.updateDims({
+        dims,
+        svg,
+        textType: "subtitle",
+        text: subtitle,
+      });
+    }
+
+    if (title || subtitle) {
+      dims.addTop(dims.BASE_MARGIN * 2);
     }
 
     const colorMap = new ColorMap(domain, paletteName);
 
     let colorLegendsGetters: ColorLegend.Getter[] | undefined;
-
     if (showLegend) {
-      const legendItemHeight = textDims.legendItem.height;
       colorLegendsGetters = ColorLegend.getters({
         colorMap,
         anchor: legendAnchor,
         title: legendTitle,
-        itemHeight: legendItemHeight,
+        itemHeight: textDims.legendItem.height,
         svg,
         dims: dims.resolve(),
       });
+    }
 
-      const colorLegendHeight = ColorLegend.getHeight(
-        colorLegendsGetters,
-        legendItemHeight
-      );
+    ColorLegend.updateDims({
+      dims,
+      getters: colorLegendsGetters,
+      itemHeight: textDims.legendItem.height,
+      chartType,
+    });
 
-      dims.addBottom(colorLegendHeight);
+    if (chartType === "bar" || chartType === "scatter") {
+      const {
+        show = chartType === "bar" ? groups.length > 0 : true,
+        title = "",
+      } = step.verticalAxis || {};
 
-      if (chartType === "bar") {
-        dims.addBottom(dims.BASE_MARGIN * 2);
-      } else {
-        dims.addBottom(dims.BASE_MARGIN);
+      if (show) {
+        const titleHeight = textDims.axisTitle.height;
+        Axis.updateDims({
+          type: "vertical",
+          dims,
+          svg,
+          titleHeight: title ? titleHeight : 0,
+          maxValue: Axis.getMaxValue({ type: "vertical", maxValue }),
+          tickHeight: textDims.axisTick.height,
+        });
       }
+    }
+
+    let horizontalAxisGetters: Axis.Getter | undefined;
+    if (chartType === "scatter") {
+      const { show = true, title = "" } = step.horizontalAxis || {};
+
+      if (show) {
+        const horizontalMaxValue = Axis.getMaxValue({
+          type: "horizontal",
+          maxValue,
+        });
+        const titleHeight = textDims.axisTitle.height;
+        const width = Axis.getWidth({
+          svg,
+          maxValue: horizontalMaxValue,
+        });
+        Axis.updateDims({
+          type: "horizontal",
+          dims,
+          svg,
+          maxValue: horizontalMaxValue,
+          titleHeight: title ? titleHeight : 0,
+          tickHeight: textDims.axisTick.height,
+        });
+        const resolvedDims = dims.resolve();
+
+        horizontalAxisGetters = Axis.getters({
+          type: "horizontal",
+          title,
+          titleMargin: {
+            top:
+              titleHeight +
+              dims.BASE_MARGIN +
+              AxisTick.SIZE +
+              AxisTick.LABEL_MARGIN,
+            right:
+              resolvedDims.margin.right +
+              resolvedDims.margin.left -
+              width * 0.5,
+            bottom: 0,
+            left: 0,
+          },
+          svg,
+          dims: resolvedDims,
+          tickHeight: textDims.axisTick.height,
+          maxValue: horizontalMaxValue,
+          _maxValue: _showHorizontalAxis ? _maxHorizontalAxisValue : undefined,
+        });
+      }
+
+      _showHorizontalAxis = show;
     } else {
-      if (chartType === "bar") {
-        dims.addBottom(dims.BASE_MARGIN);
-      }
+      _showHorizontalAxis = false;
     }
 
-    if (title || subtitle) {
-      dims.addTop(dims.BASE_MARGIN);
-    }
-
-    dims.addBottom(dims.BASE_MARGIN);
-
-    let verticalAxisGetters: VerticalAxis.Getter | undefined;
-
-    if (chartType === "bar") {
-      if (showValues) {
+    let verticalAxisGetters: Axis.Getter | undefined;
+    if (chartType === "bar" || chartType === "scatter") {
+      if (chartType === "bar" && showValues) {
         dims.addTop(dims.BASE_MARGIN);
       }
 
-      const { show = groups.length > 0, title = "" } = step.verticalAxis || {};
+      const {
+        show = chartType === "bar" ? groups.length > 0 : true,
+        title = "",
+      } = step.verticalAxis || {};
 
       if (show) {
-        const width = VerticalAxis.getWidth({
-          svg,
-          maxValue: maxValue.actual,
+        const verticalMaxValue = Axis.getMaxValue({
+          type: "vertical",
+          maxValue,
         });
-        const titleHeight = title
-          ? svg.measureText(title, "verticalAxisTitle").height
-          : 0;
-        const titleMargin = dims.BASE_MARGIN;
+        const width = Axis.getWidth({
+          svg,
+          maxValue: verticalMaxValue,
+        });
+        const titleHeight = textDims.axisTitle.height;
 
-        dims.addTop(titleHeight + titleMargin).addLeft(width);
-
-        verticalAxisGetters = VerticalAxis.getters({
+        verticalAxisGetters = Axis.getters({
+          type: "vertical",
           title,
-          titleMargin: {
-            top: -(
-              titleHeight +
-              titleMargin +
-              (title && showValues ? dims.BASE_MARGIN : 0)
-            ),
-            right: 0,
-            bottom: 0,
-            left: -width,
-          },
+          titleMargin: title
+            ? {
+                top: -(
+                  titleHeight +
+                  dims.BASE_MARGIN +
+                  (chartType === "bar" && showValues
+                    ? textDims.datumValue.height
+                    : 0)
+                ),
+                right: 0,
+                bottom: 0,
+                left: -width - AxisTick.SIZE - AxisTick.LABEL_MARGIN,
+              }
+            : {
+                top: 0,
+                right: 0,
+                bottom: 0,
+                left: 0,
+              },
           svg,
           dims: dims.resolve(),
-          tickHeight: textDims.tick.height,
-          maxValue: maxValue.actual,
-          _maxValue: _showVerticalAxis ? _maxValue : undefined,
+          tickHeight: textDims.axisTick.height,
+          maxValue: verticalMaxValue,
+          _maxValue: _showVerticalAxis ? _maxVerticalAxisValue : undefined,
         });
       }
 
@@ -204,35 +319,70 @@ export const getters = ({
       _showVerticalAxis = false;
     }
 
-    const groupsGetters: Group.Getter[] = Group.getters(
-      chartType,
-      chartSubtype,
-      {
-        groups,
-        groupsKeys,
-        dataKeys,
-        shareDomain,
-        maxValue,
-        showValues,
-        showDatumLabels,
-        svg,
-        dims: dims.resolve(),
-        textDims,
-        colorMap,
-        cartoonize,
-      }
-    );
+    const commonGroupGetterProps = {
+      groupsKeys,
+      dataKeys,
+      shareDomain,
+      showValues,
+      showDatumLabels,
+      svg,
+      dims: dims.resolve(),
+      textDims,
+      colorMap,
+      cartoonize,
+    };
+    let groupsGetters: Group.Getter[];
+    switch (chartType) {
+      case "bar":
+        groupsGetters = Group.valueGetters({
+          chartType,
+          chartSubtype: chartSubtype as BarChartSubtype,
+          props: {
+            ...commonGroupGetterProps,
+            groups,
+            maxValue: maxValue as MaxValue,
+          },
+        });
+        break;
+      case "scatter":
+        groupsGetters = Group.xyGetters({
+          chartType,
+          props: {
+            ...commonGroupGetterProps,
+            groups,
+            maxValue: maxValue as MaxXY,
+          },
+        });
+        break;
+      default:
+        groupsGetters = Group.valueGetters({
+          chartType,
+          props: {
+            ...commonGroupGetterProps,
+            groups,
+            maxValue: maxValue as MaxValue,
+          },
+        });
+    }
 
     steps.push({
       key,
       title: titleGetter,
       subtitle: subtitleGetter,
       colorLegends: colorLegendsGetters,
+      horizontalAxis: horizontalAxisGetters,
       verticalAxis: verticalAxisGetters,
       groups: groupsGetters,
     });
 
-    _maxValue = maxValue.actual;
+    _maxHorizontalAxisValue = Axis.getMaxValue({
+      type: "horizontal",
+      maxValue,
+    });
+    _maxVerticalAxisValue = Axis.getMaxValue({
+      type: "vertical",
+      maxValue,
+    });
   }
 
   return steps;
@@ -243,7 +393,8 @@ export type Int = {
   subtitles: Text.Int[];
   groups: Group.Int[];
   colorLegends: ColorLegend.Int[];
-  verticalAxes: VerticalAxis.Int[];
+  horizontalAxes: Axis.Int[];
+  verticalAxes: Axis.Int[];
 };
 
 export type IntsMap = Map<string, Int>;
@@ -260,10 +411,19 @@ export const intsMap = ({
   let _subtitleInts: Text.Int[] | undefined;
   let _groupInts: Group.Int[] | undefined;
   let _colorLegendInts: ColorLegend.Int[] | undefined;
-  let _verticalAxisInts: VerticalAxis.Int[] | undefined;
+  let _verticalAxisInts: Axis.Int[] | undefined;
+  let _horizontalAxisInts: Axis.Int[] | undefined;
 
   steps.forEach((step, i) => {
-    const { key, title, subtitle, groups, colorLegends, verticalAxis } = step;
+    const {
+      key,
+      title,
+      subtitle,
+      groups,
+      colorLegends,
+      horizontalAxis,
+      verticalAxis,
+    } = step;
     const _stepGetters: Getter | undefined = steps[i - 1];
 
     const titlesInts = Text.ints({
@@ -284,7 +444,15 @@ export const intsMap = ({
       _ints: _colorLegendInts,
     });
 
-    const verticalAxesInts = VerticalAxis.ints({
+    const horizontalAxesInts = Axis.ints({
+      getters: horizontalAxis ? [horizontalAxis] : [],
+      _getters: _stepGetters?.horizontalAxis
+        ? [_stepGetters.horizontalAxis]
+        : undefined,
+      _ints: _horizontalAxisInts,
+    });
+
+    const verticalAxesInts = Axis.ints({
       getters: verticalAxis ? [verticalAxis] : [],
       _getters: _stepGetters?.verticalAxis
         ? [_stepGetters.verticalAxis]
@@ -304,6 +472,7 @@ export const intsMap = ({
       // Sort the groups so they are rendered in a correct order.
       groups: (_groupInts = groupsInts.sort(stateOrderComparator)),
       colorLegends: (_colorLegendInts = colorLegendsInts),
+      horizontalAxes: (_horizontalAxisInts = horizontalAxesInts),
       verticalAxes: (_verticalAxisInts = verticalAxesInts),
     });
   });
@@ -316,18 +485,27 @@ export type Resolved = {
   subtitles: Text.Resolved[];
   groups: Group.Resolved[];
   colors: ColorLegend.Resolved[];
-  verticalAxes: VerticalAxis.Resolved[];
+  horizontalAxes: Axis.Resolved[];
+  verticalAxes: Axis.Resolved[];
 };
 
 export const resolve = (ints: Int, t: number) => {
-  const { titles, subtitles, groups, colorLegends, verticalAxes } = ints;
+  const {
+    titles,
+    subtitles,
+    groups,
+    colorLegends,
+    horizontalAxes,
+    verticalAxes,
+  } = ints;
 
   return {
     titles: Text.resolve({ ints: titles, t }),
     subtitles: Text.resolve({ ints: subtitles, t }),
     groups: Group.resolve({ ints: groups, t }),
     colors: ColorLegend.resolve({ ints: colorLegends, t }),
-    verticalAxes: VerticalAxis.resolve({ ints: verticalAxes, t }),
+    horizontalAxes: Axis.resolve({ ints: horizontalAxes, t }),
+    verticalAxes: Axis.resolve({ ints: verticalAxes, t }),
   };
 };
 
@@ -344,7 +522,8 @@ export const render = ({
   finished: boolean;
   indicateProgress: boolean;
 }) => {
-  const { titles, subtitles, colors, verticalAxes, groups } = resolved;
+  const { titles, subtitles, colors, horizontalAxes, verticalAxes, groups } =
+    resolved;
 
   Text.render({
     selection: svg.selection,
@@ -363,9 +542,16 @@ export const render = ({
     selection: svg.selection,
   });
 
-  VerticalAxis.render({
+  Axis.render({
+    resolved: horizontalAxes,
+    selection: svg.selection,
+    type: "horizontal",
+  });
+
+  Axis.render({
     resolved: verticalAxes,
     selection: svg.selection,
+    type: "vertical",
   });
 
   Group.render({

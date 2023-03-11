@@ -1,7 +1,7 @@
 import { hierarchy, treemap, treemapResquarify } from "d3-hierarchy";
 import { Datum, Group } from "../components";
 import { BAR, getPathData } from "../coords";
-import { InputGroup } from "../types";
+import { InputGroupValue } from "../types";
 import { FONT_SIZE, getTextColor } from "../utils";
 import { TreemapHierarchyRoot } from "./types";
 import {
@@ -16,7 +16,7 @@ const PADDING = 2;
 export const getTreemapGetters = ({
   groups,
   shareDomain,
-  maxValue,
+  maxValue: { value: maxValue },
   showValues,
   showDatumLabels,
   svg,
@@ -24,7 +24,7 @@ export const getTreemapGetters = ({
   textDims,
   colorMap,
   cartoonize,
-}: Group.GetterProps): Group.Getter[] => {
+}: Group.GetterPropsValue): Group.Getter[] => {
   const root = getRoot({
     groups,
     width: maxValue.k * width,
@@ -82,6 +82,7 @@ export const getTreemapGetters = ({
 
       const datumGetters: Datum.Getter = {
         key,
+        type: "value",
         teleportKey: `${group.data.key}:${key}`,
         teleportFrom: datum.data.teleportFrom,
         value,
@@ -148,7 +149,7 @@ const getRoot = ({
   width,
   height,
 }: {
-  groups: InputGroup[];
+  groups: InputGroupValue[];
   width: number;
   height: number;
 }): TreemapHierarchyRoot => {

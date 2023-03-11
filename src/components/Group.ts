@@ -1,14 +1,17 @@
 import { getBarGetters } from "../charts/bar";
 import { getBubbleGetters } from "../charts/bubble";
 import { getPieGetters } from "../charts/pie";
+import { getScatterGetters } from "../charts/scatter";
 import { getTreemapGetters } from "../charts/treemap";
 import { ColorMap } from "../colors";
 import { ResolvedDimensions } from "../dims";
 import {
   BarChartSubtype,
   ChartType,
-  InputGroup,
+  InputGroupValue,
+  InputGroupXY,
   MaxValue,
+  MaxXY,
   TextDims,
 } from "../types";
 import { FONT_WEIGHT, stateOrderComparator } from "../utils";
@@ -30,14 +33,12 @@ type G = {
 
 export type Getter = Generic.Getter<G, { data: Datum.Getter[] }>;
 
-export type GetterProps = {
+type BaseGetterProps = {
   // Data.
-  groups: InputGroup[];
   groupsKeys: string[];
   dataKeys: string[];
   // Scales.
   shareDomain: boolean;
-  maxValue: MaxValue;
   // Labels.
   showValues: boolean;
   showDatumLabels: boolean;
@@ -50,21 +51,48 @@ export type GetterProps = {
   cartoonize: boolean;
 };
 
-export const getters = (
-  chartType: ChartType,
-  chartSubtype: BarChartSubtype | undefined,
-  props: GetterProps
+export type GetterPropsValue = BaseGetterProps & {
+  groups: InputGroupValue[];
+  maxValue: MaxValue;
+};
+
+export type GetterPropsXY = BaseGetterProps & {
+  groups: InputGroupXY[];
+  maxValue: MaxXY;
+};
+
+export const valueGetters = (
+  props:
+    | {
+        chartType: "bar";
+        chartSubtype: BarChartSubtype;
+        props: GetterPropsValue;
+      }
+    | {
+        chartType: Exclude<ChartType, "bar" | "scatter">;
+        props: GetterPropsValue;
+      }
 ): Getter[] => {
-  switch (chartType) {
+  switch (props.chartType) {
     case "bar":
-      return getBarGetters(chartSubtype as BarChartSubtype, props);
+      return getBarGetters(props.chartSubtype, props.props);
     case "bubble":
-      return getBubbleGetters(props);
+      return getBubbleGetters(props.props);
     case "pie":
-      return getPieGetters(props);
+      return getPieGetters(props.props);
     case "treemap":
-      return getTreemapGetters(props);
+      return getTreemapGetters(props.props);
   }
+};
+
+export const xyGetters = ({
+  chartType,
+  props,
+}: {
+  chartType: "scatter";
+  props: GetterPropsXY;
+}): Getter[] => {
+  return getScatterGetters(props);
 };
 
 export type Int = Generic.Int<G, { data: Datum.Int[] }>;
@@ -201,10 +229,22 @@ export const render = ({
     dataSelection
       .on("mouseover mousemove", function (e: MouseEvent, d) {
         tooltip.move(e.clientX, e.clientY);
-        tooltip.setText({
-          label: d.key,
-          value: d.value,
-        });
+
+        switch (d.type) {
+          case "value":
+            tooltip.setText({
+              label: d.key,
+              value: d.value,
+            });
+            break;
+          case "xy":
+            tooltip.setText({
+              label: d.key,
+              value: `(${d.xValue}, ${d.yValue})`,
+            });
+            break;
+        }
+
         tooltip.show();
       })
       .on("mouseout", function () {

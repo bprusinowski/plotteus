@@ -1,10 +1,11 @@
 import { scaleLinear } from "d3-scale";
 import { Text } from ".";
-import { Margin, ResolvedDimensions } from "../dims";
+import { Dimensions, Margin, ResolvedDimensions } from "../dims";
+import { AxisType, MaxValue, MaxXY } from "../types";
 import { max } from "../utils";
+import * as Tick from "./AxisTick";
 import * as Generic from "./Generic";
 import { Svg, SVGSelection } from "./Svg";
-import * as Tick from "./Tick";
 
 type G = {
   x: number;
@@ -18,6 +19,7 @@ export type Getter = Generic.Getter<
 >;
 
 export const getters = ({
+  type,
   title,
   titleMargin,
   svg,
@@ -26,6 +28,7 @@ export const getters = ({
   maxValue,
   _maxValue,
 }: {
+  type: AxisType;
   title: string;
   titleMargin: Margin;
   svg: Svg;
@@ -37,24 +40,36 @@ export const getters = ({
   const ticks = scaleLinear().domain([0, maxValue]).ticks(5);
 
   return {
-    key: "verticalAxis",
+    key: `${type}-axis`,
     g: ({ s, _g }) => {
+      const x = dims.margin.left;
+      let y: number;
+      switch (type) {
+        case "vertical":
+          y = dims.margin.top;
+          break;
+        case "horizontal":
+          y = dims.fullHeight - dims.margin.bottom;
+          break;
+      }
+
       return {
-        x: s(dims.margin.left, null, _g?.x),
-        y: s(dims.margin.top, null, _g?.y),
+        x: s(x, null, _g?.x),
+        y: s(y, null, _g?.y),
         opacity: s(0, 1),
       };
     },
     title: title
       ? Text.getter({
           text: title,
-          textType: "verticalAxisTitle",
-          anchor: "start",
+          type: "axisTitle",
+          anchor: type === "vertical" ? "start" : "end",
           svg,
           dims: { ...dims, margin: titleMargin },
         })
       : undefined,
     ticks: Tick.getters({
+      axisType: type,
       ticks,
       maxValue,
       _maxValue,
@@ -76,8 +91,9 @@ export const ints = ({
     _getters,
     _ints,
     modifyInt: ({ getter, int, _updateInt }) => {
-      const _titleGetter = _getters?.find((d) => d.key === getter.key)?.title;
-      const _tickGetters = _getters?.find((d) => d.key === getter.key)?.ticks;
+      const _getter = _getters?.find((d) => d.key === getter.key);
+      const _titleGetter = _getter?.title;
+      const _tickGetters = _getter?.ticks;
 
       return {
         ...int,
@@ -118,18 +134,20 @@ export const resolve = ({ ints, t }: { ints: Int[]; t: number }) => {
 export const render = ({
   resolved,
   selection,
+  type,
 }: {
   resolved: Resolved[];
   selection: SVGSelection;
+  type: AxisType;
 }) => {
   const titles = resolved.flatMap((d) => d.titles);
   const ticks = resolved.flatMap((d) => d.ticks);
 
   const verticalAxisSelection = selection
-    .selectAll<SVGGElement, Resolved>(".vertical-axis")
+    .selectAll<SVGGElement, Resolved>(`.${type}-axis`)
     .data(resolved)
     .join("g")
-    .attr("class", "vertical-axis")
+    .attr("class", `${type}-axis`)
     .attr("transform", (d) => `translate(${d.x}, ${d.y})`)
     .style("opacity", (d) => d.opacity)
     // Vertical axis needs to be the first element in SVG, so it doesn't overlap bars.
@@ -137,13 +155,44 @@ export const render = ({
 
   Text.render({
     resolved: titles,
-    key: "verticalAxisTitle",
+    key: "title",
     selection: verticalAxisSelection,
   });
   Tick.render({
     resolved: ticks,
     selection: verticalAxisSelection,
+    axisType: type,
   });
+};
+
+export const updateDims = ({
+  type,
+  dims,
+  svg,
+  maxValue,
+  titleHeight,
+  tickHeight,
+}: {
+  type: AxisType;
+  dims: Dimensions;
+  svg: Svg;
+  maxValue: number;
+  titleHeight: number;
+  tickHeight: number;
+}): void => {
+  const width = getWidth({ svg, maxValue });
+
+  switch (type) {
+    case "horizontal":
+      dims
+        .addRight(width * 0.5)
+        .addBottom(titleHeight)
+        .addBottom(tickHeight + Tick.SIZE + Tick.LABEL_MARGIN);
+      break;
+    case "vertical":
+      dims.addLeft(width + Tick.SIZE + Tick.LABEL_MARGIN).addTop(titleHeight);
+      break;
+  }
 };
 
 export const getWidth = ({
@@ -155,8 +204,25 @@ export const getWidth = ({
 }): number => {
   const ticks = scaleLinear().domain([0, maxValue]).nice().ticks(5);
   const ticksWidths = ticks.map((d) => {
-    return svg.measureText(d, "tick").width;
+    return svg.measureText(d, "axisTick").width;
   });
 
-  return (max(ticksWidths) as number) + Tick.WIDTH;
+  return max(ticksWidths) as number;
+};
+
+export const getMaxValue = ({
+  type,
+  maxValue,
+}: {
+  type: AxisType;
+  maxValue: MaxValue | MaxXY;
+}): number => {
+  switch (type) {
+    case "horizontal":
+      return maxValue.type === "value" ? 0 : maxValue.x.actual;
+    case "vertical":
+      return maxValue.type === "value"
+        ? maxValue.value.actual
+        : maxValue.y.actual;
+  }
 };

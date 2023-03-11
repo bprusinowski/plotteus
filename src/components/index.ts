@@ -1,9 +1,9 @@
+export * as Axis from "./Axis";
+export * as AxisTick from "./AxisTick";
 export * as ColorLegend from "./ColorLegend";
 export * as Datum from "./Datum";
 export * as Group from "./Group";
 export * as Step from "./Step";
 export * from "./Svg";
 export * as Text from "./Text";
-export * as Tick from "./Tick";
 export * from "./Tooltip";
-export * as VerticalAxis from "./VerticalAxis";

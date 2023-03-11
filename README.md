@@ -111,7 +111,7 @@ Limitless animations and a powerful mechanism to control them combined with a co
 
 ```ts
 const div = document.querySelector("#story");
-const groups: Group[] = [
+const groups = [
   {
     key: "Alice",
     data: [
@@ -146,7 +146,7 @@ const baseStep = {
   showDatumLabels: true,
   groups,
 };
-const steps: Step[] = [
+const steps = [
   {
     key: "zero",
     chartType: "treemap",
@@ -193,14 +193,13 @@ https://user-images.githubusercontent.com/52032047/221407756-3038fae9-84ed-4d77-
 
 ### ⚙️ Step configuration
 
+Step configurations vary by chart type, but there's a common part that's shared.
+
 ```ts
 type Step = {
   // Unique identifier of a step.
   // Passed as a first argument to the `render` method.
   key: string;
-  chartType: "bar" | "bubble" | "pie" | "treemap";
-  // Only applicable for bar chart.
-  chartSubtype?: "grouped" | "stacked";
   title?: string;
   titleAnchor?: "start" | "middle" | "end";
   subtitle?: string;
@@ -211,40 +210,105 @@ type Step = {
   legendTitle?: string;
   legendAnchor?: "start" | "middle" | "end";
   showValues?: boolean;
-  // Artificial maximum value.
-  // Useful for fixing the value scale domain to show evolution of values.
-  maxValue?: number;
   showDatumLabels?: boolean;
-  // Only applicable for bar chart.
-  verticalAxis?: {
-    show?: boolean;
-    title?: string;
-  };
   palette?: "default" | "pastel" | "vivid" | "oranges";
   // If true, enables hand-drawn look.
   cartoonize?: boolean;
-  // Data used to render a chart.
-  groups: Array<{
-    // Unique identifier of a group.
-    // Will be used to match and animate the groups between consecutive steps.
-    key: string;
-    opacity?: number;
-    data: Array<{
-      // Unique identifier of a datum.
-      // Will be used to match and animate the data inside a given group between
-      // consecutive steps.
-      key: string;
-      value: number;
-      // Use when you want to move a given datum across groups.
-      // Should be defined as "groupKey:datumKey" for a datum from an exiting
-      // group you want to "teleport" it from.
-      teleportFrom?: string;
-      // HEX, e.g. "#CCCCCC"
-      fill?: string;
-      opacity?: number;
-    }>;
-  }>;
-};
+} & (
+  | {
+      chartType: "bar";
+      chartSubtype?: "grouped" | "stacked";
+      valueScale?: {
+        // Useful for fixing the value scale domain to show evolution of values.
+        maxValue?: number;
+      };
+      verticalAxis?: {
+        show?: boolean;
+        title?: string;
+      };
+      groups: Array<{
+        // Unique identifier of a group.
+        // Used to match and animate the groups between consecutive steps.
+        key: string;
+        opacity?: number;
+        data: Array<{
+          // Unique identifier of a datum.
+          // Used to match and animate the data inside a given group between
+          // consecutive steps.
+          key: string;
+          value: number;
+          // Used to teleport datum between groups. Formatted as "groupKey:datumKey".
+          teleportFrom?: string;
+          // HEX, e.g. "#CCCCCC"
+          fill?: string;
+          opacity?: number;
+        }>;
+      }>;
+    }
+  | {
+      chartType: "bubble" | "pie" | "treemap";
+      valueScale?: {
+        // Useful for fixing the value scale domain to show evolution of values.
+        maxValue?: number;
+      };
+      groups: Array<{
+        // Unique identifier of a group.
+        // Used to match and animate the groups between consecutive steps.
+        key: string;
+        opacity?: number;
+        data: Array<{
+          // Unique identifier of a datum.
+          // Used to match and animate the data inside a given group between
+          // consecutive steps.
+          key: string;
+          value: number;
+          // Used to teleport datum between groups. Formatted as "groupKey:datumKey".
+          teleportFrom?: string;
+          // HEX, e.g. "#CCCCCC"
+          fill?: string;
+          opacity?: number;
+        }>;
+      }>;
+    }
+  | {
+      chartType: "scatter";
+      xScale?: {
+        // Useful for fixing the x scale domain to show evolution of values.
+        maxValue?: number;
+      };
+      yScale?: {
+        // Useful for fixing the y scale domain to show evolution of values.
+        maxValue?: number;
+      };
+      horizontalAxis?: {
+        show?: boolean;
+        title?: string;
+      };
+      verticalAxis?: {
+        show?: boolean;
+        title?: string;
+      };
+      groups: Array<{
+        // Unique identifier of a group.
+        // Used to match and animate the groups between consecutive steps.
+        key: string;
+        opacity?: number;
+        data: Array<{
+          // Unique identifier of a datum.
+          // Used to match and animate the data inside a given group between
+          // consecutive steps.
+          key: string;
+          x: number;
+          y: number;
+          // Used to teleport datum between groups. Formatted as "groupKey:datumKey".
+          teleportFrom?: string;
+          // HEX, e.g. "#CCCCCC"
+          fill?: string;
+          opacity?: number;
+        }>;
+      }>;
+    }
+);
 ```
 
 ### 🔠 Every group is a chart
@@ -344,7 +408,7 @@ const groups = [
 
 You can structure your `Steps` to be based on either more groups (as with the bar chart) or fewer groups (other charts). The main difference between them is that, by default, the color domain is shared at the `Datum` level for bar and pie charts and at the `Group` level for other charts.
 
-This decision comes from the experience that bar charts usually share the same domain within groups (so, _A_ in one group should have the same color as _A_ in all other groups). Pie charts, well, usually do not share the same color within the group, as you would end up with monochromatic slices. Bubble and treemap charts, on the other hand, usually have different "children" within groups. However, you can freely change this behavior by manually setting `shareDomain` to suit your needs, e.g. if you'd like to have a three-group bar chart with colors based on `Group` rather than `Datum`.
+This decision comes from the experience that bar charts usually share the same domain within groups (so, _A_ in one group should have the same color as _A_ in all other groups). Pie charts, well, usually do not share the same color within the group, as you would end up with monochromatic slices. Bubble, scatter and treemap charts, on the other hand, usually have different "children" within groups. However, you can freely change this behavior by manually setting `shareDomain` to suit your needs, e.g. if you'd like to have a three-group bar chart with colors based on `Group` rather than `Datum`.
 
 While this design gives you a lot of freedom to manipulate the elements, it can also pose a problem if you want to make some specific animations.
 

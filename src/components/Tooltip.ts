@@ -44,7 +44,7 @@ export const makeTooltip = (div: HTMLDivElement) => {
     value,
   }: {
     label: string;
-    value: number;
+    value: number | string;
   }): void => {
     datumLabel.text(label ? `${label}:` : "");
     valueLabel.text(` ${value}`);

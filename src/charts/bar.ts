@@ -1,7 +1,7 @@
 import { ScaleBand, scaleBand, ScaleLinear, scaleLinear } from "d3-scale";
 import { Datum, Group } from "../components";
 import { BAR, getPathData } from "../coords";
-import { BarChartSubtype, MaxValue } from "../types";
+import { BarChartSubtype, Max } from "../types";
 import { FONT_SIZE, getTextColor } from "../utils";
 import {
   getGroupLabelStrokeWidth,
@@ -20,7 +20,7 @@ export const getBarGetters = (
     groupsKeys,
     dataKeys,
     shareDomain,
-    maxValue,
+    maxValue: { value: maxValue },
     showValues,
     showDatumLabels,
     svg,
@@ -28,7 +28,7 @@ export const getBarGetters = (
     textDims,
     colorMap,
     cartoonize,
-  }: Group.GetterProps
+  }: Group.GetterPropsValue
 ): Group.Getter[] => {
   const isGrouped = subtype === "grouped";
   const { x0Scale, x0bw, x1Scale, x1bw, yScale } = getScales({
@@ -105,6 +105,7 @@ export const getBarGetters = (
 
       const datumGetters: Datum.Getter = {
         key,
+        type: "value",
         teleportKey: `${group.key}:${key}`,
         teleportFrom: datum.teleportFrom,
         value,
@@ -188,7 +189,7 @@ const getScales = ({
   isGrouped: boolean;
   groupsKeys: string[];
   dataKeys: string[];
-  maxValue: MaxValue;
+  maxValue: Max;
   width: number;
   height: number;
 }): {
