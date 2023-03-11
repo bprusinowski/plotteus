@@ -38,6 +38,8 @@ export const getters = ({
 }): Getter[] => {
   const isVerticalAxis = axisType === "vertical";
   const size = isVerticalAxis ? height : width;
+  const scaleDomain = isVerticalAxis ? [maxValue, 0] : [0, maxValue];
+  const scale = scaleLinear().domain(scaleDomain).range([0, size]);
   let _scale: (tick: number) => number = () => (isVerticalAxis ? size : 0);
 
   if (_maxValue !== undefined) {
@@ -50,11 +52,10 @@ export const getters = ({
       key: `${tick}`,
       g: ({ s }) => {
         const x = 0;
-        const _y = _scale(tick);
         const y = s(
-          _y,
+          _scale(tick),
           (isVerticalAxis ? 1 - tick / maxValue : tick / maxValue) * size,
-          _y
+          scale(tick)
         );
 
         return {
