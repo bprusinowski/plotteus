@@ -88,6 +88,7 @@ export const getPieGetters = ({
 
       const datumGetters: Datum.Getter = {
         key,
+        type: "value",
         teleportKey: `${group.data.key}:${key}`,
         teleportFrom: datum.data.data.teleportFrom,
         value,

@@ -12,7 +12,6 @@ export const getScatterGetters = ({
   cartoonize,
   colorMap,
   showDatumLabels,
-  textDims,
   dims: { width, height, margin, BASE_MARGIN },
 }: Group.GetterPropsXY) => {
   const { xScale, yScale } = getScales({ maxValue, width, height });
@@ -48,7 +47,6 @@ export const getScatterGetters = ({
 
     for (const datum of group.data) {
       const { key, x, y, fill } = datum;
-      const value = 0;
 
       const datumX = xScale(x);
       const datumY = yScale(y);
@@ -56,9 +54,11 @@ export const getScatterGetters = ({
 
       const datumGetters: Datum.Getter = {
         key,
+        type: "xy",
+        xValue: x,
+        yValue: y,
         teleportKey: `${group.key}:${key}`,
         teleportFrom: datum.teleportFrom,
-        value,
         g: ({ s, _g }) => {
           const d = s(
             BAR,

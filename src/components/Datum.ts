@@ -25,22 +25,37 @@ export type G = {
 
 export type Getter = Generic.Getter<
   G,
-  {
-    teleportKey: string;
-    teleportFrom: string | undefined;
-    value: number;
-  }
+  | {
+      type: "value";
+      teleportKey: string;
+      teleportFrom: string | undefined;
+      value: number;
+    }
+  | {
+      type: "xy";
+      teleportKey: string;
+      teleportFrom: string | undefined;
+      xValue: number;
+      yValue: number;
+    }
 >;
 
 // Getters are defined per chart type in GroupsGetters.
 
 export type Int = Generic.Int<
   G,
-  {
-    teleportKey: string;
-    value: number;
-    _value: number;
-  }
+  | {
+      type: "value";
+      teleportKey: string;
+      value: number;
+      _value: number;
+    }
+  | {
+      type: "xy";
+      teleportKey: string;
+      xValue: number;
+      yValue: number;
+    }
 >;
 
 export const ints = ({
@@ -54,18 +69,37 @@ export const ints = ({
     _getters,
     _ints,
     modifyInt: ({ getter, int, _updateInt }) => {
-      return {
-        ...int,
-        teleportKey: getter.teleportKey,
-        value: getter.value,
-        _value: _updateInt?.value ?? getter.value,
-      };
+      switch (getter.type) {
+        case "value":
+          return {
+            ...int,
+            type: getter.type,
+            teleportKey: getter.teleportKey,
+            value: getter.value,
+            _value:
+              _updateInt?.type === "value"
+                ? _updateInt?.value ?? getter.value
+                : 0,
+          };
+        case "xy":
+          return {
+            ...int,
+            type: getter.type,
+            teleportKey: getter.teleportKey,
+            xValue: getter.xValue,
+            yValue: getter.yValue,
+          };
+      }
     },
     getModifyPreviousG,
   });
 };
 
-export type Resolved = Generic.Resolved<G, { value: number }>;
+export type Resolved = Generic.Resolved<
+  G,
+  | { type: "value"; value: number }
+  | { type: "xy"; xValue: number; yValue: number }
+>;
 
 export const resolve = ({
   ints,
@@ -78,10 +112,21 @@ export const resolve = ({
     ints,
     t,
     modifyResolved: ({ int, resolved }) => {
-      return {
-        ...resolved,
-        value: interpolate(int._value, int.value)(Math.round(t)),
-      };
+      switch (int.type) {
+        case "value":
+          return {
+            ...resolved,
+            type: int.type,
+            value: interpolate(int._value, int.value)(Math.round(t)),
+          };
+        case "xy":
+          return {
+            ...resolved,
+            type: int.type,
+            xValue: int.xValue,
+            yValue: int.yValue,
+          };
+      }
     },
   });
 };
@@ -179,5 +224,5 @@ export const render = ({
     .style("user-select", "none")
     .style("pointer-events", "none")
     .style("fill", (d) => d.valueFill)
-    .text((d) => d.value);
+    .text((d) => (d.type === "value" ? d.value : ""));
 };

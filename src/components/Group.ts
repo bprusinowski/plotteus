@@ -227,10 +227,22 @@ export const render = ({
     dataSelection
       .on("mouseover mousemove", function (e: MouseEvent, d) {
         tooltip.move(e.clientX, e.clientY);
-        tooltip.setText({
-          label: d.key,
-          value: d.value,
-        });
+
+        switch (d.type) {
+          case "value":
+            tooltip.setText({
+              label: d.key,
+              value: d.value,
+            });
+            break;
+          case "xy":
+            tooltip.setText({
+              label: d.key,
+              value: `(${d.xValue}, ${d.yValue})`,
+            });
+            break;
+        }
+
         tooltip.show();
       })
       .on("mouseout", function () {

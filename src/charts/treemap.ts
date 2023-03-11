@@ -82,6 +82,7 @@ export const getTreemapGetters = ({
 
       const datumGetters: Datum.Getter = {
         key,
+        type: "value",
         teleportKey: `${group.data.key}:${key}`,
         teleportFrom: datum.data.teleportFrom,
         value,

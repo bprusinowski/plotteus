@@ -105,6 +105,7 @@ export const getBarGetters = (
 
       const datumGetters: Datum.Getter = {
         key,
+        type: "value",
         teleportKey: `${group.key}:${key}`,
         teleportFrom: datum.teleportFrom,
         value,
