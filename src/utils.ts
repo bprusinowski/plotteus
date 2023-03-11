@@ -10,16 +10,20 @@ export const max = (array: number[]): number | undefined => {
   return array.length === 0 ? undefined : Math.max(...array);
 };
 
+export const sum = (array: number[]): number => {
+  return array.reduce((acc, d) => acc + d, 0);
+};
+
 export const FONT_SIZE: Record<TextType, number> = {
   title: 24,
   subtitle: 14,
   legendTitle: 12,
   legendItem: 12,
-  verticalAxisTitle: 12,
+  axisTitle: 12,
+  axisTick: 11,
   groupLabel: 14,
   datumLabel: 11,
   datumValue: 11,
-  tick: 11,
 };
 
 export const FONT_WEIGHT: Record<TextType, number> = {
@@ -27,11 +31,11 @@ export const FONT_WEIGHT: Record<TextType, number> = {
   subtitle: 400,
   legendTitle: 700,
   legendItem: 400,
-  verticalAxisTitle: 400,
+  axisTitle: 400,
+  axisTick: 400,
   groupLabel: 400,
   datumLabel: 600,
   datumValue: 400,
-  tick: 400,
 };
 
 export const getTextDims = (svg: Svg): TextDims => {

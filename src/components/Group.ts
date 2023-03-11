@@ -1,13 +1,15 @@
 import { getBarGetters } from "../charts/bar";
 import { getBubbleGetters } from "../charts/bubble";
 import { getPieGetters } from "../charts/pie";
+import { getScatterGetters } from "../charts/scatter";
 import { getTreemapGetters } from "../charts/treemap";
 import { ColorMap } from "../colors";
 import { ResolvedDimensions } from "../dims";
 import {
   BarChartSubtype,
   ChartType,
-  InputGroup,
+  InputGroupValue,
+  InputGroupXY,
   MaxValue,
   TextDims,
 } from "../types";
@@ -30,9 +32,8 @@ type G = {
 
 export type Getter = Generic.Getter<G, { data: Datum.Getter[] }>;
 
-export type GetterProps = {
+type BaseGetterProps = {
   // Data.
-  groups: InputGroup[];
   groupsKeys: string[];
   dataKeys: string[];
   // Scales.
@@ -50,21 +51,46 @@ export type GetterProps = {
   cartoonize: boolean;
 };
 
-export const getters = (
-  chartType: ChartType,
-  chartSubtype: BarChartSubtype | undefined,
-  props: GetterProps
+export type GetterPropsValue = BaseGetterProps & {
+  groups: InputGroupValue[];
+};
+
+export type GetterPropsXY = BaseGetterProps & {
+  groups: InputGroupXY[];
+};
+
+export const valueGetters = (
+  props:
+    | {
+        chartType: "bar";
+        chartSubtype: BarChartSubtype;
+        props: GetterPropsValue;
+      }
+    | {
+        chartType: Exclude<ChartType, "bar" | "scatter">;
+        props: GetterPropsValue;
+      }
 ): Getter[] => {
-  switch (chartType) {
+  switch (props.chartType) {
     case "bar":
-      return getBarGetters(chartSubtype as BarChartSubtype, props);
+      return getBarGetters(props.chartSubtype, props.props);
     case "bubble":
-      return getBubbleGetters(props);
+      return getBubbleGetters(props.props);
     case "pie":
-      return getPieGetters(props);
+      return getPieGetters(props.props);
     case "treemap":
-      return getTreemapGetters(props);
+      return getTreemapGetters(props.props);
   }
+};
+
+export const xyGetters = ({
+  chartType,
+  props,
+}: {
+  chartType: "scatter";
+  props: GetterPropsXY;
+}): Getter[] => {
+  return getScatterGetters(props);
 };
 
 export type Int = Generic.Int<G, { data: Datum.Int[] }>;

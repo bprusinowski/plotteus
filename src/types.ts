@@ -24,9 +24,6 @@ type BaseInputStep = {
   /** Appearance. */
   palette?: PaletteName;
   cartoonize?: boolean;
-
-  /** Data. */
-  groups: InputGroup[];
 };
 
 export type InputStep = BaseInputStep &
@@ -38,44 +35,74 @@ export type InputStep = BaseInputStep &
           show?: boolean;
           title?: string;
         };
+        groups: InputGroupValue[];
       }
     | {
-        chartType: Exclude<ChartType, "bar">;
+        chartType: "scatter";
+        horizontalAxis?: {
+          show?: boolean;
+          title?: string;
+        };
+        verticalAxis?: {
+          show?: boolean;
+          title?: string;
+        };
+        groups: InputGroupXY[];
+      }
+    | {
+        chartType: Exclude<ChartType, "bar" | "scatter">;
+        groups: InputGroupValue[];
       }
   );
 
-export type InputGroup = {
+export type InputGroupValue = {
   key: string;
   opacity?: number;
-  data: InputDatum[];
+  data: InputDatumValue[];
 };
 
-export type InputDatum = {
+export type InputGroupXY = {
   key: string;
-  value: number;
+  opacity?: number;
+  data: InputDatumXY[];
+};
+
+type BaseInputDatum = {
+  key: string;
   // Used to teleport datum between groups. Formatted as "groupKey:datumKey".
   teleportFrom?: string;
   fill?: string;
   opacity?: number;
 };
 
+export type InputDatumValue = BaseInputDatum & {
+  value: number;
+};
+
+export type InputDatumXY = BaseInputDatum & {
+  x: number;
+  y: number;
+};
+
 export type Anchor = "start" | "middle" | "end";
 
 // Charts.
-export type ChartType = "bar" | "bubble" | "pie" | "treemap";
+export type ChartType = "bar" | "bubble" | "pie" | "scatter" | "treemap";
 
 export type BarChartSubtype = "grouped" | "stacked";
+
+export type AxisType = "vertical" | "horizontal";
 
 export type TextType =
   | "title"
   | "subtitle"
   | "legendTitle"
   | "legendItem"
-  | "verticalAxisTitle"
+  | "axisTitle"
+  | "axisTick"
   | "groupLabel"
   | "datumLabel"
-  | "datumValue"
-  | "tick";
+  | "datumValue";
 
 export type TextDims = {
   [type in TextType]: {

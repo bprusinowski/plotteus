@@ -28,7 +28,7 @@ export const getBarGetters = (
     textDims,
     colorMap,
     cartoonize,
-  }: Group.GetterProps
+  }: Group.GetterPropsValue
 ): Group.Getter[] => {
   const isGrouped = subtype === "grouped";
   const { x0Scale, x0bw, x1Scale, x1bw, yScale } = getScales({

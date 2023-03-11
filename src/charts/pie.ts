@@ -2,7 +2,7 @@ import { hierarchy, pack } from "d3-hierarchy";
 import { pie, PieArcDatum } from "d3-shape";
 import { Datum, Group } from "../components";
 import { BUBBLE, getPathData } from "../coords";
-import { InputDatum, InputGroup } from "../types";
+import { InputDatumValue, InputGroupValue } from "../types";
 import { FONT_SIZE, getTextColor, radiansToDegrees } from "../utils";
 import { HierarchyRoot } from "./types";
 import { getGroupLabelStrokeWidth, PADDING, STROKE_WIDTH } from "./utils";
@@ -17,7 +17,7 @@ export const getPieGetters = ({
   textDims,
   colorMap,
   cartoonize,
-}: Group.GetterProps): Group.Getter[] => {
+}: Group.GetterPropsValue): Group.Getter[] => {
   const root = getRoot({ groups, size: maxValue.k * size });
   const groupsGetters: Group.Getter[] = [];
   const maxValueShift = maxValue.kc * size * 0.5;
@@ -63,7 +63,7 @@ export const getPieGetters = ({
 
     const data = pie().value((d: any) => d.value)(
       group.children || ([] as any)
-    ) as unknown as PieArcDatum<{ data: InputDatum }>[];
+    ) as unknown as PieArcDatum<{ data: InputDatumValue }>[];
 
     data.map((datum, i) => {
       const { key, value, fill } = datum.data.data;
@@ -172,7 +172,7 @@ const getRoot = ({
   groups,
   size,
 }: {
-  groups: InputGroup[];
+  groups: InputGroupValue[];
   size: number;
 }): HierarchyRoot => {
   const root = hierarchy({

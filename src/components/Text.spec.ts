@@ -7,7 +7,7 @@ describe("Text", () => {
   const enterGetter = Text.getter({
     svg,
     text: "Hello, Plotteus!",
-    textType: "title",
+    type: "title",
     anchor: "middle",
     dims: dims.resolve(),
   });
@@ -91,7 +91,7 @@ describe("Text", () => {
   const updateGetter = Text.getter({
     svg,
     text: "Hello, Plotteus!",
-    textType: "datumLabel",
+    type: "datumLabel",
     anchor: "start",
     dims: dims.resolve(),
   });

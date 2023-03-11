@@ -44,6 +44,7 @@ export const shouldShareDomain = (type: ChartType): boolean => {
     case "pie":
       return true;
     case "bubble":
+    case "scatter":
     case "treemap":
       return false;
   }

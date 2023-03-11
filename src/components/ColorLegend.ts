@@ -1,6 +1,6 @@
 import { ColorMap } from "../colors";
-import { ResolvedDimensions } from "../dims";
-import { Anchor } from "../types";
+import { Dimensions, ResolvedDimensions } from "../dims";
+import { Anchor, ChartType } from "../types";
 import { FONT_SIZE, FONT_WEIGHT, max } from "../utils";
 import * as Generic from "./Generic";
 import { Svg, SVGSelection } from "./Svg";
@@ -239,8 +239,27 @@ export const render = ({
     );
 };
 
-// --- UTILS
+export const updateDims = ({
+  dims,
+  getters,
+  itemHeight,
+  chartType,
+}: {
+  dims: Dimensions;
+  getters: Getter[] | undefined;
+  itemHeight: number;
+  chartType: ChartType;
+}): void => {
+  if (getters) {
+    const rows = max(getters.map((d) => d.rowIndex)) ?? -1;
+    const height = (rows + 1) * itemHeight;
+    dims.addBottom(height).addBottom(dims.BASE_MARGIN);
+  }
 
-export const getHeight = (getters: Getter[], itemHeight: number): number => {
-  return ((max(getters.map((d) => d.rowIndex)) ?? -1) + 1) * itemHeight;
+  // Account for bar chart's bottom labels.
+  if (chartType === "bar") {
+    dims.addBottom(dims.BASE_MARGIN);
+  }
+
+  dims.addBottom(dims.BASE_MARGIN);
 };

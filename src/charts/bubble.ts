@@ -1,7 +1,7 @@
 import { hierarchy, pack } from "d3-hierarchy";
 import { Datum, Group } from "../components";
 import { BUBBLE, getPathData } from "../coords";
-import { InputGroup } from "../types";
+import { InputGroupValue } from "../types";
 import { FONT_SIZE, getTextColor } from "../utils";
 import { HierarchyRoot } from "./types";
 import {
@@ -21,7 +21,7 @@ export const getBubbleGetters = ({
   textDims,
   colorMap,
   cartoonize,
-}: Group.GetterProps): Group.Getter[] => {
+}: Group.GetterPropsValue): Group.Getter[] => {
   const root = getRoot({ groups, size: maxValue.k * size });
   const groupsGetters: Group.Getter[] = [];
   // If a custom maxValue was provided, we need to shift the bubbles to the center.
@@ -148,7 +148,7 @@ const getRoot = ({
   groups,
   size,
 }: {
-  groups: InputGroup[];
+  groups: InputGroupValue[];
   size: number;
 }): HierarchyRoot => {
   const root = hierarchy({

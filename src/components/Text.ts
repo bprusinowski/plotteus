@@ -1,5 +1,5 @@
 import { Selection } from "d3-selection";
-import { ResolvedDimensions } from "../dims";
+import { Dimensions, ResolvedDimensions } from "../dims";
 import { Anchor, TextType } from "../types";
 import { FONT_SIZE, FONT_WEIGHT } from "../utils";
 import * as Generic from "./Generic";
@@ -17,18 +17,18 @@ export type Getter = Generic.Getter<G>;
 
 export const getter = ({
   text,
-  textType,
+  type,
   anchor,
   svg,
   dims: { fullWidth, margin },
 }: {
   text: string;
-  textType: TextType;
+  type: TextType;
   anchor: Anchor;
   svg: Svg;
   dims: ResolvedDimensions;
 }): Getter => {
-  const { width: textWidth } = svg.measureText(text, textType);
+  const { width: textWidth } = svg.measureText(text, type);
 
   return {
     key: text,
@@ -49,8 +49,8 @@ export const getter = ({
       return {
         x: s(x, null, _g?.x),
         y: s(margin.top, null, _g?.y),
-        fontSize: FONT_SIZE[textType],
-        fontWeight: FONT_WEIGHT[textType],
+        fontSize: FONT_SIZE[type],
+        fontWeight: FONT_WEIGHT[type],
         opacity: s(0, 1),
       };
     },
@@ -87,4 +87,19 @@ export const render = ({
     .style("dominant-baseline", "hanging")
     .style("opacity", (d) => d.opacity)
     .text((d) => d.key);
+};
+
+export const updateDims = ({
+  dims,
+  svg,
+  textType,
+  text,
+}: {
+  dims: Dimensions;
+  svg: Svg;
+  textType: TextType;
+  text: string;
+}): void => {
+  const { height } = svg.measureText(text, textType);
+  dims.addTop(height);
 };

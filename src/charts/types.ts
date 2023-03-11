@@ -1,4 +1,4 @@
-import { InputDatum, InputGroup } from "../types";
+import { InputDatumValue, InputGroupValue } from "../types";
 
 type Root<T> = {
   r: number;
@@ -9,8 +9,8 @@ type Root<T> = {
 };
 
 export type HierarchyRoot = {
-  children?: (Root<InputGroup> & {
-    children?: Root<InputDatum>[];
+  children?: (Root<InputGroupValue> & {
+    children?: Root<InputDatumValue>[];
   })[];
 };
 
@@ -24,7 +24,7 @@ type TreemapRoot<T> = {
 };
 
 export type TreemapHierarchyRoot = {
-  children?: (TreemapRoot<InputGroup> & {
-    children?: TreemapRoot<InputDatum>[];
+  children?: (TreemapRoot<InputGroupValue> & {
+    children?: TreemapRoot<InputDatumValue>[];
   })[];
 };

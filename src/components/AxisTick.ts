@@ -2,17 +2,19 @@ import { scaleLinear } from "d3-scale";
 import { Selection } from "d3-selection";
 import { HALF_FONT_K } from "../charts/utils";
 import { ResolvedDimensions } from "../dims";
+import { AxisType } from "../types";
 import { FONT_SIZE, FONT_WEIGHT } from "../utils";
+import * as Axis from "./Axis";
 import * as Generic from "./Generic";
-import * as VerticalAxis from "./VerticalAxis";
 
-export const WIDTH = 12;
+export const SIZE = 5;
+export const LABEL_MARGIN = 3;
 
 type G = {
   x: number;
   y: number;
-  width: number;
-  height: number;
+  size: number;
+  tickLabelHeight: number;
   fontSize: number;
   opacity: number;
 };
@@ -20,42 +22,47 @@ type G = {
 export type Getter = Generic.Getter<G>;
 
 export const getters = ({
+  axisType,
   ticks,
   maxValue,
   _maxValue,
   dims: { width, height },
   tickHeight,
 }: {
+  axisType: AxisType;
   ticks: number[];
   maxValue: number;
   _maxValue: number | undefined;
   dims: ResolvedDimensions;
   tickHeight: number;
 }): Getter[] => {
-  const yScale = scaleLinear().domain([maxValue, 0]).range([0, height]);
-  let _yScale: (tick: number) => number = () => height;
+  const isVerticalAxis = axisType === "vertical";
+  const size = isVerticalAxis ? height : width;
+  let _scale: (tick: number) => number = () => (isVerticalAxis ? size : 0);
 
   if (_maxValue !== undefined) {
-    _yScale = scaleLinear().domain([_maxValue, 0]).range([0, height]);
+    const _scaleDomain = isVerticalAxis ? [_maxValue, 0] : [0, _maxValue];
+    _scale = scaleLinear().domain(_scaleDomain).range([0, size]);
   }
 
   return ticks.map((tick) => {
     const getters: Getter = {
       key: `${tick}`,
       g: ({ s }) => {
-        const x = -WIDTH;
+        const x = 0;
+        const _y = _scale(tick);
         const y = s(
-          _yScale(tick),
-          (1 - tick / maxValue) * height,
-          yScale(tick)
+          _y,
+          (isVerticalAxis ? 1 - tick / maxValue : tick / maxValue) * size,
+          _y
         );
 
         return {
-          x,
-          y,
-          width,
-          height: tickHeight,
-          fontSize: FONT_SIZE.tick,
+          x: isVerticalAxis ? x : y,
+          y: isVerticalAxis ? y : x,
+          size: isVerticalAxis ? width : height,
+          tickLabelHeight: tickHeight,
+          fontSize: FONT_SIZE.axisTick,
           opacity: s(0, 1),
         };
       },
@@ -76,15 +83,14 @@ export const resolve = Generic.resolve<G, Resolved, Int>();
 export const render = ({
   selection,
   resolved,
+  axisType,
 }: {
-  selection: Selection<
-    SVGGElement,
-    VerticalAxis.Resolved,
-    SVGSVGElement,
-    unknown
-  >;
+  selection: Selection<SVGGElement, Axis.Resolved, SVGSVGElement, unknown>;
   resolved: Resolved[];
+  axisType: AxisType;
 }): void => {
+  const isVerticalAxis = axisType === "vertical";
+
   selection
     .selectAll<SVGGElement, Resolved>(".tick")
     .data(resolved, (d) => d.key)
@@ -98,11 +104,19 @@ export const render = ({
         .data((d) => [d])
         .join("text")
         .attr("class", "label")
-        .attr("transform", `translate(-2, 0)`)
-        .attr("dy", (d) => -d.height * HALF_FONT_K)
-        .style("text-anchor", "end")
+        .attr(
+          "transform",
+          isVerticalAxis
+            ? `translate(-${SIZE + LABEL_MARGIN}, 0)`
+            : `translate(0, ${LABEL_MARGIN})`
+        )
+        .attr(
+          "dy",
+          (d) => (isVerticalAxis ? -1 : 1) * d.tickLabelHeight * HALF_FONT_K
+        )
+        .style("text-anchor", isVerticalAxis ? "end" : "middle")
         .style("font-size", (d) => d.fontSize)
-        .style("font-weight", FONT_WEIGHT.tick)
+        .style("font-weight", FONT_WEIGHT.axisTick)
         .style("dominant-baseline", "hanging")
         .text((d) => d.key)
     )
@@ -112,8 +126,8 @@ export const render = ({
         .data((d) => [d])
         .join("line")
         .attr("class", "bold-line")
-        .attr("x1", 2)
-        .attr("x2", 7)
+        .attr(isVerticalAxis ? "x1" : "y1", isVerticalAxis ? -SIZE : 0)
+        .attr(isVerticalAxis ? "x2" : "y2", isVerticalAxis ? 0 : SIZE)
         .style("stroke", "#696969")
     )
     .call((g) =>
@@ -122,8 +136,10 @@ export const render = ({
         .data((d) => [d])
         .join("line")
         .attr("class", "light-line")
-        .attr("x1", 7)
-        .attr("x2", (d) => d.width)
+        .attr(isVerticalAxis ? "x1" : "y1", 0)
+        .attr(isVerticalAxis ? "x2" : "y2", (d) =>
+          isVerticalAxis ? d.size : -d.size
+        )
         .style("stroke", "#ededed")
     );
 };
