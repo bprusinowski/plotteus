@@ -1,7 +1,7 @@
 import { scaleLinear } from "d3-scale";
 import { Text } from ".";
 import { Dimensions, Margin, ResolvedDimensions } from "../dims";
-import { AxisType } from "../types";
+import { AxisType, MaxValue, MaxXY } from "../types";
 import { max } from "../utils";
 import * as Tick from "./AxisTick";
 import * as Generic from "./Generic";
@@ -208,4 +208,21 @@ export const getWidth = ({
   });
 
   return max(ticksWidths) as number;
+};
+
+export const getMaxValue = ({
+  type,
+  maxValue,
+}: {
+  type: AxisType;
+  maxValue: MaxValue | MaxXY;
+}): number => {
+  switch (type) {
+    case "horizontal":
+      return maxValue.type === "value" ? 0 : maxValue.x.actual;
+    case "vertical":
+      return maxValue.type === "value"
+        ? maxValue.value.actual
+        : maxValue.y.actual;
+  }
 };

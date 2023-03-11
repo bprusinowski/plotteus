@@ -11,6 +11,7 @@ import {
   InputGroupValue,
   InputGroupXY,
   MaxValue,
+  MaxXY,
   TextDims,
 } from "../types";
 import { FONT_WEIGHT, stateOrderComparator } from "../utils";
@@ -38,7 +39,6 @@ type BaseGetterProps = {
   dataKeys: string[];
   // Scales.
   shareDomain: boolean;
-  maxValue: MaxValue;
   // Labels.
   showValues: boolean;
   showDatumLabels: boolean;
@@ -53,10 +53,12 @@ type BaseGetterProps = {
 
 export type GetterPropsValue = BaseGetterProps & {
   groups: InputGroupValue[];
+  maxValue: MaxValue;
 };
 
 export type GetterPropsXY = BaseGetterProps & {
   groups: InputGroupXY[];
+  maxValue: MaxXY;
 };
 
 export const valueGetters = (

@@ -1,20 +1,20 @@
 import { scaleLinear, ScaleLinear } from "d3-scale";
 import { Datum, Group } from "../components";
 import { BAR, getPathData } from "../coords";
-import { MaxValue } from "../types";
+import { Max } from "../types";
 import { FONT_SIZE, getTextColor } from "../utils";
 import { getGroupLabelStrokeWidth, getRotate, STROKE_WIDTH } from "./utils";
 
 export const getScatterGetters = ({
   groups,
-  maxValue,
+  maxValue: { x: xMaxValue, y: yMaxValue },
   shareDomain,
   cartoonize,
   colorMap,
   showDatumLabels,
   dims: { width, height, margin, BASE_MARGIN },
 }: Group.GetterPropsXY) => {
-  const { xScale, yScale } = getScales({ maxValue, width, height });
+  const { xScale, yScale } = getScales({ xMaxValue, yMaxValue, width, height });
   const groupsGetters: Group.Getter[] = [];
 
   for (const group of groups) {
@@ -119,19 +119,21 @@ export const getScatterGetters = ({
 };
 
 const getScales = ({
-  maxValue,
+  xMaxValue,
+  yMaxValue,
   width,
   height,
 }: {
-  maxValue: MaxValue;
+  xMaxValue: Max;
+  yMaxValue: Max;
   width: number;
   height: number;
 }): {
   xScale: ScaleLinear<number, number>;
   yScale: ScaleLinear<number, number>;
 } => {
-  const xScale = scaleLinear().domain([0, maxValue.actual]).range([0, width]);
-  const yScale = scaleLinear().domain([0, maxValue.actual]).range([height, 0]);
+  const xScale = scaleLinear().domain([0, xMaxValue.actual]).range([0, width]);
+  const yScale = scaleLinear().domain([0, yMaxValue.actual]).range([height, 0]);
 
   return {
     xScale,

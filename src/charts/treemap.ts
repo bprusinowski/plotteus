@@ -16,7 +16,7 @@ const PADDING = 2;
 export const getTreemapGetters = ({
   groups,
   shareDomain,
-  maxValue,
+  maxValue: { value: maxValue },
   showValues,
   showDatumLabels,
   svg,

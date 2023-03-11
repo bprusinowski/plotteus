@@ -10,7 +10,7 @@ import { getGroupLabelStrokeWidth, PADDING, STROKE_WIDTH } from "./utils";
 export const getPieGetters = ({
   groups,
   shareDomain,
-  maxValue,
+  maxValue: { value: maxValue },
   showValues,
   showDatumLabels,
   dims: { width, height, size, margin },

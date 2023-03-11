@@ -14,7 +14,7 @@ import {
 export const getBubbleGetters = ({
   groups,
   shareDomain,
-  maxValue,
+  maxValue: { value: maxValue },
   showValues,
   showDatumLabels,
   dims: { width, height, size, margin },

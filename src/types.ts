@@ -18,7 +18,6 @@ type BaseInputStep = {
 
   /** Values & data labels. */
   showValues?: boolean;
-  maxValue?: number;
   showDatumLabels?: boolean;
 
   /** Appearance. */
@@ -31,6 +30,9 @@ export type InputStep = BaseInputStep &
     | {
         chartType: "bar";
         chartSubtype?: BarChartSubtype;
+        valueScale?: {
+          maxValue?: number;
+        };
         verticalAxis?: {
           show?: boolean;
           title?: string;
@@ -39,6 +41,12 @@ export type InputStep = BaseInputStep &
       }
     | {
         chartType: "scatter";
+        xScale?: {
+          maxValue?: number;
+        };
+        yScale?: {
+          maxValue?: number;
+        };
         horizontalAxis?: {
           show?: boolean;
           title?: string;
@@ -51,6 +59,9 @@ export type InputStep = BaseInputStep &
       }
     | {
         chartType: Exclude<ChartType, "bar" | "scatter">;
+        valueScale?: {
+          maxValue?: number;
+        };
         groups: InputGroupValue[];
       }
   );
@@ -111,7 +122,18 @@ export type TextDims = {
   };
 };
 
-export type MaxValue = {
+export type DataMaxValue = {
+  type: "value";
+  value: number;
+};
+
+export type DataMaxXY = {
+  type: "xy";
+  x: number;
+  y: number;
+};
+
+export type Max = {
   data: number;
   scale: number | undefined;
   actual: number;
@@ -119,6 +141,17 @@ export type MaxValue = {
   k: number;
   // complement of k, 1 - k
   kc: number;
+};
+
+export type MaxValue = {
+  type: "value";
+  value: Max;
+};
+
+export type MaxXY = {
+  type: "xy";
+  x: Max;
+  y: Max;
 };
 
 /**

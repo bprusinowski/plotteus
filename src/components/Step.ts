@@ -1,7 +1,7 @@
 import { Axis, AxisTick, ColorLegend, Group, Svg, Text, Tooltip } from ".";
 import { ColorMap } from "../colors";
 import { Dimensions } from "../dims";
-import { BarChartSubtype, InputStep, MaxValue } from "../types";
+import { BarChartSubtype, InputStep, MaxValue, MaxXY } from "../types";
 import { getTextDims, max, stateOrderComparator, sum, unique } from "../utils";
 import { shouldShareDomain } from "./utils";
 
@@ -47,7 +47,6 @@ export const getters = ({
       legendTitle = "",
       legendAnchor = "middle",
       showValues = false,
-      maxValue: inputMaxValue,
       showDatumLabels = false,
       palette: paletteName = "default",
       cartoonize = false,
@@ -63,38 +62,68 @@ export const getters = ({
     const groupsKeys = groups.map((d) => d.key);
     const dataKeys = unique(groups.flatMap((d) => d.data.map((d) => d.key)));
 
-    let maxDataValue = 0;
+    let maxValue: MaxValue | MaxXY;
+    switch (chartType) {
+      case "scatter":
+        const xValues = groups.flatMap((d) => d.data.map((d) => d.x));
+        const yValues = groups.flatMap((d) => d.data.map((d) => d.y));
 
-    if (chartType === "bar" && chartSubtype === "stacked") {
-      // Sum values by group for stacked bar chart.
-      groups.forEach((d) => {
-        const groupSum = sum(d.data.map((d) => d.value));
+        const xMax = max(xValues) ?? 0;
+        const yMax = max(yValues) ?? 0;
 
-        if (groupSum > maxDataValue) {
-          maxDataValue = groupSum;
+        const inputXMaxValue = step.xScale?.maxValue;
+        const inputYMaxValue = step.yScale?.maxValue;
+        const kx = inputXMaxValue ? xMax / inputXMaxValue : 1;
+        const ky = inputYMaxValue ? yMax / inputYMaxValue : 1;
+        maxValue = {
+          type: "xy",
+          x: {
+            data: xMax,
+            scale: inputXMaxValue,
+            actual: inputXMaxValue ?? xMax,
+            k: kx,
+            kc: 1 - kx,
+          },
+          y: {
+            data: yMax,
+            scale: inputYMaxValue,
+            actual: inputYMaxValue ?? yMax,
+            k: ky,
+            kc: 1 - ky,
+          },
+        };
+        break;
+      default:
+        let valueMax = 0;
+
+        if (chartType === "bar" && chartSubtype === "stacked") {
+          // Sum values by group for stacked bar chart.
+          groups.forEach((d) => {
+            const groupSum = sum(d.data.map((d) => d.value));
+
+            if (groupSum > valueMax) {
+              valueMax = groupSum;
+            }
+          });
+        } else {
+          valueMax =
+            max(groups.flatMap((d) => d.data.map((d) => d.value))) ?? 0;
         }
-      });
-    } else if (chartType !== "scatter") {
-      maxDataValue =
-        max(groups.flatMap((d) => d.data.map((d) => d.value))) ?? 0;
-    } else {
-      const xValues = groups.flatMap((d) => d.data.map((d) => d.x));
-      const yValues = groups.flatMap((d) => d.data.map((d) => d.y));
 
-      const xMax = max(xValues) ?? 0;
-      const yMax = max(yValues) ?? 0;
-
-      maxDataValue = Math.max(xMax, yMax);
+        const inputValueMaxValue = step.valueScale?.maxValue;
+        const k = inputValueMaxValue ? valueMax / inputValueMaxValue : 1;
+        maxValue = {
+          type: "value",
+          value: {
+            data: valueMax,
+            scale: inputValueMaxValue,
+            actual: inputValueMaxValue ?? valueMax,
+            k,
+            kc: 1 - k,
+          },
+        };
+        break;
     }
-
-    const k = inputMaxValue ? maxDataValue / inputMaxValue : 1;
-    const maxValue: MaxValue = {
-      data: maxDataValue,
-      scale: inputMaxValue,
-      actual: inputMaxValue ?? maxDataValue,
-      k,
-      kc: 1 - k,
-    };
 
     const shareDomain = inputShareDomain ?? shouldShareDomain(chartType);
     const domain = shareDomain ? dataKeys : groupsKeys;
@@ -174,7 +203,7 @@ export const getters = ({
           dims,
           svg,
           titleHeight: title ? titleHeight : 0,
-          maxValue: maxValue.actual,
+          maxValue: Axis.getMaxValue({ type: "vertical", maxValue }),
           tickHeight: textDims.axisTick.height,
         });
       }
@@ -185,13 +214,20 @@ export const getters = ({
       const { show = true, title = "" } = step.horizontalAxis || {};
 
       if (show) {
+        const horizontalMaxValue = Axis.getMaxValue({
+          type: "horizontal",
+          maxValue,
+        });
         const titleHeight = textDims.axisTitle.height;
-        const width = Axis.getWidth({ svg, maxValue: maxValue.actual });
+        const width = Axis.getWidth({
+          svg,
+          maxValue: horizontalMaxValue,
+        });
         Axis.updateDims({
           type: "horizontal",
           dims,
           svg,
-          maxValue: maxValue.actual,
+          maxValue: horizontalMaxValue,
           titleHeight: title ? titleHeight : 0,
           tickHeight: textDims.axisTick.height,
         });
@@ -216,7 +252,7 @@ export const getters = ({
           svg,
           dims: resolvedDims,
           tickHeight: textDims.axisTick.height,
-          maxValue: maxValue.actual,
+          maxValue: horizontalMaxValue,
           _maxValue: _showHorizontalAxis ? _maxHorizontalAxisValue : undefined,
         });
       }
@@ -238,7 +274,14 @@ export const getters = ({
       } = step.verticalAxis || {};
 
       if (show) {
-        const width = Axis.getWidth({ svg, maxValue: maxValue.actual });
+        const verticalMaxValue = Axis.getMaxValue({
+          type: "vertical",
+          maxValue,
+        });
+        const width = Axis.getWidth({
+          svg,
+          maxValue: verticalMaxValue,
+        });
         const titleHeight = textDims.axisTitle.height;
 
         verticalAxisGetters = Axis.getters({
@@ -266,7 +309,7 @@ export const getters = ({
           svg,
           dims: dims.resolve(),
           tickHeight: textDims.axisTick.height,
-          maxValue: maxValue.actual,
+          maxValue: verticalMaxValue,
           _maxValue: _showVerticalAxis ? _maxVerticalAxisValue : undefined,
         });
       }
@@ -280,7 +323,6 @@ export const getters = ({
       groupsKeys,
       dataKeys,
       shareDomain,
-      maxValue,
       showValues,
       showDatumLabels,
       svg,
@@ -294,10 +336,11 @@ export const getters = ({
       case "bar":
         groupsGetters = Group.valueGetters({
           chartType,
-          chartSubtype: chartSubtype!,
+          chartSubtype: chartSubtype as BarChartSubtype,
           props: {
             ...commonGroupGetterProps,
             groups,
+            maxValue: maxValue as MaxValue,
           },
         });
         break;
@@ -307,6 +350,7 @@ export const getters = ({
           props: {
             ...commonGroupGetterProps,
             groups,
+            maxValue: maxValue as MaxXY,
           },
         });
         break;
@@ -316,6 +360,7 @@ export const getters = ({
           props: {
             ...commonGroupGetterProps,
             groups,
+            maxValue: maxValue as MaxValue,
           },
         });
     }
@@ -330,9 +375,14 @@ export const getters = ({
       groups: groupsGetters,
     });
 
-    // FIXME
-    _maxHorizontalAxisValue = 1;
-    _maxVerticalAxisValue = maxValue.actual;
+    _maxHorizontalAxisValue = Axis.getMaxValue({
+      type: "horizontal",
+      maxValue,
+    });
+    _maxVerticalAxisValue = Axis.getMaxValue({
+      type: "vertical",
+      maxValue,
+    });
   }
 
   return steps;
