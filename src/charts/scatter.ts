@@ -27,7 +27,7 @@ export const getScatterGetters = ({
         const y = margin.top + height * 0.5;
         const labelX = 0;
         const labelY = BASE_MARGIN;
-        const labelFontSize = s(0, shareDomain ? FONT_SIZE.groupLabel : 0);
+        const labelFontSize = 0;
         const labelStrokeWidth = getGroupLabelStrokeWidth(labelFontSize);
         const opacity = group.opacity ?? 1;
 
