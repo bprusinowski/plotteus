@@ -421,9 +421,27 @@ To _teleport_ a `Datum` from a given **exiting** `Group`, you can add a `telepor
 ```ts
 // Step 1, bar chart.
 const barChartGroups = [
-  { key: "A", data: [{ key: "value", value: 1 }] },
-  { key: "B", data: [{ key: "value", value: 2 }] },
-  { key: "C", data: [{ key: "value", value: 3 }] },
+  {
+    key: "A",
+    data: [
+      { key: "1996", value: 1 },
+      { key: "1997", value: 1.2 },
+    ],
+  },
+  {
+    key: "B",
+    data: [
+      { key: "1996", value: 2 },
+      { key: "1997", value: 2.4 },
+    ],
+  },
+  {
+    key: "C",
+    data: [
+      { key: "1996", value: 3 },
+      { key: "1997", value: 3.6 },
+    ],
+  },
 ];
 
 // Step 2, pie chart.
@@ -431,9 +449,9 @@ const pieChartGroups = [
   {
     key: "pieGroup",
     data: [
-      { key: "A", value: 1, teleportFrom: "A:value" },
-      { key: "B", value: 2, teleportFrom: "A:value" },
-      { key: "C", value: 3, teleportFrom: "A:value" },
+      { key: "A", value: 1, teleportFrom: "A:1996" },
+      { key: "B", value: 2, teleportFrom: "B:1996" },
+      { key: "C", value: 3, teleportFrom: "C:1996" },
     ],
   },
 ];

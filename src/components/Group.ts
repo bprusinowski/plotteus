@@ -113,10 +113,21 @@ export const ints = ({
         data: [],
       };
 
+      const getPreviousDatumInt: Generic.IntsProps<
+        Datum.G,
+        Datum.Getter,
+        Datum.Int
+      >["getPreviousInt"] = ({ getter }) => {
+        return _ints
+          ?.flatMap((d) => d.data)
+          .find((d) => d.teleportKey === getter.teleportFrom);
+      };
+
       newInt.data = Datum.ints({
         getters: exiting ? [] : getter.data,
         _getters: _data,
         _ints: _updateInt?.data,
+        getPreviousInt: getPreviousDatumInt,
         getModifyPreviousG: ({ getter }) => {
           let _teleportInt: Datum.Int | undefined;
           const _groupTeleportInt = _ints?.find((d) => {

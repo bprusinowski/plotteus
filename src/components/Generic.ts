@@ -38,6 +38,7 @@ export type IntsProps<G, TGetter extends Getter<G>, TInt extends Int<G>> = {
     _updateInt: TInt | undefined;
     int: Int<G>;
   }) => TInt;
+  getPreviousInt?: (props: { getter: TGetter }) => TInt | undefined;
   /**
    * Use when you need to modify the output of previous g
    * (e.g. during datum teleportation).
@@ -59,6 +60,7 @@ export const ints =
     _getters,
     _ints,
     modifyInt = ({ int }) => int as TInt,
+    getPreviousInt,
     getModifyPreviousG,
   }: IntsProps<G, TGetter, TInt>): TInt[] => {
     const keys = getters.map((d) => d.key);
@@ -66,7 +68,9 @@ export const ints =
     const allGetters = getters.concat(exitingGetters);
     const ints: TInt[] = allGetters.map((getter) => {
       const exiting = !keys.includes(getter.key);
-      const _int = _ints?.find((d) => d.key === getter.key);
+      const _int =
+        getPreviousInt?.({ getter }) ??
+        _ints?.find((d) => d.key === getter.key);
       const { state, i, _updateInt } = getInts({
         _int,
         exiting,
