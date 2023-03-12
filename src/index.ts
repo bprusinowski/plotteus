@@ -35,7 +35,7 @@ const makeStory = (
   // Previous progress.
   let _t = 0;
 
-  let intsMap: Step.IntsMap;
+  let intsMap: Step.IntsMap | undefined;
 
   new ResizeObserver(() => {
     const { width, height } = svg.measure();
@@ -67,7 +67,7 @@ const makeStory = (
     _key = stepKey;
     _t = t;
 
-    if (stepKey !== null && stepKey !== undefined) {
+    if (intsMap && stepKey !== null && stepKey !== undefined) {
       const ints = intsMap.get(stepKey);
 
       if (ints) {
