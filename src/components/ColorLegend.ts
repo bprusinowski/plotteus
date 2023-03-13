@@ -232,7 +232,7 @@ export const render = ({
         .attr("class", "label")
         .attr("x", (d) => d.labelX)
         .attr("y", (d) => d.labelY)
-        .style("font-size", (d) => d.labelFontSize)
+        .style("font-size", (d) => `${d.labelFontSize}px`)
         .style("font-weight", (d) => d.labelFontWeight)
         .style("dominant-baseline", "hanging")
         .text((d) => d.key)

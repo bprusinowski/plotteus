@@ -33,7 +33,7 @@ export const makeSvg = (div: HTMLDivElement): Svg => {
   const measureText = (text: string | number, textType: TextType): DOMRect => {
     const node = selection
       .append("text")
-      .style("font-size", FONT_SIZE[textType])
+      .style("font-size", `${FONT_SIZE[textType]}px`)
       .style("font-weight", FONT_WEIGHT[textType])
       .text(text)
       .node() as SVGTextElement;

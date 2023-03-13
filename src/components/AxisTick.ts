@@ -116,7 +116,7 @@ export const render = ({
           (d) => (isVerticalAxis ? -1 : 1) * d.tickLabelHeight * HALF_FONT_K
         )
         .style("text-anchor", isVerticalAxis ? "end" : "middle")
-        .style("font-size", (d) => d.fontSize)
+        .style("font-size", (d) => `${d.fontSize}px`)
         .style("font-weight", FONT_WEIGHT.axisTick)
         .style("dominant-baseline", "hanging")
         .text((d) => d.key)

@@ -82,7 +82,7 @@ export const render = ({
     .join("text")
     .attr("class", className)
     .attr("transform", (d) => `translate(${d.x}, ${d.y})`)
-    .style("font-size", (d) => d.fontSize)
+    .style("font-size", (d) => `${d.fontSize}px`)
     .style("font-weight", (d) => d.fontWeight)
     .style("dominant-baseline", "hanging")
     .style("opacity", (d) => d.opacity)

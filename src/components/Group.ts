@@ -281,7 +281,7 @@ export const render = ({
     .style("stroke-width", (d) => d.labelStrokeWidth)
     .style("stroke-linecap", "round")
     .style("stroke-linejoin", "round")
-    .style("font-size", (d) => d.labelFontSize)
+    .style("font-size", (d) => `${d.labelFontSize}px`)
     .style("font-weight", FONT_WEIGHT.groupLabel)
     .style("text-anchor", "middle")
     .style("dominant-baseline", "hanging")
