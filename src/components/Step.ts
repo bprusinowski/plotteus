@@ -198,6 +198,7 @@ export const getters = ({
 
       if (show) {
         const titleHeight = textDims.axisTitle.height;
+        const ticksCount = Axis.getTicksCount(dims.resolve().height);
         Axis.updateDims({
           type: "vertical",
           dims,
@@ -205,6 +206,7 @@ export const getters = ({
           titleHeight: title ? titleHeight : 0,
           maxValue: Axis.getMaxValue({ type: "vertical", maxValue }),
           tickHeight: textDims.axisTick.height,
+          ticksCount,
         });
       }
     }
@@ -219,9 +221,11 @@ export const getters = ({
           maxValue,
         });
         const titleHeight = textDims.axisTitle.height;
+        const ticksCount = Axis.getTicksCount(dims.resolve().width);
         const width = Axis.getWidth({
           svg,
           maxValue: horizontalMaxValue,
+          ticksCount,
         });
         Axis.updateDims({
           type: "horizontal",
@@ -230,6 +234,7 @@ export const getters = ({
           maxValue: horizontalMaxValue,
           titleHeight: title ? titleHeight : 0,
           tickHeight: textDims.axisTick.height,
+          ticksCount,
         });
         const resolvedDims = dims.resolve();
 
@@ -252,6 +257,7 @@ export const getters = ({
           svg,
           dims: resolvedDims,
           tickHeight: textDims.axisTick.height,
+          ticksCount,
           maxValue: horizontalMaxValue,
           _maxValue: _showHorizontalAxis ? _maxHorizontalAxisValue : undefined,
         });
@@ -278,9 +284,11 @@ export const getters = ({
           type: "vertical",
           maxValue,
         });
+        const ticksCount = Axis.getTicksCount(dims.resolve().height);
         const width = Axis.getWidth({
           svg,
           maxValue: verticalMaxValue,
+          ticksCount,
         });
         const titleHeight = textDims.axisTitle.height;
 
@@ -311,6 +319,7 @@ export const getters = ({
           tickHeight: textDims.axisTick.height,
           maxValue: verticalMaxValue,
           _maxValue: _showVerticalAxis ? _maxVerticalAxisValue : undefined,
+          ticksCount,
         });
       }
 
