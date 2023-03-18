@@ -1,7 +1,7 @@
 import { ScaleBand, scaleBand, ScaleLinear, scaleLinear } from "d3-scale";
 import { Datum, Group } from "../components";
 import { BAR, getPathData } from "../coords";
-import { BarChartSubtype, Max } from "../types";
+import { BaseMax, ChartSubtype } from "../types";
 import { FONT_SIZE, getTextColor } from "../utils";
 import {
   getGroupLabelStrokeWidth,
@@ -14,7 +14,7 @@ const PADDING_X0 = 0.1;
 const PADDING_X1 = 0.05;
 
 export const getBarGetters = (
-  subtype: BarChartSubtype,
+  subtype: ChartSubtype,
   {
     groups,
     groupsKeys,
@@ -189,7 +189,7 @@ const getScales = ({
   isGrouped: boolean;
   groupsKeys: string[];
   dataKeys: string[];
-  maxValue: Max;
+  maxValue: BaseMax;
   width: number;
   height: number;
 }): {

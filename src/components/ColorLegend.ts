@@ -246,20 +246,11 @@ export const updateDims = ({
   chartType,
 }: {
   dims: Dimensions;
-  getters: Getter[] | undefined;
+  getters: Getter[];
   itemHeight: number;
   chartType: ChartType;
 }): void => {
-  if (getters) {
-    const rows = max(getters.map((d) => d.rowIndex)) ?? -1;
-    const height = (rows + 1) * itemHeight;
-    dims.addBottom(height).addBottom(dims.BASE_MARGIN);
-  }
-
-  // Account for bar chart's bottom labels.
-  if (chartType === "bar") {
-    dims.addBottom(dims.BASE_MARGIN);
-  }
-
-  dims.addBottom(dims.BASE_MARGIN);
+  const rows = max(getters.map((d) => d.rowIndex)) ?? -1;
+  const height = (rows + 1) * itemHeight;
+  dims.addBottom(height).addBottom(dims.BASE_MARGIN);
 };
