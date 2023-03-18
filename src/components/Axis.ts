@@ -25,6 +25,7 @@ export const getters = ({
   svg,
   dims,
   tickHeight,
+  ticksCount,
   maxValue,
   _maxValue,
 }: {
@@ -34,10 +35,11 @@ export const getters = ({
   svg: Svg;
   dims: ResolvedDimensions;
   tickHeight: number;
+  ticksCount: number;
   maxValue: number;
   _maxValue: number | undefined;
 }): Getter => {
-  const ticks = scaleLinear().domain([0, maxValue]).ticks(5);
+  const ticks = scaleLinear().domain([0, maxValue]).ticks(ticksCount);
 
   return {
     key: `${type}-axis`,
@@ -172,6 +174,7 @@ export const updateDims = ({
   maxValue,
   titleHeight,
   tickHeight,
+  ticksCount,
 }: {
   type: AxisType;
   dims: Dimensions;
@@ -179,8 +182,9 @@ export const updateDims = ({
   maxValue: number;
   titleHeight: number;
   tickHeight: number;
+  ticksCount: number;
 }): void => {
-  const width = getWidth({ svg, maxValue });
+  const width = getWidth({ svg, maxValue, ticksCount });
 
   switch (type) {
     case "horizontal":
@@ -195,14 +199,20 @@ export const updateDims = ({
   }
 };
 
+export const getTicksCount = (size: number): number => {
+  return Math.max(2, Math.min(5, Math.floor(size / 50)));
+};
+
 export const getWidth = ({
   svg,
+  ticksCount,
   maxValue,
 }: {
   svg: Svg;
+  ticksCount: number;
   maxValue: number;
 }): number => {
-  const ticks = scaleLinear().domain([0, maxValue]).nice().ticks(5);
+  const ticks = scaleLinear().domain([0, maxValue]).nice().ticks(ticksCount);
   const ticksWidths = ticks.map((d) => {
     return svg.measureText(d, "axisTick").width;
   });
