@@ -25,46 +25,41 @@ type BaseInputStep = {
   cartoonize?: boolean;
 };
 
-export type InputStep = BaseInputStep &
-  (
-    | {
-        chartType: "bar";
-        chartSubtype?: BarChartSubtype;
-        valueScale?: {
-          maxValue?: number;
-        };
-        verticalAxis?: {
-          show?: boolean;
-          title?: string;
-        };
-        groups: InputGroupValue[];
-      }
-    | {
-        chartType: "scatter";
-        xScale?: {
-          maxValue?: number;
-        };
-        yScale?: {
-          maxValue?: number;
-        };
-        horizontalAxis?: {
-          show?: boolean;
-          title?: string;
-        };
-        verticalAxis?: {
-          show?: boolean;
-          title?: string;
-        };
-        groups: InputGroupXY[];
-      }
-    | {
-        chartType: Exclude<ChartType, "bar" | "scatter">;
-        valueScale?: {
-          maxValue?: number;
-        };
-        groups: InputGroupValue[];
-      }
-  );
+export type BarInputStep = BaseInputStep & {
+  chartType: "bar";
+  chartSubtype?: ChartSubtype;
+  valueScale?: InputScale;
+  verticalAxis?: InputAxis;
+  groups: InputGroupValue[];
+};
+
+export type ScatterInputStep = BaseInputStep & {
+  chartType: "scatter";
+  xScale?: InputScale;
+  yScale?: InputScale;
+  horizontalAxis?: InputAxis;
+  verticalAxis?: InputAxis;
+  groups: InputGroupXY[];
+};
+
+export type DefaultInputStep = BaseInputStep & {
+  chartType: Exclude<ChartType, "bar" | "scatter">;
+  valueScale?: InputScale;
+  groups: InputGroupValue[];
+};
+
+export type InputStep = BarInputStep | ScatterInputStep | DefaultInputStep;
+
+export type InputScale = {
+  maxValue?: number;
+};
+
+export type InputAxis = {
+  show?: boolean;
+  title?: string;
+};
+
+export type InputGroupType = "value" | "xy";
 
 export type InputGroupValue = {
   key: string;
@@ -100,7 +95,7 @@ export type Anchor = "start" | "middle" | "end";
 // Charts.
 export type ChartType = "bar" | "bubble" | "pie" | "scatter" | "treemap";
 
-export type BarChartSubtype = "grouped" | "stacked";
+export type ChartSubtype = "grouped" | "stacked";
 
 export type AxisType = "vertical" | "horizontal";
 
@@ -133,7 +128,7 @@ export type DataMaxXY = {
   y: number;
 };
 
-export type Max = {
+export type BaseMax = {
   data: number;
   scale: number | undefined;
   actual: number;
@@ -145,14 +140,16 @@ export type Max = {
 
 export type MaxValue = {
   type: "value";
-  value: Max;
+  value: BaseMax;
 };
 
 export type MaxXY = {
   type: "xy";
-  x: Max;
-  y: Max;
+  x: BaseMax;
+  y: BaseMax;
 };
+
+export type Max = MaxValue | MaxXY;
 
 /**
  * Provides access to a stateful function and previous G.

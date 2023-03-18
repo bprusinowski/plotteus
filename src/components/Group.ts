@@ -6,7 +6,7 @@ import { getTreemapGetters } from "../charts/treemap";
 import { ColorMap } from "../colors";
 import { ResolvedDimensions } from "../dims";
 import {
-  BarChartSubtype,
+  ChartSubtype,
   ChartType,
   InputGroupValue,
   InputGroupXY,
@@ -61,21 +61,16 @@ export type GetterPropsXY = BaseGetterProps & {
   maxValue: MaxXY;
 };
 
-export const valueGetters = (
-  props:
-    | {
-        chartType: "bar";
-        chartSubtype: BarChartSubtype;
-        props: GetterPropsValue;
-      }
-    | {
-        chartType: Exclude<ChartType, "bar" | "scatter">;
-        props: GetterPropsValue;
-      }
-): Getter[] => {
+type ValueGettersProps = {
+  chartType: Exclude<ChartType, "scatter">;
+  chartSubtype: ChartSubtype | undefined;
+  props: GetterPropsValue;
+};
+
+export const valueGetters = (props: ValueGettersProps): Getter[] => {
   switch (props.chartType) {
     case "bar":
-      return getBarGetters(props.chartSubtype, props.props);
+      return getBarGetters(props.chartSubtype ?? "grouped", props.props);
     case "bubble":
       return getBubbleGetters(props.props);
     case "pie":

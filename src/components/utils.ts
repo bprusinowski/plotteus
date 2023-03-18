@@ -1,5 +1,5 @@
 import { interpolate } from "d3-interpolate";
-import { ChartType, Interpolator, State, Stateful } from "../types";
+import { Interpolator, State, Stateful } from "../types";
 
 export const getInts = <
   G extends object,
@@ -36,16 +36,4 @@ export const getInts = <
   const i = interpolate(from, to);
 
   return { state, i, _updateInt };
-};
-
-export const shouldShareDomain = (type: ChartType): boolean => {
-  switch (type) {
-    case "bar":
-    case "pie":
-      return true;
-    case "bubble":
-    case "scatter":
-    case "treemap":
-      return false;
-  }
 };

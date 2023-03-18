@@ -1,7 +1,7 @@
 import { scaleLinear, ScaleLinear } from "d3-scale";
 import { Datum, Group } from "../components";
 import { BAR, getPathData } from "../coords";
-import { Max } from "../types";
+import { BaseMax } from "../types";
 import { FONT_SIZE, getTextColor } from "../utils";
 import { getGroupLabelStrokeWidth, getRotate, STROKE_WIDTH } from "./utils";
 
@@ -124,8 +124,8 @@ const getScales = ({
   width,
   height,
 }: {
-  xMaxValue: Max;
-  yMaxValue: Max;
+  xMaxValue: BaseMax;
+  yMaxValue: BaseMax;
   width: number;
   height: number;
 }): {
