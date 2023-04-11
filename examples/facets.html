@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Plotteus</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;500&display=swap"
+    />
+    <style>
+      body {
+        margin: 0px;
+        padding: 0px;
+        font-family: "Open Sans", sans-serif;
+      }
+
+      #main {
+        display: grid;
+        grid-template-columns: 0fr 1fr;
+        gap: 0px;
+        margin: 0 auto;
+        max-width: 1300px;
+      }
+
+      #scrollable {
+        margin-bottom: 100vh;
+      }
+
+      .scroll {
+        margin-top: 15vh;
+        min-height: 40vh;
+        margin-bottom: 15vh;
+      }
+
+      #chart-container {
+        position: sticky;
+        top: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 24px;
+        width: 100%;
+        max-width: 700px;
+        height: 100vh;
+        margin: 0 auto;
+      }
+
+      .chart {
+        width: 100%;
+        height: 60%;
+        max-height: 400px;
+        max-width: 690px;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="main">
+      <div id="scrollable">
+        <div class="scroll" data-step="zero"></div>
+        <div class="scroll" data-step="one"></div>
+      </div>
+      <div id="chart-container">
+        <div id="chart-A" class="chart"></div>
+        <div id="chart-B" class="chart"></div>
+        <div id="chart-C" class="chart"></div>
+      </div>
+    </div>
+
+    <script type="module">
+      import { makeStory } from "https://cdn.jsdelivr.net/npm/plotteus";
+
+      const groupsA = [
+        {
+          key: "Alice",
+          data: [{ key: "A", value: 0.4 }],
+        },
+        {
+          key: "Bob",
+          data: [{ key: "A", value: 3 }],
+        },
+        {
+          key: "Cecile",
+          data: [{ key: "A", value: 2.5 }],
+        },
+      ];
+      const groupsB = [
+        {
+          key: "Alice",
+          data: [{ key: "B", value: 6 }],
+        },
+        {
+          key: "Bob",
+          data: [{ key: "B", value: 3.5 }],
+        },
+        {
+          key: "Cecile",
+          data: [{ key: "B", value: 2 }],
+        },
+      ];
+      const groupsC = [
+        {
+          key: "Alice",
+          data: [{ key: "C", value: 2.5 }],
+        },
+        {
+          key: "Bob",
+          data: [{ key: "C", value: 3 }],
+        },
+        {
+          key: "Cecile",
+          data: [{ key: "C", value: 1.5 }],
+        },
+      ];
+      const commonStep = {
+        chartType: "bar",
+        titleAnchor: "middle",
+        palette: "vivid",
+        showValues: true,
+        valueScale: {
+          maxValue: Math.max(
+            ...groupsA.map((g) => g.data[0].value),
+            ...groupsB.map((g) => g.data[0].value),
+            ...groupsC.map((g) => g.data[0].value)
+          ),
+        },
+        verticalAxis: {
+          show: false,
+        },
+      };
+      const stepsA = [
+        {
+          ...commonStep,
+          key: "zero",
+          title: "Group A",
+          groups: groupsA,
+        },
+        {
+          ...commonStep,
+          key: "one",
+          title: "Group A",
+          groups: [...groupsA].sort(
+            (a, b) => b.data[0].value - a.data[0].value
+          ),
+        },
+      ];
+      const stepsB = [
+        {
+          ...commonStep,
+          key: "zero",
+          title: "Group B",
+          groups: groupsB,
+        },
+        {
+          ...commonStep,
+          key: "one",
+          title: "Group B",
+          groups: [...groupsB].sort(
+            (a, b) => b.data[0].value - a.data[0].value
+          ),
+        },
+      ];
+      const stepsC = [
+        {
+          ...commonStep,
+          key: "zero",
+          title: "Group C",
+          groups: groupsC,
+        },
+        {
+          ...commonStep,
+          key: "one",
+          title: "Group C",
+          groups: [...groupsC].sort(
+            (a, b) => b.data[0].value - a.data[0].value
+          ),
+        },
+      ];
+      const storyA = makeStory(document.querySelector("#chart-A"), stepsA);
+      const storyB = makeStory(document.querySelector("#chart-B"), stepsB);
+      const storyC = makeStory(document.querySelector("#chart-C"), stepsC);
+
+      const createScrollListener = () => {
+        let lastScroll;
+        let precedingStep;
+        let lastUpdatedStep;
+        let scrollElements;
+
+        window.addEventListener("scroll", () => {
+          const { scrollY } = window;
+          let currentStep;
+
+          if (!lastScroll) {
+            scrollElements = Array.from(
+              document.querySelectorAll(".scroll")
+            ).map((el) => {
+              const { top, bottom, height } = el.getBoundingClientRect();
+              const step = el.getAttribute("data-step");
+
+              return {
+                top: top + scrollY,
+                bottom: bottom + scrollY,
+                height,
+                step,
+              };
+            });
+          }
+
+          scrollElements.every((el, i) => {
+            const { top, bottom, height, step } = el;
+
+            if (top <= scrollY && bottom >= scrollY) {
+              const t = 1 - (bottom - scrollY) / height;
+              currentStep = step;
+              precedingStep = scrollElements[i - 1]?.step;
+              const progress = -(Math.cos(Math.PI * t) - 1) / 2;
+
+              storyA.render(step, progress);
+              storyB.render(step, progress, false);
+              storyC.render(step, progress, false);
+
+              lastScroll = scrollY;
+              lastUpdatedStep = currentStep;
+
+              return false;
+            }
+
+            return true;
+          });
+
+          if (!currentStep && lastUpdatedStep) {
+            if (lastScroll < scrollY) {
+              storyA.render(lastUpdatedStep, 1);
+              storyB.render(lastUpdatedStep, 1);
+              storyC.render(lastUpdatedStep, 1);
+            } else {
+              if (precedingStep) {
+                storyA.render(precedingStep, 1);
+                storyB.render(precedingStep, 1);
+                storyC.render(precedingStep, 1);
+              } else {
+                storyA.render(lastUpdatedStep, 0);
+                storyB.render(lastUpdatedStep, 0);
+                storyC.render(lastUpdatedStep, 0);
+              }
+            }
+
+            lastScroll = scrollY;
+            lastUpdatedStep = currentStep;
+          }
+        });
+      };
+
+      createScrollListener();
+    </script>
+  </body>
+</html>
