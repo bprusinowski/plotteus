@@ -248,7 +248,7 @@ type Step = {
       }>;
     }
   | {
-      chartType: "bubble" | "pie" | "treemap";
+      chartType: "bubble" | "pie";
       valueScale?: {
         // Compares the maximum value set by the user to the sum of the values
         // within a group.
@@ -307,6 +307,39 @@ type Step = {
           key: string;
           x: number;
           y: number;
+          // Used to teleport datum between groups. Formatted as "groupKey:datumKey".
+          teleportFrom?: string;
+          // HEX, e.g. "#CCCCCC"
+          fill?: string;
+          opacity?: number;
+        }>;
+      }>;
+    }
+  | {
+      chartType: "treemap";
+      layout?:
+        | "binary"
+        | "dice"
+        | "slice"
+        | "slice-dice"
+        | "squarify"
+        | "resquarify" = "resquarify";
+      valueScale?: {
+        // Compares the maximum value set by the user to the sum of the values
+        // within a group.
+        maxValue?: number;
+      };
+      groups: Array<{
+        // Unique identifier of a group.
+        // Used to match and animate the groups between consecutive steps.
+        key: string;
+        opacity?: number;
+        data: Array<{
+          // Unique identifier of a datum.
+          // Used to match and animate the data inside a given group between
+          // consecutive steps.
+          key: string;
+          value: number;
           // Used to teleport datum between groups. Formatted as "groupKey:datumKey".
           teleportFrom?: string;
           // HEX, e.g. "#CCCCCC"

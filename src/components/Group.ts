@@ -13,6 +13,7 @@ import {
   MaxValue,
   MaxXY,
   TextDims,
+  TreemapLayout,
 } from "../types";
 import { FONT_WEIGHT, stateOrderComparator } from "../utils";
 import * as Datum from "./Datum";
@@ -61,11 +62,17 @@ export type GetterPropsXY = BaseGetterProps & {
   maxValue: MaxXY;
 };
 
-type ValueGettersProps = {
-  chartType: Exclude<ChartType, "scatter">;
-  chartSubtype: ChartSubtype | undefined;
-  props: GetterPropsValue;
-};
+type ValueGettersProps =
+  | {
+      chartType: Exclude<ChartType, "scatter" | "treemap">;
+      chartSubtype: ChartSubtype | undefined;
+      props: GetterPropsValue;
+    }
+  | {
+      chartType: "treemap";
+      layout: TreemapLayout | undefined;
+      props: GetterPropsValue;
+    };
 
 export const valueGetters = (props: ValueGettersProps): Getter[] => {
   switch (props.chartType) {
@@ -76,7 +83,7 @@ export const valueGetters = (props: ValueGettersProps): Getter[] => {
     case "pie":
       return getPieGetters(props.props);
     case "treemap":
-      return getTreemapGetters(props.props);
+      return getTreemapGetters(props.layout, props.props);
   }
 };
 

@@ -10,6 +10,8 @@ import {
   MaxValue,
   MaxXY,
   ScatterInputStep,
+  TreemapInputStep,
+  TreemapLayout,
 } from "./types";
 import { max, sum, unique } from "./utils";
 
@@ -25,6 +27,7 @@ type ChartMeta = {
       groupsType: "value";
       type: Exclude<ChartType, "scatter">;
       subtype: ChartSubtype | undefined;
+      layout: TreemapLayout | undefined;
       max: MaxValue;
     }
   | {
@@ -32,6 +35,7 @@ type ChartMeta = {
       groupsType: "xy";
       type: "scatter";
       subtype: undefined;
+      layout: undefined;
       max: MaxXY;
     }
 );
@@ -78,6 +82,7 @@ export class StepMeta {
           groupsType: "value",
           type: "bar",
           subtype: step.chartSubtype,
+          layout: undefined,
           max: this.getMaxValueBar(step),
           ...common,
         };
@@ -89,6 +94,7 @@ export class StepMeta {
           groupsType: "xy",
           type: "scatter",
           subtype: undefined,
+          layout: undefined,
           max: this.getMaxXY(step),
           ...common,
         };
@@ -100,6 +106,7 @@ export class StepMeta {
           groupsType: "value",
           type: step.chartType,
           subtype: undefined,
+          layout: step.chartType === "treemap" ? step.layout : undefined,
           max: this.getMaxValueDefault(step),
           ...common,
         };
@@ -143,7 +150,9 @@ export class StepMeta {
     };
   }
 
-  private getMaxValueDefault(step: DefaultInputStep): MaxValue {
+  private getMaxValueDefault(
+    step: DefaultInputStep | TreemapInputStep
+  ): MaxValue {
     const values = step.groups.flatMap((d) =>
       d.data.reduce((acc, d) => acc + d.value, 0)
     );

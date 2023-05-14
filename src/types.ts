@@ -42,13 +42,24 @@ export type ScatterInputStep = BaseInputStep & {
   groups: InputGroupXY[];
 };
 
-export type DefaultInputStep = BaseInputStep & {
-  chartType: Exclude<ChartType, "bar" | "scatter">;
+export type TreemapInputStep = BaseInputStep & {
+  chartType: "treemap";
+  layout?: TreemapLayout;
   valueScale?: InputScale;
   groups: InputGroupValue[];
 };
 
-export type InputStep = BarInputStep | ScatterInputStep | DefaultInputStep;
+export type DefaultInputStep = BaseInputStep & {
+  chartType: Exclude<ChartType, "bar" | "scatter" | "treemap">;
+  valueScale?: InputScale;
+  groups: InputGroupValue[];
+};
+
+export type InputStep =
+  | BarInputStep
+  | ScatterInputStep
+  | TreemapInputStep
+  | DefaultInputStep;
 
 export type InputScale = {
   maxValue?: number;
@@ -97,6 +108,14 @@ export type Anchor = "start" | "middle" | "end";
 export type ChartType = "bar" | "bubble" | "pie" | "scatter" | "treemap";
 
 export type ChartSubtype = "grouped" | "stacked";
+
+export type TreemapLayout =
+  | "binary"
+  | "dice"
+  | "slice"
+  | "slice-dice"
+  | "squarify"
+  | "resquarify";
 
 export type AxisType = "vertical" | "horizontal";
 
