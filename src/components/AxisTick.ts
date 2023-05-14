@@ -28,6 +28,7 @@ export const getters = ({
   _maxValue,
   dims: { width, height },
   tickHeight,
+  tickFormat,
 }: {
   axisType: AxisType;
   ticks: number[];
@@ -35,6 +36,7 @@ export const getters = ({
   _maxValue: number | undefined;
   dims: ResolvedDimensions;
   tickHeight: number;
+  tickFormat: (d: number) => string;
 }): Getter[] => {
   const isVerticalAxis = axisType === "vertical";
   const size = isVerticalAxis ? height : width;
@@ -49,7 +51,7 @@ export const getters = ({
 
   return ticks.map((tick) => {
     const getters: Getter = {
-      key: `${tick}`,
+      key: tickFormat(tick),
       g: ({ s }) => {
         const x = 0;
         const y = s(

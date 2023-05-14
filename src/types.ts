@@ -57,6 +57,7 @@ export type InputScale = {
 export type InputAxis = {
   show?: boolean;
   title?: string;
+  tickFormat?: (d: number) => string;
 };
 
 export type InputGroupType = "value" | "xy";

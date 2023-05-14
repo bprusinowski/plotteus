@@ -225,6 +225,7 @@ type Step = {
       verticalAxis?: {
         show?: boolean;
         title?: string;
+        tickFormat?: (d: number) => string;
       };
       groups: Array<{
         // Unique identifier of a group.
@@ -283,10 +284,12 @@ type Step = {
       horizontalAxis?: {
         show?: boolean;
         title?: string;
+        tickFormat?: (d: number) => string;
       };
       verticalAxis?: {
         show?: boolean;
         title?: string;
+        tickFormat?: (d: number) => string;
       };
       groups: Array<{
         // Unique identifier of a group.

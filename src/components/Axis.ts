@@ -5,7 +5,7 @@ import { AxisType, MaxValue, MaxXY } from "../types";
 import { max } from "../utils";
 import * as Tick from "./AxisTick";
 import * as Generic from "./Generic";
-import { Svg, SVGSelection } from "./Svg";
+import { SVGSelection, Svg } from "./Svg";
 
 type G = {
   x: number;
@@ -15,7 +15,10 @@ type G = {
 
 export type Getter = Generic.Getter<
   G,
-  { title: Text.Getter | undefined; ticks: Tick.Getter[] }
+  {
+    title: Text.Getter | undefined;
+    ticks: Tick.Getter[];
+  }
 >;
 
 export const getters = ({
@@ -26,6 +29,7 @@ export const getters = ({
   dims,
   tickHeight,
   ticksCount,
+  tickFormat,
   maxValue,
   _maxValue,
 }: {
@@ -36,6 +40,7 @@ export const getters = ({
   dims: ResolvedDimensions;
   tickHeight: number;
   ticksCount: number;
+  tickFormat: (d: number) => string;
   maxValue: number;
   _maxValue: number | undefined;
 }): Getter => {
@@ -76,6 +81,7 @@ export const getters = ({
       maxValue,
       _maxValue,
       tickHeight,
+      tickFormat,
       dims,
     }),
   };
@@ -175,6 +181,7 @@ export const updateDims = ({
   titleHeight,
   tickHeight,
   ticksCount,
+  tickFormat,
 }: {
   type: AxisType;
   dims: Dimensions;
@@ -183,8 +190,9 @@ export const updateDims = ({
   titleHeight: number;
   tickHeight: number;
   ticksCount: number;
+  tickFormat: (d: number) => string;
 }): void => {
-  const width = getWidth({ svg, maxValue, ticksCount });
+  const width = getWidth({ svg, ticksCount, tickFormat, maxValue });
 
   switch (type) {
     case "horizontal":
@@ -206,15 +214,17 @@ export const getTicksCount = (size: number): number => {
 export const getWidth = ({
   svg,
   ticksCount,
+  tickFormat,
   maxValue,
 }: {
   svg: Svg;
   ticksCount: number;
+  tickFormat: (d: number) => string;
   maxValue: number;
 }): number => {
   const ticks = scaleLinear().domain([0, maxValue]).nice().ticks(ticksCount);
   const ticksWidths = ticks.map((d) => {
-    return svg.measureText(d, "axisTick").width;
+    return svg.measureText(tickFormat(d), "axisTick").width;
   });
 
   return max(ticksWidths) as number;

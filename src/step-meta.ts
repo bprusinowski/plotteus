@@ -44,7 +44,10 @@ type LegendMeta = {
 type AxisMeta = {
   show: boolean;
   title: string;
+  tickFormat: (d: number) => string;
 };
+
+const defaultTickFormat = (d: number) => d.toString();
 
 export class StepMeta {
   public chart: ChartMeta;
@@ -177,6 +180,7 @@ export class StepMeta {
         return {
           show: step.horizontalAxis?.show ?? true,
           title: step.horizontalAxis?.title ?? "",
+          tickFormat: step.horizontalAxis?.tickFormat ?? defaultTickFormat,
         };
     }
   }
@@ -187,11 +191,13 @@ export class StepMeta {
         return {
           show: step.verticalAxis?.show ?? step.groups.length > 0,
           title: step.verticalAxis?.title ?? "",
+          tickFormat: step.verticalAxis?.tickFormat ?? defaultTickFormat,
         };
       case "scatter":
         return {
           show: step.verticalAxis?.show ?? true,
           title: step.verticalAxis?.title ?? "",
+          tickFormat: step.verticalAxis?.tickFormat ?? defaultTickFormat,
         };
     }
   }
