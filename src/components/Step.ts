@@ -273,6 +273,7 @@ export const getters = ({
         groupsGetters = Group.valueGetters({
           chartType: chart.type,
           chartSubtype: chart.subtype,
+          layout: chart.layout,
           props: {
             ...commonGroupGetterProps,
             groups: chart.groups,

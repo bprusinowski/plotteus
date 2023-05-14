@@ -1,34 +1,47 @@
-import { hierarchy, treemap, treemapResquarify } from "d3-hierarchy";
+import {
+  hierarchy,
+  treemap,
+  treemapBinary,
+  treemapDice,
+  treemapResquarify,
+  treemapSlice,
+  treemapSliceDice,
+  treemapSquarify,
+} from "d3-hierarchy";
 import { Datum, Group } from "../components";
 import { BAR, getPathData } from "../coords";
-import { InputGroupValue } from "../types";
+import { InputGroupValue, TreemapLayout } from "../types";
 import { FONT_SIZE, getTextColor } from "../utils";
 import { TreemapHierarchyRoot } from "./types";
 import {
-  getGroupLabelStrokeWidth,
-  getRotate,
   STROKE_WIDTH,
   TEXT_MARGIN,
+  getGroupLabelStrokeWidth,
+  getRotate,
 } from "./utils";
 
 const PADDING = 2;
 
-export const getTreemapGetters = ({
-  groups,
-  shareDomain,
-  maxValue: { value: maxValue },
-  showValues,
-  showDatumLabels,
-  svg,
-  dims: { width, height, margin },
-  textDims,
-  colorMap,
-  cartoonize,
-}: Group.GetterPropsValue): Group.Getter[] => {
+export const getTreemapGetters = (
+  layout: TreemapLayout | undefined,
+  {
+    groups,
+    shareDomain,
+    maxValue: { value: maxValue },
+    showValues,
+    showDatumLabels,
+    svg,
+    dims: { width, height, margin },
+    textDims,
+    colorMap,
+    cartoonize,
+  }: Group.GetterPropsValue
+): Group.Getter[] => {
   const root = getRoot({
     groups,
     width: maxValue.k * width,
     height: maxValue.k * height,
+    layout,
   });
   const groupsGetters: Group.Getter[] = [];
 
@@ -148,10 +161,12 @@ const getRoot = ({
   groups,
   width,
   height,
+  layout = "resquarify",
 }: {
   groups: InputGroupValue[];
   width: number;
   height: number;
+  layout?: TreemapLayout;
 }): TreemapHierarchyRoot => {
   const root = hierarchy({
     children: groups.map((d) => ({
@@ -165,10 +180,27 @@ const getRoot = ({
   leaves.forEach((d: any, i) => (d.index = i));
   root.sort((a: any, b: any) => a.index - b.index);
   treemap()
-    .tile(treemapResquarify)
+    .tile(getTile(layout))
     .size([width, height])
     .paddingInner(PADDING)
     .paddingOuter(PADDING)(root as any);
 
   return root as any as TreemapHierarchyRoot;
+};
+
+const getTile = (layout: TreemapLayout) => {
+  switch (layout) {
+    case "binary":
+      return treemapBinary;
+    case "dice":
+      return treemapDice;
+    case "slice":
+      return treemapSlice;
+    case "slice-dice":
+      return treemapSliceDice;
+    case "squarify":
+      return treemapSquarify;
+    case "resquarify":
+      return treemapResquarify;
+  }
 };
