@@ -219,7 +219,8 @@ type Step = {
       chartType: "bar";
       chartSubtype?: "grouped" | "stacked";
       valueScale?: {
-        // Useful for fixing the value scale domain to show evolution of values.
+        // Compares the maximum value set by the user with the maximum value
+        // found within the group.
         maxValue?: number;
       };
       verticalAxis?: {
@@ -249,7 +250,8 @@ type Step = {
   | {
       chartType: "bubble" | "pie" | "treemap";
       valueScale?: {
-        // Useful for fixing the value scale domain to show evolution of values.
+        // Compares the maximum value set by the user to the sum of the values
+        // within a group.
         maxValue?: number;
       };
       groups: Array<{
@@ -274,11 +276,13 @@ type Step = {
   | {
       chartType: "scatter";
       xScale?: {
-        // Useful for fixing the x scale domain to show evolution of values.
+        // Compares the maximum value set by the user with the maximum value
+        // found within the group.
         maxValue?: number;
       };
       yScale?: {
-        // Useful for fixing the y scale domain to show evolution of values.
+        // Compares the maximum value set by the user with the maximum value
+        // found within the group.
         maxValue?: number;
       };
       horizontalAxis?: {

@@ -144,7 +144,9 @@ export class StepMeta {
   }
 
   private getMaxValueDefault(step: DefaultInputStep): MaxValue {
-    const values = step.groups.flatMap((d) => d.data.map((d) => d.value));
+    const values = step.groups.flatMap((d) =>
+      d.data.reduce((acc, d) => acc + d.value, 0)
+    );
     const valueMax = max(values) ?? 0;
 
     return {
