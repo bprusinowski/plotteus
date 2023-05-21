@@ -32,13 +32,34 @@ export const getPalette = (d: PaletteName): string[] => {
 };
 
 export class ColorMap {
-  private colorMap: Map<string, string>;
+  private colorMap: Map<string, string> = new Map();
+  public palette: PaletteName = "default";
 
-  constructor(domain: string[], paletteName: PaletteName) {
-    const palette = getPalette(paletteName);
-    this.colorMap = new Map(
-      domain.map((d, i) => [d, palette[i % palette.length]])
-    );
+  constructor() {}
+
+  public addKeys(keys: string[]): void {
+    const palette = getPalette(this.palette);
+    const colorMap = new Map<string, string>();
+    let i = this.colorMap.size + 1;
+    keys.forEach((d) => {
+      if (this.colorMap.has(d)) {
+        colorMap.set(d, this.colorMap.get(d) as string);
+      } else {
+        colorMap.set(d, palette[i % palette.length]);
+        i++;
+      }
+    });
+    this.colorMap = colorMap;
+  }
+
+  public setPalette(d: PaletteName): void {
+    this.palette = d;
+    const colors = getPalette(d);
+    let i = 0;
+    this.colorMap.forEach((_, k) => {
+      this.colorMap.set(k, colors[i % colors.length]);
+      i++;
+    });
   }
 
   public get(datumKey: string, groupKey: string, shareDomain: boolean): string {
