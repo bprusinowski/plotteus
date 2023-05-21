@@ -119,12 +119,13 @@ export class StepMeta {
     const { chart } = this;
     const keys = chart.shareDomain ? chart.dataKeys : chart.groupsKeys;
     const show = step.showLegend ?? keys.length > 1;
-    const customDataColors = this.getCustomDataColors(step);
-    colorMap.addKeys(keys, customDataColors);
 
     if (step.palette && step.palette !== colorMap.palette) {
       colorMap.setPalette(step.palette);
     }
+
+    const customDataColors = this.getCustomDataColors(step);
+    colorMap.addKeys(keys, customDataColors);
 
     return { show };
   }
