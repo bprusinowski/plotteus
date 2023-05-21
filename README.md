@@ -211,7 +211,7 @@ type Step = {
   legendAnchor?: "start" | "middle" | "end";
   showValues?: boolean;
   showDatumLabels?: boolean;
-  palette?: "default" | "pastel" | "vivid" | "oranges";
+  palette?: "default" | "pastel" | "vivid" | "oranges" | "tableau";
   // If true, enables hand-drawn look.
   cartoonize?: boolean;
 } & (
