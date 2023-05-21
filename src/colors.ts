@@ -61,13 +61,14 @@ export const getPalette = (d: PaletteName): string[] => {
 export class ColorMap {
   private colorMap: Map<string, string> = new Map();
   public palette: PaletteName = "default";
+  private lastUsedPaletteColorIndex = 0;
 
   constructor() {}
 
   public addKeys(keys: string[], customColorsMap: Map<string, string>): void {
     const palette = getPalette(this.palette);
     const colorMap = new Map<string, string>();
-    let i = this.colorMap.size + 1;
+    let i = this.lastUsedPaletteColorIndex;
     keys.forEach((d) => {
       if (customColorsMap.has(d)) {
         colorMap.set(d, customColorsMap.get(d) as string);
@@ -79,6 +80,7 @@ export class ColorMap {
       }
     });
     this.colorMap = colorMap;
+    this.lastUsedPaletteColorIndex = i;
   }
 
   public setPalette(d: PaletteName): void {
@@ -89,6 +91,7 @@ export class ColorMap {
       this.colorMap.set(k, colors[i % colors.length]);
       i++;
     });
+    this.lastUsedPaletteColorIndex = i;
   }
 
   public get(datumKey: string, groupKey: string, shareDomain: boolean): string {
