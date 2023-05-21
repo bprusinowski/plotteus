@@ -1,22 +1,47 @@
-export type PaletteName = "default" | "pastel" | "vivid" | "oranges";
+export type PaletteName =
+  | "default"
+  | "pastel"
+  | "vivid"
+  | "oranges"
+  | "tableau";
 
-const defaultPalette = ["#333333", "#FD7F6F", "#A48CF2", "#6BA6FF", "#FA667E"];
+const defaultPalette = [
+  "#333333",
+  "#FD7F6F",
+  "#A48CF2",
+  "#6BA6FF",
+  "#FA667E",
+  "#68CA8E",
+];
 
 const pastelPalette = [
-  "#b3cde3",
-  "#fbb4ae",
-  "#ccebc5",
-  "#decbe4",
-  "#fed9a6",
-  "#ffffcc",
-  "#e5d8bd",
-  "#fddaec",
-  "#f2f2f2",
+  "#B3CDE3",
+  "#FBB4AE",
+  "#CCEBC5",
+  "#DECBE4",
+  "#FED9A6",
+  "#FFFFCC",
+  "#E5D8bD",
+  "#FDDAEC",
+  "#F2F2F2",
 ];
 
 const vividPalette = ["#79A0FB", "#FCBB7E", "#F5A3CF", "#BB89F0", "#BBE773"];
 
-const orangesPalette = ["#ff9191", "#ffa984", "#ffc680", "#fce389", "#e9ffa1"];
+const orangesPalette = ["#FF9191", "#FFA984", "#FFC680", "#FCE389", "#E9FFA1"];
+
+const tableauPalette = [
+  "#4E79A7",
+  "#F28E2B",
+  "#E15759",
+  "#76B7B2",
+  "#59A14F",
+  "#EDC948",
+  "#B07AA1",
+  "#FF9DA7",
+  "#9C755F",
+  "#BAB0AC",
+];
 
 export const getPalette = (d: PaletteName): string[] => {
   switch (d) {
@@ -28,6 +53,8 @@ export const getPalette = (d: PaletteName): string[] => {
       return vividPalette;
     case "oranges":
       return orangesPalette;
+    case "tableau":
+      return tableauPalette;
   }
 };
 
