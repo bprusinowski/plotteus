@@ -32,6 +32,7 @@ export const getters = ({
   let _maxHorizontalAxisValue: number | undefined;
   let _maxVerticalAxisValue: number | undefined;
   const textDims = getTextDims(svg);
+  const colorMap = new ColorMap();
 
   for (const step of inputSteps) {
     const {
@@ -44,11 +45,13 @@ export const getters = ({
       legendAnchor = "middle",
       showValues = false,
       showDatumLabels = false,
-      palette: paletteName = "default",
       cartoonize = false,
     } = step;
 
-    const { chart, legend, horizontalAxis, verticalAxis } = new StepMeta(step);
+    const { chart, legend, horizontalAxis, verticalAxis } = new StepMeta(
+      step,
+      colorMap
+    );
     const dims = new Dimensions(width, height);
 
     let titleGetter: Text.Getter | undefined;
@@ -88,8 +91,6 @@ export const getters = ({
     if (title || subtitle) {
       dims.addTop(dims.BASE_MARGIN * 2);
     }
-
-    const colorMap = new ColorMap(legend.domain, paletteName);
 
     let colorLegendsGetters: ColorLegend.Getter[] | undefined;
     if (legend.show) {

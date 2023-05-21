@@ -1,9 +1,12 @@
+import { ColorMap } from "./colors";
 import {
   BarInputStep,
   BaseMax,
   ChartSubtype,
   ChartType,
   DefaultInputStep,
+  InputDatumValue,
+  InputDatumXY,
   InputGroupValue,
   InputGroupXY,
   InputStep,
@@ -41,7 +44,6 @@ type ChartMeta = {
 );
 
 type LegendMeta = {
-  domain: string[];
   show: boolean;
 };
 
@@ -59,9 +61,9 @@ export class StepMeta {
   public horizontalAxis?: AxisMeta;
   public verticalAxis?: AxisMeta;
 
-  constructor(step: InputStep) {
+  constructor(step: InputStep, colorMap: ColorMap) {
     this.chart = this.getChartMeta(step);
-    this.legend = this.getLegendMeta(step);
+    this.legend = this.getLegendMeta(step, colorMap);
     this.horizontalAxis = this.getHorizontalAxis(step);
     this.verticalAxis = this.getVerticalAxis(step);
   }
@@ -113,15 +115,18 @@ export class StepMeta {
     }
   }
 
-  private getLegendMeta(step: InputStep): LegendMeta {
+  private getLegendMeta(step: InputStep, colorMap: ColorMap): LegendMeta {
     const { chart } = this;
-    const domain = chart.shareDomain ? chart.dataKeys : chart.groupsKeys;
-    const show = step.showLegend ?? domain.length > 1;
+    const keys = chart.shareDomain ? chart.dataKeys : chart.groupsKeys;
+    const show = step.showLegend ?? keys.length > 1;
+    const customDataColors = this.getCustomDataColors(step);
+    colorMap.addKeys(keys, customDataColors);
 
-    return {
-      domain,
-      show,
-    };
+    if (step.palette && step.palette !== colorMap.palette) {
+      colorMap.setPalette(step.palette);
+    }
+
+    return { show };
   }
 
   private getMaxValueBar(step: BarInputStep): MaxValue {
@@ -183,6 +188,19 @@ export class StepMeta {
 
   private getDataKeys(step: InputStep): string[] {
     return unique(step.groups.flatMap((d) => d.data.map((d) => d.key)));
+  }
+
+  private getCustomDataColors(step: InputStep): Map<string, string> {
+    const customDataColorsMap = new Map<string, string>();
+    step.groups.flatMap((d) =>
+      (d.data as (InputDatumValue | InputDatumXY)[])
+        .filter((d) => d.fill)
+        .forEach((d) => {
+          customDataColorsMap.set(d.key, d.fill as string);
+        })
+    );
+
+    return customDataColorsMap;
   }
 
   private getHorizontalAxis(step: InputStep): AxisMeta | undefined {
