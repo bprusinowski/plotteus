@@ -37,12 +37,14 @@ export class ColorMap {
 
   constructor() {}
 
-  public addKeys(keys: string[]): void {
+  public addKeys(keys: string[], customColorsMap: Map<string, string>): void {
     const palette = getPalette(this.palette);
     const colorMap = new Map<string, string>();
     let i = this.colorMap.size + 1;
     keys.forEach((d) => {
-      if (this.colorMap.has(d)) {
+      if (customColorsMap.has(d)) {
+        colorMap.set(d, customColorsMap.get(d) as string);
+      } else if (this.colorMap.has(d)) {
         colorMap.set(d, this.colorMap.get(d) as string);
       } else {
         colorMap.set(d, palette[i % palette.length]);

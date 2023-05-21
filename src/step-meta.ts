@@ -5,6 +5,8 @@ import {
   ChartSubtype,
   ChartType,
   DefaultInputStep,
+  InputDatumValue,
+  InputDatumXY,
   InputGroupValue,
   InputGroupXY,
   InputStep,
@@ -117,7 +119,8 @@ export class StepMeta {
     const { chart } = this;
     const keys = chart.shareDomain ? chart.dataKeys : chart.groupsKeys;
     const show = step.showLegend ?? keys.length > 1;
-    colorMap.addKeys(keys);
+    const customDataColors = this.getCustomDataColors(step);
+    colorMap.addKeys(keys, customDataColors);
 
     if (step.palette && step.palette !== colorMap.palette) {
       colorMap.setPalette(step.palette);
@@ -185,6 +188,19 @@ export class StepMeta {
 
   private getDataKeys(step: InputStep): string[] {
     return unique(step.groups.flatMap((d) => d.data.map((d) => d.key)));
+  }
+
+  private getCustomDataColors(step: InputStep): Map<string, string> {
+    const customDataColorsMap = new Map<string, string>();
+    step.groups.flatMap((d) =>
+      (d.data as (InputDatumValue | InputDatumXY)[])
+        .filter((d) => d.fill)
+        .forEach((d) => {
+          customDataColorsMap.set(d.key, d.fill as string);
+        })
+    );
+
+    return customDataColorsMap;
   }
 
   private getHorizontalAxis(step: InputStep): AxisMeta | undefined {
