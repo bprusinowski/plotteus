@@ -51,6 +51,7 @@ type AxisMeta = {
   show: boolean;
   title: string;
   tickFormat: (d: number) => string;
+  maxValue: number;
 };
 
 const defaultTickFormat = (d: number) => d.toString();
@@ -211,6 +212,7 @@ export class StepMeta {
           show: step.horizontalAxis?.show ?? true,
           title: step.horizontalAxis?.title ?? "",
           tickFormat: step.horizontalAxis?.tickFormat ?? defaultTickFormat,
+          maxValue: this.getMaxXY(step).x.actual,
         };
     }
   }
@@ -222,12 +224,14 @@ export class StepMeta {
           show: step.verticalAxis?.show ?? step.groups.length > 0,
           title: step.verticalAxis?.title ?? "",
           tickFormat: step.verticalAxis?.tickFormat ?? defaultTickFormat,
+          maxValue: this.getMaxValueBar(step).value.actual,
         };
       case "scatter":
         return {
           show: step.verticalAxis?.show ?? true,
           title: step.verticalAxis?.title ?? "",
           tickFormat: step.verticalAxis?.tickFormat ?? defaultTickFormat,
+          maxValue: this.getMaxXY(step).y.actual,
         };
     }
   }
