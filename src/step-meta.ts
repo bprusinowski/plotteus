@@ -1,8 +1,9 @@
 import { ColorMap } from "./colors";
 import {
+  BarChartLayout,
+  BarChartSubtype,
   BarInputStep,
   BaseMax,
-  ChartSubtype,
   ChartType,
   DefaultInputStep,
   InputDatumValue,
@@ -28,9 +29,25 @@ type ChartMeta = {
   | {
       groups: InputGroupValue[];
       groupsType: "value";
-      type: Exclude<ChartType, "scatter">;
-      subtype: ChartSubtype | undefined;
+      type: "bar";
+      subtype: BarChartSubtype | undefined;
+      layout: BarChartLayout | undefined;
+      max: MaxValue;
+    }
+  | {
+      groups: InputGroupValue[];
+      groupsType: "value";
+      type: "treemap";
+      subtype: undefined;
       layout: TreemapLayout | undefined;
+      max: MaxValue;
+    }
+  | {
+      groups: InputGroupValue[];
+      groupsType: "value";
+      type: Exclude<ChartType, "bar" | "treemap" | "scatter">;
+      subtype: undefined;
+      layout: undefined;
       max: MaxValue;
     }
   | {
@@ -85,7 +102,7 @@ export class StepMeta {
           groupsType: "value",
           type: "bar",
           subtype: step.chartSubtype,
-          layout: undefined,
+          layout: step.layout,
           max: this.getMaxValueBar(step),
           ...common,
         };
@@ -101,6 +118,18 @@ export class StepMeta {
           max: this.getMaxXY(step),
           ...common,
         };
+      case "treemap":
+        return {
+          showsGroupLabelsOnBottom: true,
+          showsDatumValuesOnTop: true,
+          groups: step.groups,
+          groupsType: "value",
+          type: "treemap",
+          subtype: undefined,
+          layout: step.layout,
+          max: this.getMaxValueDefault(step),
+          ...common,
+        };
       default:
         return {
           showsGroupLabelsOnBottom: false,
@@ -109,7 +138,7 @@ export class StepMeta {
           groupsType: "value",
           type: step.chartType,
           subtype: undefined,
-          layout: step.chartType === "treemap" ? step.layout : undefined,
+          layout: undefined,
           max: this.getMaxValueDefault(step),
           ...common,
         };
@@ -207,6 +236,17 @@ export class StepMeta {
 
   private getHorizontalAxis(step: InputStep): AxisMeta | undefined {
     switch (step.chartType) {
+      case "bar":
+        if (step.layout === "horizontal") {
+          return {
+            show: step.horizontalAxis?.show ?? step.groups.length > 0,
+            title: step.horizontalAxis?.title ?? "",
+            tickFormat: step.horizontalAxis?.tickFormat ?? defaultTickFormat,
+            maxValue: this.getMaxValueBar(step).value.actual,
+          };
+        }
+
+        break;
       case "scatter":
         return {
           show: step.horizontalAxis?.show ?? true,
@@ -220,12 +260,16 @@ export class StepMeta {
   private getVerticalAxis(step: InputStep): AxisMeta | undefined {
     switch (step.chartType) {
       case "bar":
-        return {
-          show: step.verticalAxis?.show ?? step.groups.length > 0,
-          title: step.verticalAxis?.title ?? "",
-          tickFormat: step.verticalAxis?.tickFormat ?? defaultTickFormat,
-          maxValue: this.getMaxValueBar(step).value.actual,
-        };
+        if (step.layout === "vertical") {
+          return {
+            show: step.verticalAxis?.show ?? step.groups.length > 0,
+            title: step.verticalAxis?.title ?? "",
+            tickFormat: step.verticalAxis?.tickFormat ?? defaultTickFormat,
+            maxValue: this.getMaxValueBar(step).value.actual,
+          };
+        }
+
+        break;
       case "scatter":
         return {
           show: step.verticalAxis?.show ?? true,

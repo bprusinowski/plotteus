@@ -6,9 +6,9 @@ import { getTreemapGetters } from "../charts/treemap";
 import { ColorMap } from "../colors";
 import { ResolvedDimensions } from "../dims";
 import {
+  BarChartLayout,
+  BarChartSubtype,
   BaseMax,
-  ChartSubtype,
-  ChartType,
   InputGroupValue,
   InputGroupXY,
   TextDims,
@@ -62,14 +62,22 @@ export type XYGetterProps = BaseGetterProps & {
   yMaxValue: BaseMax;
 };
 
-type ValueGettersProps =
+export type ValueGettersProps =
   | {
-      chartType: Exclude<ChartType, "scatter" | "treemap">;
-      chartSubtype: ChartSubtype | undefined;
+      chartType: "bubble" | "pie";
+      subtype: undefined;
+      layout: undefined;
+      props: ValueGetterProps;
+    }
+  | {
+      chartType: "bar";
+      subtype: BarChartSubtype | undefined;
+      layout: BarChartLayout | undefined;
       props: ValueGetterProps;
     }
   | {
       chartType: "treemap";
+      subtype: undefined;
       layout: TreemapLayout | undefined;
       props: ValueGetterProps;
     };
@@ -77,13 +85,20 @@ type ValueGettersProps =
 export const valueGetters = (props: ValueGettersProps): Getter[] => {
   switch (props.chartType) {
     case "bar":
-      return getBarGetters({ type: props.chartSubtype, ...props.props });
+      return getBarGetters({
+        type: props.subtype,
+        layout: props.layout,
+        ...props.props,
+      });
     case "bubble":
       return getBubbleGetters(props.props);
     case "pie":
       return getPieGetters(props.props);
     case "treemap":
-      return getTreemapGetters({ layout: props.layout, ...props.props });
+      return getTreemapGetters({
+        layout: props.layout,
+        ...props.props,
+      });
   }
 };
 
