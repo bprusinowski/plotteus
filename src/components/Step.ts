@@ -246,7 +246,7 @@ export const getters = ({
       _showVerticalAxis = false;
     }
 
-    const commonGroupGetterProps = {
+    const baseGroupGetterProps: Group.BaseGetterProps = {
       groupsKeys: chart.groupsKeys,
       dataKeys: chart.dataKeys,
       shareDomain: chart.shareDomain,
@@ -266,7 +266,7 @@ export const getters = ({
           chartSubtype: chart.subtype,
           layout: chart.layout,
           props: {
-            ...commonGroupGetterProps,
+            ...baseGroupGetterProps,
             groups: chart.groups,
             maxValue: chart.max.value,
           },
@@ -276,7 +276,7 @@ export const getters = ({
         groupsGetters = Group.xyGetters({
           chartType: chart.type,
           props: {
-            ...commonGroupGetterProps,
+            ...baseGroupGetterProps,
             groups: chart.groups,
             xMaxValue: chart.max.x,
             yMaxValue: chart.max.y,

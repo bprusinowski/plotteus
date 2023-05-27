@@ -33,7 +33,7 @@ type G = {
 
 export type Getter = Generic.Getter<G, { data: Datum.Getter[] }>;
 
-type BaseGetterProps = {
+export type BaseGetterProps = {
   // Data.
   groupsKeys: string[];
   dataKeys: string[];
