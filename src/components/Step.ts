@@ -117,7 +117,7 @@ export const getters = ({
     dims.addBottom(dims.BASE_MARGIN);
 
     if (verticalAxis) {
-      const { show, title, tickFormat } = verticalAxis;
+      const { show, title, tickFormat, maxValue } = verticalAxis;
 
       if (show) {
         const titleHeight = textDims.axisTitle.height;
@@ -127,10 +127,7 @@ export const getters = ({
           dims,
           svg,
           titleHeight: title ? titleHeight : 0,
-          maxValue: Axis.getMaxValue({
-            type: "vertical",
-            maxValue: chart.max,
-          }),
+          maxValue,
           tickHeight: textDims.axisTick.height,
           ticksCount,
           tickFormat,
@@ -140,26 +137,22 @@ export const getters = ({
 
     let horizontalAxisGetters: Axis.Getter | undefined;
     if (horizontalAxis) {
-      const { show, title, tickFormat } = horizontalAxis;
+      const { show, title, tickFormat, maxValue } = horizontalAxis;
 
       if (show) {
-        const horizontalMaxValue = Axis.getMaxValue({
-          type: "horizontal",
-          maxValue: chart.max,
-        });
         const titleHeight = textDims.axisTitle.height;
         const ticksCount = Axis.getTicksCount(dims.resolve().width);
         const width = Axis.getWidth({
           svg,
           ticksCount,
           tickFormat,
-          maxValue: horizontalMaxValue,
+          maxValue,
         });
         Axis.updateDims({
           type: "horizontal",
           dims,
           svg,
-          maxValue: horizontalMaxValue,
+          maxValue,
           titleHeight: title ? titleHeight : 0,
           tickHeight: textDims.axisTick.height,
           ticksCount,
@@ -188,7 +181,7 @@ export const getters = ({
           tickHeight: textDims.axisTick.height,
           ticksCount,
           tickFormat,
-          maxValue: horizontalMaxValue,
+          maxValue,
           _maxValue: _showHorizontalAxis ? _maxHorizontalAxisValue : undefined,
         });
       }
@@ -200,22 +193,19 @@ export const getters = ({
 
     let verticalAxisGetters: Axis.Getter | undefined;
     if (verticalAxis) {
-      const { show, title, tickFormat } = verticalAxis;
+      const { show, title, tickFormat, maxValue } = verticalAxis;
 
       if (show) {
         if (chart.showsDatumValuesOnTop && showValues) {
           dims.addTop(dims.BASE_MARGIN);
         }
-        const verticalMaxValue = Axis.getMaxValue({
-          type: "vertical",
-          maxValue: chart.max,
-        });
+
         const ticksCount = Axis.getTicksCount(dims.resolve().height);
         const width = Axis.getWidth({
           svg,
           ticksCount,
           tickFormat,
-          maxValue: verticalMaxValue,
+          maxValue,
         });
         const titleHeight = textDims.axisTitle.height;
 
@@ -243,7 +233,7 @@ export const getters = ({
               },
           svg,
           dims: dims.resolve(),
-          maxValue: verticalMaxValue,
+          maxValue,
           _maxValue: _showVerticalAxis ? _maxVerticalAxisValue : undefined,
           ticksCount,
           tickHeight: textDims.axisTick.height,
@@ -256,7 +246,7 @@ export const getters = ({
       _showVerticalAxis = false;
     }
 
-    const commonGroupGetterProps = {
+    const baseGroupGetterProps: Group.BaseGetterProps = {
       groupsKeys: chart.groupsKeys,
       dataKeys: chart.dataKeys,
       shareDomain: chart.shareDomain,
@@ -276,9 +266,9 @@ export const getters = ({
           chartSubtype: chart.subtype,
           layout: chart.layout,
           props: {
-            ...commonGroupGetterProps,
+            ...baseGroupGetterProps,
             groups: chart.groups,
-            maxValue: chart.max,
+            maxValue: chart.max.value,
           },
         });
         break;
@@ -286,9 +276,10 @@ export const getters = ({
         groupsGetters = Group.xyGetters({
           chartType: chart.type,
           props: {
-            ...commonGroupGetterProps,
+            ...baseGroupGetterProps,
             groups: chart.groups,
-            maxValue: chart.max,
+            xMaxValue: chart.max.x,
+            yMaxValue: chart.max.y,
           },
         });
         break;
@@ -304,14 +295,8 @@ export const getters = ({
       groups: groupsGetters,
     });
 
-    _maxHorizontalAxisValue = Axis.getMaxValue({
-      type: "horizontal",
-      maxValue: chart.max,
-    });
-    _maxVerticalAxisValue = Axis.getMaxValue({
-      type: "vertical",
-      maxValue: chart.max,
-    });
+    _maxHorizontalAxisValue = horizontalAxis?.maxValue ?? 0;
+    _maxVerticalAxisValue = verticalAxis?.maxValue ?? 0;
   }
 
   return steps;

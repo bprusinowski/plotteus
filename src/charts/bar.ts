@@ -13,14 +13,18 @@ import {
 const PADDING_X0 = 0.1;
 const PADDING_X1 = 0.05;
 
-export const getBarGetters = (
-  subtype: ChartSubtype,
-  {
+type GetBarGetterProps = {
+  type: ChartSubtype | undefined;
+} & Group.ValueGetterProps;
+
+export const getBarGetters = (props: GetBarGetterProps): Group.Getter[] => {
+  const {
+    type = "grouped",
     groups,
+    maxValue,
     groupsKeys,
     dataKeys,
     shareDomain,
-    maxValue: { value: maxValue },
     showValues,
     showDatumLabels,
     svg,
@@ -28,9 +32,8 @@ export const getBarGetters = (
     textDims,
     colorMap,
     cartoonize,
-  }: Group.GetterPropsValue
-): Group.Getter[] => {
-  const isGrouped = subtype === "grouped";
+  } = props;
+  const isGrouped = type === "grouped";
   const { x0Scale, x0bw, x1Scale, x1bw, yScale } = getScales({
     isGrouped,
     groupsKeys,

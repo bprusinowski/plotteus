@@ -6,12 +6,11 @@ import { getTreemapGetters } from "../charts/treemap";
 import { ColorMap } from "../colors";
 import { ResolvedDimensions } from "../dims";
 import {
+  BaseMax,
   ChartSubtype,
   ChartType,
   InputGroupValue,
   InputGroupXY,
-  MaxValue,
-  MaxXY,
   TextDims,
   TreemapLayout,
 } from "../types";
@@ -34,7 +33,7 @@ type G = {
 
 export type Getter = Generic.Getter<G, { data: Datum.Getter[] }>;
 
-type BaseGetterProps = {
+export type BaseGetterProps = {
   // Data.
   groupsKeys: string[];
   dataKeys: string[];
@@ -52,48 +51,48 @@ type BaseGetterProps = {
   cartoonize: boolean;
 };
 
-export type GetterPropsValue = BaseGetterProps & {
+export type ValueGetterProps = BaseGetterProps & {
   groups: InputGroupValue[];
-  maxValue: MaxValue;
+  maxValue: BaseMax;
 };
 
-export type GetterPropsXY = BaseGetterProps & {
+export type XYGetterProps = BaseGetterProps & {
   groups: InputGroupXY[];
-  maxValue: MaxXY;
+  xMaxValue: BaseMax;
+  yMaxValue: BaseMax;
 };
 
 type ValueGettersProps =
   | {
       chartType: Exclude<ChartType, "scatter" | "treemap">;
       chartSubtype: ChartSubtype | undefined;
-      props: GetterPropsValue;
+      props: ValueGetterProps;
     }
   | {
       chartType: "treemap";
       layout: TreemapLayout | undefined;
-      props: GetterPropsValue;
+      props: ValueGetterProps;
     };
 
 export const valueGetters = (props: ValueGettersProps): Getter[] => {
   switch (props.chartType) {
     case "bar":
-      return getBarGetters(props.chartSubtype ?? "grouped", props.props);
+      return getBarGetters({ type: props.chartSubtype, ...props.props });
     case "bubble":
       return getBubbleGetters(props.props);
     case "pie":
       return getPieGetters(props.props);
     case "treemap":
-      return getTreemapGetters(props.layout, props.props);
+      return getTreemapGetters({ layout: props.layout, ...props.props });
   }
 };
 
-export const xyGetters = ({
-  chartType,
-  props,
-}: {
+type XYGettersProps = {
   chartType: "scatter";
-  props: GetterPropsXY;
-}): Getter[] => {
+  props: XYGetterProps;
+};
+
+export const xyGetters = ({ props }: XYGettersProps): Getter[] => {
   return getScatterGetters(props);
 };
 

@@ -5,15 +5,21 @@ import { BaseMax } from "../types";
 import { FONT_SIZE, getTextColor } from "../utils";
 import { getGroupLabelStrokeWidth, getRotate, STROKE_WIDTH } from "./utils";
 
-export const getScatterGetters = ({
-  groups,
-  maxValue: { x: xMaxValue, y: yMaxValue },
-  shareDomain,
-  cartoonize,
-  colorMap,
-  showDatumLabels,
-  dims: { width, height, margin, BASE_MARGIN },
-}: Group.GetterPropsXY) => {
+type GetScatterGettersProps = Group.XYGetterProps;
+
+export const getScatterGetters = (
+  props: GetScatterGettersProps
+): Group.Getter[] => {
+  const {
+    groups,
+    xMaxValue,
+    yMaxValue,
+    shareDomain,
+    showDatumLabels,
+    dims: { width, height, margin, BASE_MARGIN },
+    colorMap,
+    cartoonize,
+  } = props;
   const { xScale, yScale } = getScales({ xMaxValue, yMaxValue, width, height });
   const groupsGetters: Group.Getter[] = [];
 

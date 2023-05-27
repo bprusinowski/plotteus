@@ -5,23 +5,28 @@ import { InputGroupValue } from "../types";
 import { FONT_SIZE, getTextColor } from "../utils";
 import { HierarchyRoot } from "./types";
 import {
-  getGroupLabelStrokeWidth,
-  getRotate,
   PADDING,
   STROKE_WIDTH,
+  getGroupLabelStrokeWidth,
+  getRotate,
 } from "./utils";
 
-export const getBubbleGetters = ({
-  groups,
-  shareDomain,
-  maxValue: { value: maxValue },
-  showValues,
-  showDatumLabels,
-  dims: { width, height, size, margin },
-  textDims,
-  colorMap,
-  cartoonize,
-}: Group.GetterPropsValue): Group.Getter[] => {
+type GetBubbleGettersProps = Group.ValueGetterProps;
+
+export const getBubbleGetters = (
+  props: GetBubbleGettersProps
+): Group.Getter[] => {
+  const {
+    groups,
+    maxValue,
+    shareDomain,
+    showValues,
+    showDatumLabels,
+    dims: { width, height, size, margin },
+    textDims,
+    colorMap,
+    cartoonize,
+  } = props;
   const root = getRoot({ groups, size: maxValue.k * size });
   const groupsGetters: Group.Getter[] = [];
   // If a custom maxValue was provided, we need to shift the bubbles to the center.
