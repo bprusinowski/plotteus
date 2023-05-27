@@ -27,7 +27,7 @@ export const getBarGetters = (props: GetBarGetterProps): Group.Getter[] => {
     showValues,
     showDatumLabels,
     svg,
-    dims: { width, fullWidth, height, margin, BASE_MARGIN },
+    dims: { width, fullWidth, height, fullHeight, margin, BASE_MARGIN },
     textDims,
     colorMap,
     cartoonize,
@@ -117,7 +117,8 @@ export const getBarGetters = (props: GetBarGetterProps): Group.Getter[] => {
           g: ({ s, _g }) => {
             const d = s(BAR, getD());
             const clipPath =
-              isGrouped && showValues ? s(BAR, getD(valueHeight * 2)) : d;
+              // Do not clip grouped bar labels.
+              isGrouped && showValues ? s(BAR, getD(fullHeight * 2)) : d;
             const x = s(0, datumX + (x1bw - x0bw) * 0.5);
             const y = s(0, (datumY - height) * 0.5 - currentAccHeight);
             const rotate = getRotate(_g?.rotate);
@@ -135,8 +136,16 @@ export const getBarGetters = (props: GetBarGetterProps): Group.Getter[] => {
             const valueX = isGrouped
               ? 0
               : s(0, (valueWidth - x1bw) * 0.5 + TEXT_MARGIN);
+            const baseGroupedValueY = -(dHeight * 0.5 + valueHeight);
             const valueY = isGrouped
-              ? s(0, -(dHeight * 0.5 + valueHeight))
+              ? s(
+                  0,
+                  showDatumLabels
+                    ? baseGroupedValueY + valueHeight < labelY
+                      ? baseGroupedValueY
+                      : labelY - textDims.datumLabel.height
+                    : baseGroupedValueY
+                )
               : s(
                   0,
                   showDatumLabels

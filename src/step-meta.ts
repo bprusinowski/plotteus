@@ -260,7 +260,7 @@ export class StepMeta {
   private getVerticalAxis(step: InputStep): AxisMeta | undefined {
     switch (step.chartType) {
       case "bar":
-        if (step.layout === "vertical") {
+        if (step.layout === "vertical" || step.layout === undefined) {
           return {
             show: step.verticalAxis?.show ?? step.groups.length > 0,
             title: step.verticalAxis?.title ?? "",
