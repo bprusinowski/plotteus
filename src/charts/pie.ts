@@ -1,23 +1,26 @@
 import { hierarchy, pack } from "d3-hierarchy";
-import { pie, PieArcDatum } from "d3-shape";
+import { PieArcDatum, pie } from "d3-shape";
 import { Datum, Group } from "../components";
 import { BUBBLE, getPathData } from "../coords";
 import { InputDatumValue, InputGroupValue } from "../types";
 import { FONT_SIZE, getTextColor, radiansToDegrees } from "../utils";
 import { HierarchyRoot } from "./types";
-import { getGroupLabelStrokeWidth, PADDING, STROKE_WIDTH } from "./utils";
+import { PADDING, STROKE_WIDTH, getGroupLabelStrokeWidth } from "./utils";
 
-export const getPieGetters = ({
-  groups,
-  shareDomain,
-  maxValue: { value: maxValue },
-  showValues,
-  showDatumLabels,
-  dims: { width, height, size, margin },
-  textDims,
-  colorMap,
-  cartoonize,
-}: Group.GetterPropsValue): Group.Getter[] => {
+type GetPieGettersProps = Group.ValueGetterProps;
+
+export const getPieGetters = (props: GetPieGettersProps): Group.Getter[] => {
+  const {
+    groups,
+    maxValue,
+    shareDomain,
+    showValues,
+    showDatumLabels,
+    dims: { width, height, size, margin },
+    textDims,
+    colorMap,
+    cartoonize,
+  } = props;
   const root = getRoot({ groups, size: maxValue.k * size });
   const groupsGetters: Group.Getter[] = [];
   const maxValueShift = maxValue.kc * size * 0.5;

@@ -22,12 +22,18 @@ import {
 
 const PADDING = 2;
 
+type GetTreemapGettersProps = {
+  layout: TreemapLayout | undefined;
+} & Group.ValueGetterProps;
+
 export const getTreemapGetters = (
-  layout: TreemapLayout | undefined,
-  {
+  props: GetTreemapGettersProps
+): Group.Getter[] => {
+  const {
+    layout,
     groups,
+    maxValue,
     shareDomain,
-    maxValue: { value: maxValue },
     showValues,
     showDatumLabels,
     svg,
@@ -35,8 +41,7 @@ export const getTreemapGetters = (
     textDims,
     colorMap,
     cartoonize,
-  }: Group.GetterPropsValue
-): Group.Getter[] => {
+  } = props;
   const root = getRoot({
     groups,
     width: maxValue.k * width,

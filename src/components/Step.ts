@@ -278,7 +278,7 @@ export const getters = ({
           props: {
             ...commonGroupGetterProps,
             groups: chart.groups,
-            maxValue: chart.max,
+            maxValue: chart.max.value,
           },
         });
         break;
@@ -288,7 +288,8 @@ export const getters = ({
           props: {
             ...commonGroupGetterProps,
             groups: chart.groups,
-            maxValue: chart.max,
+            xMaxValue: chart.max.x,
+            yMaxValue: chart.max.y,
           },
         });
         break;

@@ -71,26 +71,25 @@ export type InputAxis = {
   tickFormat?: (d: number) => string;
 };
 
-export type InputGroupType = "value" | "xy";
-
-export type InputGroupValue = {
+type BaseInputGroup = {
   key: string;
   opacity?: number;
+};
+
+export type InputGroupType = "value" | "xy";
+
+export type InputGroupValue = BaseInputGroup & {
   data: InputDatumValue[];
 };
 
-export type InputGroupXY = {
-  key: string;
-  opacity?: number;
+export type InputGroupXY = BaseInputGroup & {
   data: InputDatumXY[];
 };
 
-type BaseInputDatum = {
-  key: string;
+type BaseInputDatum = BaseInputGroup & {
   // Used to teleport datum between groups. Formatted as "groupKey:datumKey".
   teleportFrom?: string;
   fill?: string;
-  opacity?: number;
 };
 
 export type InputDatumValue = BaseInputDatum & {
