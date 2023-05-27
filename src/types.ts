@@ -27,11 +27,19 @@ type BaseInputStep = {
 
 export type BarInputStep = BaseInputStep & {
   chartType: "bar";
-  chartSubtype?: ChartSubtype;
+  chartSubtype?: BarChartSubtype;
   valueScale?: InputScale;
-  verticalAxis?: InputAxis;
   groups: InputGroupValue[];
-};
+} & (
+    | {
+        layout?: "vertical";
+        verticalAxis?: InputAxis;
+      }
+    | {
+        layout: "horizontal";
+        horizontalAxis?: InputAxis;
+      }
+  );
 
 export type ScatterInputStep = BaseInputStep & {
   chartType: "scatter";
@@ -106,7 +114,9 @@ export type Anchor = "start" | "middle" | "end";
 // Charts.
 export type ChartType = "bar" | "bubble" | "pie" | "scatter" | "treemap";
 
-export type ChartSubtype = "grouped" | "stacked";
+export type BarChartSubtype = "grouped" | "stacked";
+
+export type BarChartLayout = "vertical" | "horizontal";
 
 export type TreemapLayout =
   | "binary"

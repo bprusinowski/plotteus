@@ -202,9 +202,16 @@ export const render = ({
     .style("font-weight", FONT_WEIGHT.datumLabel)
     .style("text-anchor", "middle")
     .style("dominant-baseline", "hanging")
+    .style("paint-order", "stroke")
+    .style("stroke", (d) =>
+      // FIXME
+      d.labelFill === "white" || d.labelFill === "rgb(255, 255, 255)"
+        ? "black"
+        : "white"
+    )
+    .style("stroke-width", 2)
     .style("user-select", "none")
     .style("pointer-events", "none")
-    .style("letter-spacing", 1.5)
     .style("fill", (d) => d.labelFill)
     .text((d) => d.key);
 

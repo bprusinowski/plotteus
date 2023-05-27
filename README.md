@@ -215,18 +215,13 @@ type Step = {
   // If true, enables hand-drawn look.
   cartoonize?: boolean;
 } & (
-  | {
+  | ({
       chartType: "bar";
       chartSubtype?: "grouped" | "stacked";
       valueScale?: {
         // Compares the maximum value set by the user with the maximum value
         // found within the group.
         maxValue?: number;
-      };
-      verticalAxis?: {
-        show?: boolean;
-        title?: string;
-        tickFormat?: (d: number) => string;
       };
       groups: Array<{
         // Unique identifier of a group.
@@ -246,7 +241,24 @@ type Step = {
           opacity?: number;
         }>;
       }>;
-    }
+    } & (
+      | {
+          layout?: "vertical";
+          verticalAxis?: {
+            show?: boolean;
+            title?: string;
+            tickFormat?: (d: number) => string;
+          };
+        }
+      | {
+          layout?: "horizontal";
+          horizontalAxis?: {
+            show?: boolean;
+            title?: string;
+            tickFormat?: (d: number) => string;
+          };
+        }
+    ))
   | {
       chartType: "bubble" | "pie";
       valueScale?: {

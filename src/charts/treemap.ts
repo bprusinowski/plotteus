@@ -30,7 +30,7 @@ export const getTreemapGetters = (
   props: GetTreemapGettersProps
 ): Group.Getter[] => {
   const {
-    layout,
+    layout = "resquarify",
     groups,
     maxValue,
     shareDomain,
@@ -166,12 +166,12 @@ const getRoot = ({
   groups,
   width,
   height,
-  layout = "resquarify",
+  layout,
 }: {
   groups: InputGroupValue[];
   width: number;
   height: number;
-  layout?: TreemapLayout;
+  layout: TreemapLayout;
 }): TreemapHierarchyRoot => {
   const root = hierarchy({
     children: groups.map((d) => ({

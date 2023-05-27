@@ -135,6 +135,20 @@ export const getters = ({
       }
     }
 
+    if (
+      chart.type === "bar" &&
+      chart.layout === "horizontal" &&
+      (chart.subtype === undefined || chart.subtype === "grouped")
+    ) {
+      const maxValueWidth = svg.measureText(
+        chart.max.value.actual,
+        "datumValue"
+      ).width;
+      dims.addRight(
+        Math.max(dims.BASE_MARGIN * 3, maxValueWidth + dims.BASE_MARGIN * 0.5)
+      );
+    }
+
     let horizontalAxisGetters: Axis.Getter | undefined;
     if (horizontalAxis) {
       const { show, title, tickFormat, maxValue } = horizontalAxis;
@@ -263,14 +277,14 @@ export const getters = ({
       case "value":
         groupsGetters = Group.valueGetters({
           chartType: chart.type,
-          chartSubtype: chart.subtype,
+          subtype: chart.subtype,
           layout: chart.layout,
           props: {
             ...baseGroupGetterProps,
             groups: chart.groups,
             maxValue: chart.max.value,
           },
-        });
+        } as Group.ValueGettersProps);
         break;
       case "xy":
         groupsGetters = Group.xyGetters({

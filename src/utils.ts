@@ -41,7 +41,7 @@ export const FONT_WEIGHT: Record<TextType, number> = {
 export const getTextDims = (svg: Svg): TextDims => {
   return Object.fromEntries(
     Object.entries(FONT_SIZE).map(([textType]) => {
-      const height = svg.measureText("Text", textType as TextType).height;
+      const { height } = svg.measureText("Text", textType as TextType);
       return [textType, { height, yShift: -height * HALF_FONT_K }];
     })
   ) as TextDims;
