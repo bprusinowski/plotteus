@@ -1,3 +1,4 @@
+import { describe, expect, test } from "vitest";
 import { Text } from ".";
 import { setup } from "../../tests/helpers";
 import { FONT_SIZE, FONT_WEIGHT } from "../utils";
