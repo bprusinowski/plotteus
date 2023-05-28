@@ -106,7 +106,6 @@ export const getters = ({
         dims,
         getters: colorLegendsGetters,
         itemHeight: textDims.legendItem.height,
-        chartType: chart.type,
       });
     }
 

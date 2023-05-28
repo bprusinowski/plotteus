@@ -1,9 +1,9 @@
 import { ColorMap } from "../colors";
 import { Dimensions, ResolvedDimensions } from "../dims";
-import { Anchor, ChartType } from "../types";
+import { Anchor } from "../types";
 import { FONT_SIZE, FONT_WEIGHT, max } from "../utils";
 import * as Generic from "./Generic";
-import { Svg, SVGSelection } from "./Svg";
+import { SVGSelection, Svg } from "./Svg";
 
 const R = FONT_SIZE.legendItem / 3;
 
@@ -243,12 +243,10 @@ export const updateDims = ({
   dims,
   getters,
   itemHeight,
-  chartType,
 }: {
   dims: Dimensions;
   getters: Getter[];
   itemHeight: number;
-  chartType: ChartType;
 }): void => {
   const rows = max(getters.map((d) => d.rowIndex)) ?? -1;
   const height = (rows + 1) * itemHeight;
