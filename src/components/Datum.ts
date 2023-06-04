@@ -40,8 +40,6 @@ export type Getter = Generic.Getter<
     }
 >;
 
-// Getters are defined per chart type in GroupsGetters.
-
 export type Int = Generic.Int<
   G,
   | {
@@ -80,7 +78,8 @@ export const ints = ({
             _value:
               _updateInt?.type === "value"
                 ? _updateInt?.value ?? getter.value
-                : 0,
+                : // Keep artificial value as bubble size?
+                  0,
           };
         case "xy":
           return {

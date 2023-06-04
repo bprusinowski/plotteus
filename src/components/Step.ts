@@ -1,15 +1,17 @@
 import { Axis, AxisTick, ColorLegend, Group, Svg, Text, Tooltip } from ".";
+import { BarChart } from "../charts";
+import * as GenericChart from "../charts/GenericChart";
 import { ColorMap } from "../colors";
 import { Dimensions } from "../dims";
 import { StepMeta } from "../step-meta";
-import { InputStep } from "../types";
+import { BarInputStep, InputStep } from "../types";
 import { getTextDims, stateOrderComparator } from "../utils";
 
 export type Getter = {
   key: string;
   title: Text.Getter | undefined;
   subtitle: Text.Getter | undefined;
-  groups: Group.Getter[];
+  groups: GenericChart.Getter[];
   colorLegends: ColorLegend.Getter[] | undefined;
   verticalAxis: Axis.Getter | undefined;
   horizontalAxis: Axis.Getter | undefined;
@@ -109,11 +111,13 @@ export const getters = ({
       });
     }
 
-    if (chart.showsGroupLabelsOnBottom) {
+    if (chart.type !== "bar") {
+      if (chart.showsGroupLabelsOnBottom) {
+        dims.addBottom(dims.BASE_MARGIN);
+      }
+
       dims.addBottom(dims.BASE_MARGIN);
     }
-
-    dims.addBottom(dims.BASE_MARGIN);
 
     if (verticalAxis) {
       const { show, title, tickFormat, maxValue } = verticalAxis;
@@ -134,18 +138,9 @@ export const getters = ({
       }
     }
 
-    if (
-      chart.type === "bar" &&
-      chart.layout === "horizontal" &&
-      (chart.subtype === undefined || chart.subtype === "grouped")
-    ) {
-      const maxValueWidth = svg.measureText(
-        chart.max.value.actual,
-        "datumValue"
-      ).width;
-      dims.addRight(
-        Math.max(dims.BASE_MARGIN * 3, maxValueWidth + dims.BASE_MARGIN * 0.5)
-      );
+    if (chart.type === "bar") {
+      const info = BarChart.info(step as BarInputStep);
+      BarChart.updateDims(info, dims, svg, showValues);
     }
 
     let horizontalAxisGetters: Axis.Getter | undefined;
@@ -259,7 +254,7 @@ export const getters = ({
       _showVerticalAxis = false;
     }
 
-    const baseGroupGetterProps: Group.BaseGetterProps = {
+    const baseGroupGetterProps: GenericChart.BaseGetterProps = {
       groupsKeys: chart.groupsKeys,
       dataKeys: chart.dataKeys,
       shareDomain: chart.shareDomain,
@@ -271,31 +266,47 @@ export const getters = ({
       colorMap,
       cartoonize,
     };
-    let groupsGetters: Group.Getter[];
-    switch (chart.groupsType) {
-      case "value":
-        groupsGetters = Group.valueGetters({
-          chartType: chart.type,
-          subtype: chart.subtype,
-          layout: chart.layout,
-          props: {
-            ...baseGroupGetterProps,
-            groups: chart.groups,
-            maxValue: chart.max.value,
-          },
-        } as Group.ValueGettersProps);
-        break;
-      case "xy":
-        groupsGetters = Group.xyGetters({
-          chartType: chart.type,
-          props: {
-            ...baseGroupGetterProps,
-            groups: chart.groups,
-            xMaxValue: chart.max.x,
-            yMaxValue: chart.max.y,
-          },
-        });
-        break;
+    let groupsGetters: GenericChart.Getter[] = [];
+
+    if (chart.type === "bar") {
+      const info = BarChart.info(step as BarInputStep);
+      groupsGetters = BarChart.getters(info, {
+        showValues,
+        showDatumLabels,
+        svg,
+        dims: dims.resolve(),
+        textDims,
+        colorMap,
+        cartoonize,
+      });
+    }
+
+    if (chart.type !== "bar") {
+      switch (chart.groupsType) {
+        case "value":
+          groupsGetters = Group.valueGetters({
+            chartType: chart.type,
+            subtype: chart.subtype,
+            layout: chart.layout,
+            props: {
+              ...baseGroupGetterProps,
+              groups: chart.groups,
+              maxValue: chart.max.value,
+            },
+          } as Group.ValueGettersProps);
+          break;
+        case "xy":
+          groupsGetters = Group.xyGetters({
+            chartType: chart.type,
+            props: {
+              ...baseGroupGetterProps,
+              groups: chart.groups,
+              xMaxValue: chart.max.x,
+              yMaxValue: chart.max.y,
+            },
+          });
+          break;
+      }
     }
 
     steps.push({
@@ -318,7 +329,7 @@ export const getters = ({
 export type Int = {
   titles: Text.Int[];
   subtitles: Text.Int[];
-  groups: Group.Int[];
+  groups: GenericChart.Int[];
   colorLegends: ColorLegend.Int[];
   horizontalAxes: Axis.Int[];
   verticalAxes: Axis.Int[];
@@ -336,7 +347,7 @@ export const intsMap = ({
   const intsMap: IntsMap = new Map();
   let _titleInts: Text.Int[] | undefined;
   let _subtitleInts: Text.Int[] | undefined;
-  let _groupInts: Group.Int[] | undefined;
+  let _groupInts: GenericChart.Int[] | undefined;
   let _colorLegendInts: ColorLegend.Int[] | undefined;
   let _verticalAxisInts: Axis.Int[] | undefined;
   let _horizontalAxisInts: Axis.Int[] | undefined;
@@ -387,7 +398,7 @@ export const intsMap = ({
       _ints: _verticalAxisInts,
     });
 
-    const groupsInts = Group.ints({
+    const groupsInts = GenericChart.ints({
       getters: groups,
       _getters: _stepGetters?.groups,
       _ints: _groupInts,
@@ -410,7 +421,7 @@ export const intsMap = ({
 export type Resolved = {
   titles: Text.Resolved[];
   subtitles: Text.Resolved[];
-  groups: Group.Resolved[];
+  groups: GenericChart.Resolved[];
   colors: ColorLegend.Resolved[];
   horizontalAxes: Axis.Resolved[];
   verticalAxes: Axis.Resolved[];
@@ -429,7 +440,7 @@ export const resolve = (ints: Int, t: number) => {
   return {
     titles: Text.resolve({ ints: titles, t }),
     subtitles: Text.resolve({ ints: subtitles, t }),
-    groups: Group.resolve({ ints: groups, t }),
+    groups: GenericChart.resolve({ ints: groups, t }),
     colors: ColorLegend.resolve({ ints: colorLegends, t }),
     horizontalAxes: Axis.resolve({ ints: horizontalAxes, t }),
     verticalAxes: Axis.resolve({ ints: verticalAxes, t }),
@@ -481,7 +492,7 @@ export const render = ({
     type: "vertical",
   });
 
-  Group.render({
+  GenericChart.render({
     resolved: groups,
     svg,
     tooltip: finished ? tooltip : undefined,
