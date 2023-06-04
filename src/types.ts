@@ -177,12 +177,10 @@ export type BaseMax = {
 };
 
 export type MaxValue = {
-  type: "value";
   value: BaseMax;
 };
 
 export type MaxXY = {
-  type: "xy";
   x: BaseMax;
   y: BaseMax;
 };

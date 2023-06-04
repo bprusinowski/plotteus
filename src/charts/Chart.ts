@@ -12,6 +12,7 @@ export type BaseInfo = {
   groupsKeys: string[];
   dataKeys: string[];
   shareDomain: boolean;
+  showValues: boolean;
 };
 
 export const baseInfo = (
@@ -22,8 +23,9 @@ export const baseInfo = (
   const dataKeys = unique(
     inputStep.groups.flatMap((d) => d.data.map((d) => d.key))
   );
+  const showValues = inputStep.showValues ?? false;
 
-  return { groupsKeys, dataKeys, shareDomain };
+  return { groupsKeys, dataKeys, shareDomain, showValues };
 };
 
 export const info = (inputStep: InputStep) => {

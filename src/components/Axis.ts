@@ -1,11 +1,81 @@
 import { scaleLinear } from "d3-scale";
 import { Text } from ".";
+import * as Chart from "../charts/Chart";
 import { Dimensions, Margin, ResolvedDimensions } from "../dims";
 import { AxisType } from "../types";
 import { max } from "../utils";
 import * as Tick from "./AxisTick";
 import * as Generic from "./Generic";
 import { SVGSelection, Svg } from "./Svg";
+
+export type Info =
+  | {
+      show: true;
+      title: string;
+      tickFormat: (d: number) => string;
+      maxValue: number;
+      addTopMargin: boolean;
+    }
+  | {
+      show: false;
+    };
+
+export const info = (type: AxisType, chartInfo: Chart.Info): Info => {
+  switch (type) {
+    case "vertical":
+      switch (chartInfo.type) {
+        case "bar":
+          if (chartInfo.layout === "vertical") {
+            return {
+              show: chartInfo.verticalAxis?.show ?? chartInfo.groups.length > 0,
+              title: chartInfo.verticalAxis?.title ?? "",
+              tickFormat:
+                chartInfo.verticalAxis?.tickFormat ?? Tick.defaultFormat,
+              maxValue: chartInfo.maxValue.actual,
+              addTopMargin: chartInfo.showValues,
+            };
+          } else {
+            return { show: false };
+          }
+        case "scatter":
+          return {
+            show: chartInfo.verticalAxis?.show ?? true,
+            title: chartInfo.verticalAxis?.title ?? "",
+            tickFormat:
+              chartInfo.verticalAxis?.tickFormat ?? Tick.defaultFormat,
+            maxValue: chartInfo.maxValue.y.actual,
+            addTopMargin: false,
+          };
+      }
+    case "horizontal":
+      switch (chartInfo.type) {
+        case "bar":
+          if (chartInfo.layout === "horizontal") {
+            return {
+              show: chartInfo.horizontalAxis?.show ?? true,
+              title: chartInfo.horizontalAxis?.title ?? "",
+              tickFormat:
+                chartInfo.horizontalAxis?.tickFormat ?? Tick.defaultFormat,
+              maxValue: chartInfo.maxValue.actual,
+              addTopMargin: false,
+            };
+          } else {
+            return { show: false };
+          }
+        case "scatter":
+          return {
+            show: chartInfo.horizontalAxis?.show ?? true,
+            title: chartInfo.horizontalAxis?.title ?? "",
+            tickFormat:
+              chartInfo.horizontalAxis?.tickFormat ?? Tick.defaultFormat,
+            maxValue: chartInfo.maxValue.x.actual,
+            addTopMargin: false,
+          };
+      }
+    default:
+      return { show: false };
+  }
+};
 
 type G = {
   x: number;

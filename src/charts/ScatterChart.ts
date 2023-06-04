@@ -5,6 +5,7 @@ import { BAR, getPathData } from "../coords";
 import { Dimensions, ResolvedDimensions } from "../dims";
 import {
   BaseMax,
+  InputAxis,
   InputGroupXY,
   MaxXY,
   ScatterInputStep,
@@ -20,8 +21,11 @@ import {
 } from "./utils";
 
 export type Info = Chart.BaseInfo & {
+  type: "scatter";
   groups: InputGroupXY[];
   maxValue: MaxXY;
+  verticalAxis: InputAxis | undefined;
+  horizontalAxis: InputAxis | undefined;
 };
 
 export const info = (inputStep: ScatterInputStep): Info => {
@@ -29,8 +33,11 @@ export const info = (inputStep: ScatterInputStep): Info => {
 
   return {
     ...Chart.baseInfo(inputStep, shareDomain),
+    type: "scatter",
     groups,
     maxValue: getMaxXY(inputStep),
+    verticalAxis: inputStep.verticalAxis,
+    horizontalAxis: inputStep.horizontalAxis,
   };
 };
 
@@ -41,7 +48,6 @@ const getMaxXY = (step: ScatterInputStep): MaxXY => {
   const yMax = max(yValues) ?? 0;
 
   return {
-    type: "xy",
     x: getBaseMax(step.xScale?.maxValue, xMax),
     y: getBaseMax(step.yScale?.maxValue, yMax),
   };
@@ -49,13 +55,12 @@ const getMaxXY = (step: ScatterInputStep): MaxXY => {
 
 export const updateDims = (dims: Dimensions) => {
   const { BASE_MARGIN } = dims;
-  dims.addBottom(BASE_MARGIN);
+  dims.addTop(BASE_MARGIN).addBottom(BASE_MARGIN);
 };
 
 export const getters = (
   info: Info,
   props: {
-    showValues: boolean;
     showDatumLabels: boolean;
     svg: Svg;
     dims: ResolvedDimensions;

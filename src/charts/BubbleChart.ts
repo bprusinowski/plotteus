@@ -16,6 +16,7 @@ import {
 } from "./utils";
 
 export type Info = Chart.BaseInfo & {
+  type: "bubble";
   groups: InputGroupValue[];
   maxValue: BaseMax;
   canUseVerticalAxis: false;
@@ -27,6 +28,7 @@ export const info = (inputStep: BubbleInputStep): Info => {
 
   return {
     ...Chart.baseInfo(inputStep, shareDomain),
+    type: "bubble",
     groups,
     maxValue: getMaxValue(inputStep),
     canUseVerticalAxis: false,
@@ -51,7 +53,6 @@ export const updateDims = (dims: Dimensions) => {
 export const getters = (
   info: Info,
   props: {
-    showValues: boolean;
     showDatumLabels: boolean;
     svg: Svg;
     dims: ResolvedDimensions;
@@ -60,9 +61,8 @@ export const getters = (
     cartoonize: boolean;
   }
 ) => {
-  const { groups, maxValue, shareDomain } = info;
+  const { groups, maxValue, shareDomain, showValues } = info;
   const {
-    showValues,
     showDatumLabels,
     dims: { width, height, size, margin },
     textDims,

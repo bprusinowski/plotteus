@@ -8,6 +8,7 @@ import {
   BarChartSubtype,
   BarInputStep,
   BaseMax,
+  InputAxis,
   InputGroupValue,
   TextDims,
 } from "../types";
@@ -22,10 +23,13 @@ import {
 } from "./utils";
 
 export type Info = Chart.BaseInfo & {
+  type: "bar";
   subtype: BarChartSubtype;
   layout: BarChartLayout;
   groups: InputGroupValue[];
   maxValue: BaseMax;
+  verticalAxis: InputAxis | undefined;
+  horizontalAxis: InputAxis | undefined;
 };
 
 export const info = (inputStep: BarInputStep): Info => {
@@ -38,10 +42,17 @@ export const info = (inputStep: BarInputStep): Info => {
 
   return {
     ...Chart.baseInfo(inputStep, shareDomain),
+    type: "bar",
     subtype: chartSubtype,
     layout,
     groups,
     maxValue: getMaxValue(inputStep),
+    verticalAxis:
+      inputStep.layout === "vertical" || inputStep.layout === undefined
+        ? inputStep.verticalAxis
+        : undefined,
+    horizontalAxis:
+      inputStep.layout === "horizontal" ? inputStep.horizontalAxis : undefined,
   };
 };
 
@@ -67,12 +78,7 @@ const getMaxValue = (step: BarInputStep): BaseMax => {
   return getBaseMax(step.valueScale?.maxValue, valueMax);
 };
 
-export const updateDims = (
-  info: Info,
-  dims: Dimensions,
-  svg: Svg,
-  showValues: boolean
-) => {
+export const updateDims = (info: Info, dims: Dimensions, svg: Svg) => {
   const { subtype, layout, maxValue } = info;
   const { BASE_MARGIN } = dims;
 
@@ -80,18 +86,17 @@ export const updateDims = (
     dims.addBottom(BASE_MARGIN);
   }
 
-  if (subtype === "grouped" && layout === "horizontal" && showValues) {
+  if (subtype === "grouped" && layout === "horizontal" && info.showValues) {
     const { width } = svg.measureText(maxValue.actual, "datumValue");
     dims.addRight(Math.max(BASE_MARGIN * 3, width + BASE_MARGIN * 0.5));
   }
 
-  dims.addBottom(BASE_MARGIN);
+  dims.addTop(BASE_MARGIN).addBottom(BASE_MARGIN);
 };
 
 export const getters = (
   info: Info,
   props: {
-    showValues: boolean;
     showDatumLabels: boolean;
     svg: Svg;
     dims: ResolvedDimensions;
@@ -107,10 +112,10 @@ export const getters = (
     groupsKeys,
     dataKeys,
     shareDomain,
+    showValues,
     maxValue,
   } = info;
   const {
-    showValues,
     showDatumLabels,
     svg,
     dims: { width, fullWidth, height, fullHeight, margin, BASE_MARGIN },

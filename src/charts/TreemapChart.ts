@@ -32,6 +32,7 @@ import {
 } from "./utils";
 
 export type Info = Chart.BaseInfo & {
+  type: "treemap";
   layout: TreemapLayout;
   groups: InputGroupValue[];
   maxValue: BaseMax;
@@ -42,6 +43,7 @@ export const info = (inputStep: TreemapInputStep): Info => {
 
   return {
     ...Chart.baseInfo(inputStep, shareDomain),
+    type: "treemap",
     layout,
     groups,
     maxValue: getMaxValue(inputStep),
@@ -66,7 +68,6 @@ export const updateDims = (dims: Dimensions) => {
 export const getters = (
   info: Info,
   props: {
-    showValues: boolean;
     showDatumLabels: boolean;
     svg: Svg;
     dims: ResolvedDimensions;
@@ -75,9 +76,8 @@ export const getters = (
     cartoonize: boolean;
   }
 ) => {
-  const { layout, groups, maxValue, shareDomain } = info;
+  const { layout, groups, maxValue, shareDomain, showValues } = info;
   const {
-    showValues,
     showDatumLabels,
     svg,
     dims: { width, height, margin },
