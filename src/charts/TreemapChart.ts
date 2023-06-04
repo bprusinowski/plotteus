@@ -20,15 +20,15 @@ import {
   TreemapInputStep,
   TreemapLayout,
 } from "../types";
-import { FONT_SIZE, getTextColor, max } from "../utils";
+import { FONT_SIZE, getTextColor } from "../utils";
 import * as Chart from "./Chart";
 import { TreemapHierarchyRoot } from "./types";
 import {
   PADDING,
   STROKE_WIDTH,
   TEXT_MARGIN,
-  getBaseMax,
   getGroupLabelStrokeWidth,
+  getMaxValue,
   getRotate,
 } from "./utils";
 
@@ -49,16 +49,6 @@ export const info = (inputStep: TreemapInputStep): Info => {
     groups,
     maxValue: getMaxValue(inputStep),
   };
-};
-
-// TODO: Share between charts.
-const getMaxValue = (step: TreemapInputStep): BaseMax => {
-  const values = step.groups.flatMap((d) =>
-    d.data.reduce((acc, d) => acc + d.value, 0)
-  );
-  const valueMax = max(values) ?? 0;
-
-  return getBaseMax(step.valueScale?.maxValue, valueMax);
 };
 
 export const updateDims = (dims: Dimensions) => {

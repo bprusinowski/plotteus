@@ -11,13 +11,13 @@ import {
   PieInputStep,
   TextDims,
 } from "../types";
-import { FONT_SIZE, getTextColor, max, radiansToDegrees } from "../utils";
+import { FONT_SIZE, getTextColor, radiansToDegrees } from "../utils";
 import * as Chart from "./Chart";
 import {
   STROKE_WIDTH,
-  getBaseMax,
   getGroupLabelStrokeWidth,
   getHierarchyRoot,
+  getMaxValue,
 } from "./utils";
 
 export type Info = Chart.BaseInfo & {
@@ -39,15 +39,6 @@ export const info = (inputStep: PieInputStep): Info => {
     canUseVerticalAxis: false,
     canUseHorizontalAxis: false,
   };
-};
-
-const getMaxValue = (step: PieInputStep): BaseMax => {
-  const values = step.groups.flatMap((d) =>
-    d.data.reduce((acc, d) => acc + d.value, 0)
-  );
-  const valueMax = max(values) ?? 0;
-
-  return getBaseMax(step.valueScale?.maxValue, valueMax);
 };
 
 export const updateDims = (dims: Dimensions) => {

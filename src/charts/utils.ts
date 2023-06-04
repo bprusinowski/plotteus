@@ -1,5 +1,12 @@
 import { hierarchy, pack } from "d3-hierarchy";
-import { BaseMax, InputGroupValue } from "../types";
+import {
+  BaseMax,
+  BubbleInputStep,
+  InputGroupValue,
+  PieInputStep,
+  TreemapInputStep,
+} from "../types";
+import { max } from "../utils";
 import { HierarchyRoot } from "./types";
 
 // 0.5 seems too much.
@@ -24,6 +31,17 @@ export const getBaseMax = (
     k,
     kc: 1 - k,
   };
+};
+
+export const getMaxValue = (
+  step: BubbleInputStep | PieInputStep | TreemapInputStep
+): BaseMax => {
+  const values = step.groups.flatMap((d) =>
+    d.data.reduce((acc, d) => acc + d.value, 0)
+  );
+  const valueMax = max(values) ?? 0;
+
+  return getBaseMax(step.valueScale?.maxValue, valueMax);
 };
 
 export const getRotate = (_rotate = 0, cartoonize?: boolean): number => {

@@ -4,13 +4,13 @@ import { Svg } from "../components";
 import { BUBBLE, getPathData } from "../coords";
 import { Dimensions, ResolvedDimensions } from "../dims";
 import { BaseMax, BubbleInputStep, InputGroupValue, TextDims } from "../types";
-import { FONT_SIZE, getTextColor, max } from "../utils";
+import { FONT_SIZE, getTextColor } from "../utils";
 import * as Chart from "./Chart";
 import {
   STROKE_WIDTH,
-  getBaseMax,
   getGroupLabelStrokeWidth,
   getHierarchyRoot,
+  getMaxValue,
   getRotate,
 } from "./utils";
 
@@ -33,15 +33,6 @@ export const info = (inputStep: BubbleInputStep): Info => {
     canUseVerticalAxis: false,
     canUseHorizontalAxis: false,
   };
-};
-
-const getMaxValue = (step: BubbleInputStep): BaseMax => {
-  const values = step.groups.flatMap((d) =>
-    d.data.reduce((acc, d) => acc + d.value, 0)
-  );
-  const valueMax = max(values) ?? 0;
-
-  return getBaseMax(step.valueScale?.maxValue, valueMax);
 };
 
 export const updateDims = (dims: Dimensions) => {
