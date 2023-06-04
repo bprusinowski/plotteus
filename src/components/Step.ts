@@ -1,10 +1,15 @@
 import { Axis, AxisTick, ColorLegend, Group, Svg, Text, Tooltip } from ".";
-import { BarChart, BubbleChart, PieChart } from "../charts";
+import { BarChart, BubbleChart, PieChart, TreemapChart } from "../charts";
 import * as GenericChart from "../charts/GenericChart";
 import { ColorMap } from "../colors";
 import { Dimensions } from "../dims";
 import { StepMeta } from "../step-meta";
-import { BarInputStep, DefaultInputStep, InputStep } from "../types";
+import {
+  BarInputStep,
+  DefaultInputStep,
+  InputStep,
+  TreemapInputStep,
+} from "../types";
 import { getTextDims, stateOrderComparator } from "../utils";
 
 export type Getter = {
@@ -114,7 +119,8 @@ export const getters = ({
     if (
       chart.type !== "bar" &&
       chart.type !== "bubble" &&
-      chart.type !== "pie"
+      chart.type !== "pie" &&
+      chart.type !== "treemap"
     ) {
       if (chart.showsGroupLabelsOnBottom) {
         dims.addBottom(dims.BASE_MARGIN);
@@ -149,6 +155,8 @@ export const getters = ({
       BubbleChart.updateDims(dims);
     } else if (chart.type === "pie") {
       PieChart.updateDims(dims);
+    } else if (chart.type === "treemap") {
+      TreemapChart.updateDims(dims);
     }
 
     let horizontalAxisGetters: Axis.Getter | undefined;
@@ -309,38 +317,31 @@ export const getters = ({
         colorMap,
         cartoonize,
       });
+    } else if (chart.type === "treemap") {
+      const info = TreemapChart.info(step as TreemapInputStep);
+      groupsGetters = TreemapChart.getters(info, {
+        showValues,
+        showDatumLabels,
+        svg,
+        dims: dims.resolve(),
+        textDims,
+        colorMap,
+        cartoonize,
+      });
     }
 
-    if (
-      chart.type !== "bar" &&
-      chart.type !== "bubble" &&
-      chart.type !== "pie"
-    ) {
-      switch (chart.groupsType) {
-        case "value":
-          groupsGetters = Group.valueGetters({
-            chartType: chart.type,
-            subtype: chart.subtype,
-            layout: chart.layout,
-            props: {
-              ...baseGroupGetterProps,
-              groups: chart.groups,
-              maxValue: chart.max.value,
-            },
-          } as Group.ValueGettersProps);
-          break;
-        case "xy":
-          groupsGetters = Group.xyGetters({
-            chartType: chart.type,
-            props: {
-              ...baseGroupGetterProps,
-              groups: chart.groups,
-              xMaxValue: chart.max.x,
-              yMaxValue: chart.max.y,
-            },
-          });
-          break;
-      }
+    switch (chart.groupsType) {
+      case "xy":
+        groupsGetters = Group.xyGetters({
+          chartType: chart.type,
+          props: {
+            ...baseGroupGetterProps,
+            groups: chart.groups,
+            xMaxValue: chart.max.x,
+            yMaxValue: chart.max.y,
+          },
+        });
+        break;
     }
 
     steps.push({

@@ -8,32 +8,76 @@ import {
   treemapSliceDice,
   treemapSquarify,
 } from "d3-hierarchy";
-import { Datum, Group } from "../components";
+import { ColorMap } from "../colors";
+import { Datum, Svg } from "../components";
 import { BAR, getPathData } from "../coords";
-import { InputGroupValue, TreemapLayout } from "../types";
-import { FONT_SIZE, getTextColor } from "../utils";
+import { Dimensions, ResolvedDimensions } from "../dims";
+import {
+  BaseMax,
+  InputGroupValue,
+  TextDims,
+  TreemapInputStep,
+  TreemapLayout,
+} from "../types";
+import { FONT_SIZE, getTextColor, max } from "../utils";
+import * as GenericChart from "./GenericChart";
 import { TreemapHierarchyRoot } from "./types";
 import {
+  PADDING,
   STROKE_WIDTH,
   TEXT_MARGIN,
+  getBaseMax,
   getGroupLabelStrokeWidth,
   getRotate,
 } from "./utils";
 
-const PADDING = 2;
+type Info = {
+  layout: TreemapLayout;
+  groups: InputGroupValue[];
+  shareDomain: boolean;
+  maxValue: BaseMax;
+};
 
-type GetTreemapGettersProps = {
-  layout: TreemapLayout | undefined;
-} & Group.ValueGetterProps;
+export const info = (inputStep: TreemapInputStep): Info => {
+  const { layout = "resquarify", groups, shareDomain = false } = inputStep;
 
-export const getTreemapGetters = (
-  props: GetTreemapGettersProps
-): Group.Getter[] => {
-  const {
-    layout = "resquarify",
+  return {
+    layout,
     groups,
-    maxValue,
     shareDomain,
+    maxValue: getMaxValue(inputStep),
+  };
+};
+
+// TODO: Share between charts.
+const getMaxValue = (step: TreemapInputStep): BaseMax => {
+  const values = step.groups.flatMap((d) =>
+    d.data.reduce((acc, d) => acc + d.value, 0)
+  );
+  const valueMax = max(values) ?? 0;
+
+  return getBaseMax(step.valueScale?.maxValue, valueMax);
+};
+
+export const updateDims = (dims: Dimensions) => {
+  const { BASE_MARGIN } = dims;
+  dims.addBottom(BASE_MARGIN);
+};
+
+export const getters = (
+  info: Info,
+  props: {
+    showValues: boolean;
+    showDatumLabels: boolean;
+    svg: Svg;
+    dims: ResolvedDimensions;
+    textDims: TextDims;
+    colorMap: ColorMap;
+    cartoonize: boolean;
+  }
+) => {
+  const { layout, groups, maxValue, shareDomain } = info;
+  const {
     showValues,
     showDatumLabels,
     svg,
@@ -48,7 +92,7 @@ export const getTreemapGetters = (
     height: maxValue.k * height,
     layout,
   });
-  const groupsGetters: Group.Getter[] = [];
+  const groupsGetters: GenericChart.Getter[] = [];
 
   for (const group of root.children || []) {
     const { key } = group.data;
@@ -64,7 +108,7 @@ export const getTreemapGetters = (
     const groupWidth = group.x1 - group.x0;
     const groupHeight = group.y1 - group.y0;
 
-    const groupGetters: Group.Getter = {
+    const groupGetters: GenericChart.Getter = {
       key,
       g: ({ s, _g }) => {
         const d = BAR;

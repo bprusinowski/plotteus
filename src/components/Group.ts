@@ -1,14 +1,7 @@
 import { getScatterGetters } from "../charts/scatter";
-import { getTreemapGetters } from "../charts/treemap";
 import { ColorMap } from "../colors";
 import { ResolvedDimensions } from "../dims";
-import {
-  BaseMax,
-  InputGroupValue,
-  InputGroupXY,
-  TextDims,
-  TreemapLayout,
-} from "../types";
+import { BaseMax, InputGroupValue, InputGroupXY, TextDims } from "../types";
 import * as Datum from "./Datum";
 import * as Generic from "./Generic";
 import { Svg } from "./Svg";
@@ -53,23 +46,6 @@ export type XYGetterProps = BaseGetterProps & {
   groups: InputGroupXY[];
   xMaxValue: BaseMax;
   yMaxValue: BaseMax;
-};
-
-export type ValueGettersProps = {
-  chartType: "treemap";
-  subtype: undefined;
-  layout: TreemapLayout | undefined;
-  props: ValueGetterProps;
-};
-
-export const valueGetters = (props: ValueGettersProps): Getter[] => {
-  switch (props.chartType) {
-    case "treemap":
-      return getTreemapGetters({
-        layout: props.layout,
-        ...props.props,
-      });
-  }
 };
 
 type XYGettersProps = {
