@@ -1,4 +1,3 @@
-import { hierarchy, pack } from "d3-hierarchy";
 import { PieArcDatum, pie } from "d3-shape";
 import { Datum } from ".";
 import { ColorMap } from "../colors";
@@ -14,12 +13,11 @@ import {
 } from "../types";
 import { FONT_SIZE, getTextColor, max, radiansToDegrees } from "../utils";
 import * as Chart from "./Chart";
-import { HierarchyRoot } from "./types";
 import {
-  PADDING,
   STROKE_WIDTH,
   getBaseMax,
   getGroupLabelStrokeWidth,
+  getHierarchyRoot,
 } from "./utils";
 
 export type Info = Chart.BaseInfo & {
@@ -76,7 +74,7 @@ export const getters = (
     colorMap,
     cartoonize,
   } = props;
-  const root = getRoot({ groups, size: maxValue.k * size });
+  const root = getHierarchyRoot({ groups, size: maxValue.k * size });
   const groupsGetters: Chart.Getter[] = [];
   const maxValueShift = maxValue.kc * size * 0.5;
   const showDatumLabelsAndValues = showDatumLabels && showValues;
@@ -225,28 +223,4 @@ export const getters = (
   }
 
   return groupsGetters;
-};
-
-// TODO: share between Bubble and Pie
-const getRoot = ({
-  groups,
-  size,
-}: {
-  groups: InputGroupValue[];
-  size: number;
-}): HierarchyRoot => {
-  const root = hierarchy({
-    children: groups.map((d) => ({
-      key: d.key,
-      opacity: d.opacity,
-      children: d.data,
-    })),
-  }).sum((d) => Math.max(0, (d as any).value));
-  const descendants = root.descendants();
-  const leaves = descendants.filter((d) => !d.children);
-  leaves.forEach((d: any, i) => (d.index = i));
-  root.sort((a: any, b: any) => a.index - b.index);
-  pack().size([size, size]).padding(PADDING)(root as any);
-
-  return root as any as HierarchyRoot;
 };

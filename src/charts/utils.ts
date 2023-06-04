@@ -1,4 +1,6 @@
-import { BaseMax } from "../types";
+import { hierarchy, pack } from "d3-hierarchy";
+import { BaseMax, InputGroupValue } from "../types";
+import { HierarchyRoot } from "./types";
 
 // 0.5 seems too much.
 export const HALF_FONT_K = 0.42;
@@ -32,4 +34,27 @@ export const getRotate = (_rotate = 0, cartoonize?: boolean): number => {
 
 export const getGroupLabelStrokeWidth = (labelFontSize: number): number => {
   return labelFontSize ? 3 : 0;
+};
+
+export const getHierarchyRoot = ({
+  groups,
+  size,
+}: {
+  groups: InputGroupValue[];
+  size: number;
+}): HierarchyRoot => {
+  const root = hierarchy({
+    children: groups.map((d) => ({
+      key: d.key,
+      opacity: d.opacity,
+      children: d.data,
+    })),
+  }).sum((d) => Math.max(0, (d as any).value));
+  const descendants = root.descendants();
+  const leaves = descendants.filter((d) => !d.children);
+  leaves.forEach((d: any, i) => (d.index = i));
+  root.sort((a: any, b: any) => a.index - b.index);
+  pack().size([size, size]).padding(PADDING)(root as any);
+
+  return root as any as HierarchyRoot;
 };
