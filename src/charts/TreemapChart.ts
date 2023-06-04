@@ -20,7 +20,7 @@ import {
   TreemapLayout,
 } from "../types";
 import { FONT_SIZE, getTextColor, max } from "../utils";
-import * as GenericChart from "./GenericChart";
+import * as Chart from "./Chart";
 import { TreemapHierarchyRoot } from "./types";
 import {
   PADDING,
@@ -31,10 +31,9 @@ import {
   getRotate,
 } from "./utils";
 
-type Info = {
+export type Info = Chart.Info & {
   layout: TreemapLayout;
   groups: InputGroupValue[];
-  shareDomain: boolean;
   maxValue: BaseMax;
 };
 
@@ -42,9 +41,9 @@ export const info = (inputStep: TreemapInputStep): Info => {
   const { layout = "resquarify", groups, shareDomain = false } = inputStep;
 
   return {
+    ...Chart.baseInfo(inputStep, shareDomain),
     layout,
     groups,
-    shareDomain,
     maxValue: getMaxValue(inputStep),
   };
 };
@@ -92,7 +91,7 @@ export const getters = (
     height: maxValue.k * height,
     layout,
   });
-  const groupsGetters: GenericChart.Getter[] = [];
+  const groupsGetters: Chart.Getter[] = [];
 
   for (const group of root.children || []) {
     const { key } = group.data;
@@ -108,7 +107,7 @@ export const getters = (
     const groupWidth = group.x1 - group.x0;
     const groupHeight = group.y1 - group.y0;
 
-    const groupGetters: GenericChart.Getter = {
+    const groupGetters: Chart.Getter = {
       key,
       g: ({ s, _g }) => {
         const d = BAR;

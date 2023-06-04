@@ -11,8 +11,8 @@ import {
   InputGroupValue,
   TextDims,
 } from "../types";
-import { FONT_SIZE, getTextColor, max, sum, unique } from "../utils";
-import * as GenericChart from "./GenericChart";
+import { FONT_SIZE, getTextColor, max, sum } from "../utils";
+import * as Chart from "./Chart";
 import {
   STROKE_WIDTH,
   TEXT_MARGIN,
@@ -21,15 +21,10 @@ import {
   getRotate,
 } from "./utils";
 
-type Info = {
+export type Info = Chart.Info & {
   subtype: BarChartSubtype;
   layout: BarChartLayout;
   groups: InputGroupValue[];
-  // Only needed for Bar chart.
-  groupsKeys: string[];
-  // Only needed for Bar chart.
-  dataKeys: string[];
-  shareDomain: boolean;
   maxValue: BaseMax;
 };
 
@@ -42,12 +37,10 @@ export const info = (inputStep: BarInputStep): Info => {
   } = inputStep;
 
   return {
+    ...Chart.baseInfo(inputStep, shareDomain),
     subtype: chartSubtype,
     layout,
     groups,
-    groupsKeys: groups.map((d) => d.key),
-    dataKeys: unique(groups.flatMap((d) => d.data.map((d) => d.key))),
-    shareDomain,
     maxValue: getMaxValue(inputStep),
   };
 };
@@ -141,12 +134,12 @@ export const getters = (
       width,
       height,
     });
-    const groupsGetters: GenericChart.Getter[] = [];
+    const groupsGetters: Chart.Getter[] = [];
 
     for (const group of groups) {
       const { key } = group;
       const groupX0 = x0Scale(key) as number;
-      const groupGetters: GenericChart.Getter = {
+      const groupGetters: Chart.Getter = {
         key,
         g: ({ s, _g }) => {
           const d = BAR;
@@ -287,12 +280,12 @@ export const getters = (
       height,
       labelMargin: textDims.groupLabel.height + BASE_MARGIN * 0.5,
     });
-    const groupsGetters: GenericChart.Getter[] = [];
+    const groupsGetters: Chart.Getter[] = [];
 
     for (const group of groups) {
       const { key } = group;
       const groupY0 = y0Scale(key) as number;
-      const groupGetters: GenericChart.Getter = {
+      const groupGetters: Chart.Getter = {
         key,
         g: ({ s, _g }) => {
           const d = BAR;

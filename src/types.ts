@@ -107,6 +107,8 @@ type BaseInputDatum = BaseInputGroup & {
   fill?: string;
 };
 
+export type InputDatum = InputDatumValue | InputDatumXY;
+
 export type InputDatumValue = BaseInputDatum & {
   value: number;
 };

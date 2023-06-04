@@ -11,7 +11,7 @@ import {
   TextDims,
 } from "../types";
 import { FONT_SIZE, getTextColor, max } from "../utils";
-import * as GenericChart from "./GenericChart";
+import * as Chart from "./Chart";
 import {
   STROKE_WIDTH,
   getBaseMax,
@@ -19,9 +19,8 @@ import {
   getRotate,
 } from "./utils";
 
-type Info = {
+export type Info = Chart.Info & {
   groups: InputGroupXY[];
-  shareDomain: boolean;
   maxValue: MaxXY;
 };
 
@@ -29,8 +28,8 @@ export const info = (inputStep: ScatterInputStep): Info => {
   const { groups, shareDomain = false } = inputStep;
 
   return {
+    ...Chart.baseInfo(inputStep, shareDomain),
     groups,
-    shareDomain,
     maxValue: getMaxXY(inputStep),
   };
 };
@@ -77,11 +76,11 @@ export const getters = (
     cartoonize,
   } = props;
   const { xScale, yScale } = getScales({ xMaxValue, yMaxValue, width, height });
-  const groupsGetters: GenericChart.Getter[] = [];
+  const groupsGetters: Chart.Getter[] = [];
 
   for (const group of groups) {
     const { key } = group;
-    const groupGetters: GenericChart.Getter = {
+    const groupGetters: Chart.Getter = {
       key,
       g: ({ s, _g }) => {
         const d = BAR;

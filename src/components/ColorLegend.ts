@@ -1,11 +1,49 @@
+import * as Chart from "../charts/Chart";
 import { ColorMap } from "../colors";
 import { Dimensions, ResolvedDimensions } from "../dims";
-import { Anchor } from "../types";
+import { Anchor, InputDatum, InputStep } from "../types";
 import { FONT_SIZE, FONT_WEIGHT, max } from "../utils";
 import * as Generic from "./Generic";
 import { SVGSelection, Svg } from "./Svg";
 
 const R = FONT_SIZE.legendItem / 3;
+
+type Info = {
+  show: boolean;
+};
+
+export const info = (
+  inputStep: InputStep,
+  chartInfo: Chart.Info,
+  colorMap: ColorMap
+): Info => {
+  const keys = chartInfo.shareDomain
+    ? chartInfo.dataKeys
+    : chartInfo.groupsKeys;
+  const show = inputStep.showLegend ?? keys.length > 1;
+
+  if (inputStep.palette && inputStep.palette !== colorMap.palette) {
+    colorMap.setPalette(inputStep.palette);
+  }
+
+  const customDataColors = getCustomDataColors(inputStep);
+  colorMap.addKeys(keys, customDataColors);
+
+  return { show };
+};
+
+const getCustomDataColors = (step: InputStep): Map<string, string> => {
+  const customDataColorsMap = new Map<string, string>();
+  step.groups.flatMap((d) =>
+    (d.data as InputDatum[])
+      .filter((d) => d.fill)
+      .forEach((d) => {
+        customDataColorsMap.set(d.key, d.fill as string);
+      })
+  );
+
+  return customDataColorsMap;
+};
 
 type G = {
   x: number;

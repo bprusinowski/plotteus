@@ -1,11 +1,42 @@
+import { BarChart, BubbleChart, PieChart, ScatterChart, TreemapChart } from ".";
 import { ColorMap } from "../colors";
 import * as Datum from "../components/Datum";
 import * as Generic from "../components/Generic";
 import { Svg } from "../components/Svg";
 import { Tooltip } from "../components/Tooltip";
 import { ResolvedDimensions } from "../dims";
-import { TextDims } from "../types";
-import { FONT_WEIGHT, stateOrderComparator } from "../utils";
+import { InputStep, TextDims } from "../types";
+import { FONT_WEIGHT, stateOrderComparator, unique } from "../utils";
+
+export type Info = {
+  groupsKeys: string[];
+  dataKeys: string[];
+  shareDomain: boolean;
+};
+
+export const baseInfo = (inputStep: InputStep, shareDomain: boolean): Info => {
+  const groupsKeys = inputStep.groups.map((d) => d.key);
+  const dataKeys = unique(
+    inputStep.groups.flatMap((d) => d.data.map((d) => d.key))
+  );
+
+  return { groupsKeys, dataKeys, shareDomain };
+};
+
+export const info = (inputStep: InputStep) => {
+  switch (inputStep.chartType) {
+    case "bar":
+      return BarChart.info(inputStep);
+    case "bubble":
+      return BubbleChart.info(inputStep);
+    case "pie":
+      return PieChart.info(inputStep);
+    case "scatter":
+      return ScatterChart.info(inputStep);
+    case "treemap":
+      return TreemapChart.info(inputStep);
+  }
+};
 
 export type G = {
   d: string;

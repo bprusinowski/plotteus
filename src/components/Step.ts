@@ -6,7 +6,7 @@ import {
   ScatterChart,
   TreemapChart,
 } from "../charts";
-import * as GenericChart from "../charts/GenericChart";
+import * as Chart from "../charts/Chart";
 import { ColorMap } from "../colors";
 import { Dimensions } from "../dims";
 import { StepMeta } from "../step-meta";
@@ -17,7 +17,7 @@ export type Getter = {
   key: string;
   title: Text.Getter | undefined;
   subtitle: Text.Getter | undefined;
-  groups: GenericChart.Getter[];
+  groups: Chart.Getter[];
   colorLegends: ColorLegend.Getter[] | undefined;
   verticalAxis: Axis.Getter | undefined;
   horizontalAxis: Axis.Getter | undefined;
@@ -56,10 +56,9 @@ export const getters = ({
       cartoonize = false,
     } = step;
 
-    const { chart, legend, horizontalAxis, verticalAxis } = new StepMeta(
-      step,
-      colorMap
-    );
+    const chartInfo = Chart.info(step);
+    const colorLegendInfo = ColorLegend.info(step, chartInfo, colorMap);
+    const { chart, horizontalAxis, verticalAxis } = new StepMeta(step);
     const dims = new Dimensions(width, height);
 
     let titleGetter: Text.Getter | undefined;
@@ -101,7 +100,7 @@ export const getters = ({
     }
 
     let colorLegendsGetters: ColorLegend.Getter[] | undefined;
-    if (legend.show) {
+    if (colorLegendInfo.show) {
       colorLegendsGetters = ColorLegend.getters({
         colorMap,
         anchor: legendAnchor,
@@ -271,7 +270,7 @@ export const getters = ({
       _showVerticalAxis = false;
     }
 
-    let groupsGetters: GenericChart.Getter[] = [];
+    let groupsGetters: Chart.Getter[] = [];
     const chartGetterProps = {
       showValues,
       showDatumLabels,
@@ -330,7 +329,7 @@ export const getters = ({
 export type Int = {
   titles: Text.Int[];
   subtitles: Text.Int[];
-  groups: GenericChart.Int[];
+  groups: Chart.Int[];
   colorLegends: ColorLegend.Int[];
   horizontalAxes: Axis.Int[];
   verticalAxes: Axis.Int[];
@@ -348,7 +347,7 @@ export const intsMap = ({
   const intsMap: IntsMap = new Map();
   let _titleInts: Text.Int[] | undefined;
   let _subtitleInts: Text.Int[] | undefined;
-  let _groupInts: GenericChart.Int[] | undefined;
+  let _groupInts: Chart.Int[] | undefined;
   let _colorLegendInts: ColorLegend.Int[] | undefined;
   let _verticalAxisInts: Axis.Int[] | undefined;
   let _horizontalAxisInts: Axis.Int[] | undefined;
@@ -399,7 +398,7 @@ export const intsMap = ({
       _ints: _verticalAxisInts,
     });
 
-    const groupsInts = GenericChart.ints({
+    const groupsInts = Chart.ints({
       getters: groups,
       _getters: _stepGetters?.groups,
       _ints: _groupInts,
@@ -422,7 +421,7 @@ export const intsMap = ({
 export type Resolved = {
   titles: Text.Resolved[];
   subtitles: Text.Resolved[];
-  groups: GenericChart.Resolved[];
+  groups: Chart.Resolved[];
   colors: ColorLegend.Resolved[];
   horizontalAxes: Axis.Resolved[];
   verticalAxes: Axis.Resolved[];
@@ -441,7 +440,7 @@ export const resolve = (ints: Int, t: number) => {
   return {
     titles: Text.resolve({ ints: titles, t }),
     subtitles: Text.resolve({ ints: subtitles, t }),
-    groups: GenericChart.resolve({ ints: groups, t }),
+    groups: Chart.resolve({ ints: groups, t }),
     colors: ColorLegend.resolve({ ints: colorLegends, t }),
     horizontalAxes: Axis.resolve({ ints: horizontalAxes, t }),
     verticalAxes: Axis.resolve({ ints: verticalAxes, t }),
@@ -493,7 +492,7 @@ export const render = ({
     type: "vertical",
   });
 
-  GenericChart.render({
+  Chart.render({
     resolved: groups,
     svg,
     tooltip: finished ? tooltip : undefined,

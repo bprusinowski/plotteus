@@ -12,7 +12,7 @@ import {
   TextDims,
 } from "../types";
 import { FONT_SIZE, getTextColor, max, radiansToDegrees } from "../utils";
-import * as GenericChart from "./GenericChart";
+import * as Chart from "./Chart";
 import { HierarchyRoot } from "./types";
 import {
   PADDING,
@@ -21,9 +21,8 @@ import {
   getGroupLabelStrokeWidth,
 } from "./utils";
 
-type Info = {
+export type Info = Chart.Info & {
   groups: InputGroupValue[];
-  shareDomain: boolean;
   maxValue: BaseMax;
 };
 
@@ -31,8 +30,8 @@ export const info = (inputStep: PieInputStep): Info => {
   const { groups, shareDomain = true } = inputStep;
 
   return {
+    ...Chart.baseInfo(inputStep, shareDomain),
     groups,
-    shareDomain,
     maxValue: getMaxValue(inputStep),
   };
 };
@@ -73,7 +72,7 @@ export const getters = (
     cartoonize,
   } = props;
   const root = getRoot({ groups, size: maxValue.k * size });
-  const groupsGetters: GenericChart.Getter[] = [];
+  const groupsGetters: Chart.Getter[] = [];
   const maxValueShift = maxValue.kc * size * 0.5;
   const showDatumLabelsAndValues = showDatumLabels && showValues;
 
@@ -88,7 +87,7 @@ export const getters = (
       continue;
     }
 
-    const groupGetters: GenericChart.Getter = {
+    const groupGetters: Chart.Getter = {
       key,
       g: ({ s, _g }) => {
         const d = BUBBLE;
