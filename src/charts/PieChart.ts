@@ -1,28 +1,72 @@
-import { hierarchy, pack } from "d3-hierarchy";
 import { PieArcDatum, pie } from "d3-shape";
-import { Datum, Group } from "../components";
+import { Datum } from ".";
+import { ColorMap } from "../colors";
+import { Svg } from "../components";
 import { BUBBLE, getPathData } from "../coords";
-import { InputDatumValue, InputGroupValue } from "../types";
+import { Dimensions, ResolvedDimensions } from "../dims";
+import {
+  BaseMax,
+  InputDatumValue,
+  InputGroupValue,
+  PieInputStep,
+  TextDims,
+} from "../types";
 import { FONT_SIZE, getTextColor, radiansToDegrees } from "../utils";
-import { HierarchyRoot } from "./types";
-import { PADDING, STROKE_WIDTH, getGroupLabelStrokeWidth } from "./utils";
+import * as Chart from "./Chart";
+import {
+  STROKE_WIDTH,
+  getGroupLabelStrokeWidth,
+  getHierarchyRoot,
+  getMaxValue,
+} from "./utils";
 
-type GetPieGettersProps = Group.ValueGetterProps;
+export type Info = Chart.BaseInfo & {
+  type: "pie";
+  groups: InputGroupValue[];
+  maxValue: BaseMax;
+  canUseVerticalAxis: false;
+  canUseHorizontalAxis: false;
+};
 
-export const getPieGetters = (props: GetPieGettersProps): Group.Getter[] => {
-  const {
+export const info = (inputStep: PieInputStep): Info => {
+  const { groups, shareDomain = true } = inputStep;
+
+  return {
+    ...Chart.baseInfo(inputStep, shareDomain),
+    type: "pie",
     groups,
-    maxValue,
-    shareDomain,
-    showValues,
+    maxValue: getMaxValue(inputStep),
+    canUseVerticalAxis: false,
+    canUseHorizontalAxis: false,
+  };
+};
+
+export const updateDims = (dims: Dimensions) => {
+  const { BASE_MARGIN } = dims;
+  dims.addBottom(BASE_MARGIN);
+};
+
+export const getters = (
+  info: Info,
+  props: {
+    showDatumLabels: boolean;
+    svg: Svg;
+    dims: ResolvedDimensions;
+    textDims: TextDims;
+    colorMap: ColorMap;
+    cartoonize: boolean;
+  }
+) => {
+  const { groups, maxValue, shareDomain, showValues } = info;
+  const {
     showDatumLabels,
     dims: { width, height, size, margin },
     textDims,
     colorMap,
     cartoonize,
   } = props;
-  const root = getRoot({ groups, size: maxValue.k * size });
-  const groupsGetters: Group.Getter[] = [];
+  const root = getHierarchyRoot({ groups, size: maxValue.k * size });
+  const groupsGetters: Chart.Getter[] = [];
   const maxValueShift = maxValue.kc * size * 0.5;
   const showDatumLabelsAndValues = showDatumLabels && showValues;
 
@@ -37,7 +81,7 @@ export const getPieGetters = (props: GetPieGettersProps): Group.Getter[] => {
       continue;
     }
 
-    const groupGetters: Group.Getter = {
+    const groupGetters: Chart.Getter = {
       key,
       g: ({ s, _g }) => {
         const d = BUBBLE;
@@ -170,27 +214,4 @@ export const getPieGetters = (props: GetPieGettersProps): Group.Getter[] => {
   }
 
   return groupsGetters;
-};
-
-const getRoot = ({
-  groups,
-  size,
-}: {
-  groups: InputGroupValue[];
-  size: number;
-}): HierarchyRoot => {
-  const root = hierarchy({
-    children: groups.map((d) => ({
-      key: d.key,
-      opacity: d.opacity,
-      children: d.data,
-    })),
-  }).sum((d) => Math.max(0, (d as any).value));
-  const descendants = root.descendants();
-  const leaves = descendants.filter((d) => !d.children);
-  leaves.forEach((d: any, i) => (d.index = i));
-  root.sort((a: any, b: any) => a.index - b.index);
-  pack().size([size, size]).padding(PADDING)(root as any);
-
-  return root as any as HierarchyRoot;
 };

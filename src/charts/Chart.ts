@@ -1,26 +1,72 @@
-import { getBarGetters } from "../charts/bar";
-import { getBubbleGetters } from "../charts/bubble";
-import { getPieGetters } from "../charts/pie";
-import { getScatterGetters } from "../charts/scatter";
-import { getTreemapGetters } from "../charts/treemap";
+import { BarChart, BubbleChart, PieChart, ScatterChart, TreemapChart } from ".";
 import { ColorMap } from "../colors";
-import { ResolvedDimensions } from "../dims";
-import {
-  BarChartLayout,
-  BarChartSubtype,
-  BaseMax,
-  InputGroupValue,
-  InputGroupXY,
-  TextDims,
-  TreemapLayout,
-} from "../types";
-import { FONT_WEIGHT, stateOrderComparator } from "../utils";
+import * as Generic from "../components/Generic";
+import { Svg } from "../components/Svg";
+import { Tooltip } from "../components/Tooltip";
+import { Dimensions, ResolvedDimensions } from "../dims";
+import { InputStep, TextDims } from "../types";
+import { FONT_WEIGHT, stateOrderComparator, unique } from "../utils";
 import * as Datum from "./Datum";
-import * as Generic from "./Generic";
-import { Svg } from "./Svg";
-import { Tooltip } from "./Tooltip";
 
-type G = {
+export type BaseInfo = {
+  groupsKeys: string[];
+  dataKeys: string[];
+  shareDomain: boolean;
+  showValues: boolean;
+};
+
+export const baseInfo = (
+  inputStep: InputStep,
+  shareDomain: boolean
+): BaseInfo => {
+  const groupsKeys = inputStep.groups.map((d) => d.key);
+  const dataKeys = unique(
+    inputStep.groups.flatMap((d) => d.data.map((d) => d.key))
+  );
+  const showValues = inputStep.showValues ?? false;
+
+  return { groupsKeys, dataKeys, shareDomain, showValues };
+};
+
+export const info = (inputStep: InputStep) => {
+  switch (inputStep.chartType) {
+    case "bar":
+      return BarChart.info(inputStep);
+    case "bubble":
+      return BubbleChart.info(inputStep);
+    case "pie":
+      return PieChart.info(inputStep);
+    case "scatter":
+      return ScatterChart.info(inputStep);
+    case "treemap":
+      return TreemapChart.info(inputStep);
+    default:
+      const _exhaustiveCheck: never = inputStep;
+      return _exhaustiveCheck;
+  }
+};
+
+export type Info = ReturnType<typeof info>;
+
+export const updateDims = (info: Info, dims: Dimensions, svg: Svg) => {
+  switch (info.type) {
+    case "bar":
+      return BarChart.updateDims(info, dims, svg);
+    case "bubble":
+      return BubbleChart.updateDims(dims);
+    case "pie":
+      return PieChart.updateDims(dims);
+    case "scatter":
+      return ScatterChart.updateDims(dims);
+    case "treemap":
+      return TreemapChart.updateDims(dims);
+    default:
+      const _exhaustiveCheck: never = info;
+      return _exhaustiveCheck;
+  }
+};
+
+export type G = {
   d: string;
   x: number;
   y: number;
@@ -33,82 +79,31 @@ type G = {
 
 export type Getter = Generic.Getter<G, { data: Datum.Getter[] }>;
 
-export type BaseGetterProps = {
-  // Data.
-  groupsKeys: string[];
-  dataKeys: string[];
-  // Scales.
-  shareDomain: boolean;
-  // Labels.
-  showValues: boolean;
+export type GetterProps = {
   showDatumLabels: boolean;
-  // Dimensions.
   svg: Svg;
   dims: ResolvedDimensions;
   textDims: TextDims;
-  // Appearance.
   colorMap: ColorMap;
   cartoonize: boolean;
 };
 
-export type ValueGetterProps = BaseGetterProps & {
-  groups: InputGroupValue[];
-  maxValue: BaseMax;
-};
-
-export type XYGetterProps = BaseGetterProps & {
-  groups: InputGroupXY[];
-  xMaxValue: BaseMax;
-  yMaxValue: BaseMax;
-};
-
-export type ValueGettersProps =
-  | {
-      chartType: "bubble" | "pie";
-      subtype: undefined;
-      layout: undefined;
-      props: ValueGetterProps;
-    }
-  | {
-      chartType: "bar";
-      subtype: BarChartSubtype | undefined;
-      layout: BarChartLayout | undefined;
-      props: ValueGetterProps;
-    }
-  | {
-      chartType: "treemap";
-      subtype: undefined;
-      layout: TreemapLayout | undefined;
-      props: ValueGetterProps;
-    };
-
-export const valueGetters = (props: ValueGettersProps): Getter[] => {
-  switch (props.chartType) {
+export const getters = (info: Info, props: GetterProps): Getter[] => {
+  switch (info.type) {
     case "bar":
-      return getBarGetters({
-        type: props.subtype,
-        layout: props.layout,
-        ...props.props,
-      });
+      return BarChart.getters(info, props);
     case "bubble":
-      return getBubbleGetters(props.props);
+      return BubbleChart.getters(info, props);
     case "pie":
-      return getPieGetters(props.props);
+      return PieChart.getters(info, props);
+    case "scatter":
+      return ScatterChart.getters(info, props);
     case "treemap":
-      return getTreemapGetters({
-        layout: props.layout,
-        ...props.props,
-      });
+      return TreemapChart.getters(info, props);
+    default:
+      const _exhaustiveCheck: never = info;
+      return _exhaustiveCheck;
   }
-};
-
-type XYGettersProps = {
-  chartType: "scatter";
-  props: XYGetterProps;
-};
-
-export const xyGetters = ({ props }: XYGettersProps): Getter[] => {
-  return getScatterGetters(props);
 };
 
 export type Int = Generic.Int<G, { data: Datum.Int[] }>;

@@ -1,30 +1,122 @@
-import { ScaleBand, scaleBand, ScaleLinear, scaleLinear } from "d3-scale";
-import { AxisTick, Datum, Group } from "../components";
+import { ScaleBand, ScaleLinear, scaleBand, scaleLinear } from "d3-scale";
+import { Datum } from ".";
+import { ColorMap } from "../colors";
+import { AxisTick, Svg } from "../components";
 import { BAR, getPathData } from "../coords";
-import { BarChartLayout, BarChartSubtype, BaseMax } from "../types";
-import { FONT_SIZE, getTextColor } from "../utils";
+import { Dimensions, ResolvedDimensions } from "../dims";
 import {
-  getGroupLabelStrokeWidth,
-  getRotate,
+  BarChartLayout,
+  BarChartSubtype,
+  BarInputStep,
+  BaseMax,
+  InputAxis,
+  InputGroupValue,
+  TextDims,
+} from "../types";
+import { FONT_SIZE, getTextColor, max, sum } from "../utils";
+import * as Chart from "./Chart";
+import {
   STROKE_WIDTH,
   TEXT_MARGIN,
+  getBaseMax,
+  getGroupLabelStrokeWidth,
+  getRotate,
 } from "./utils";
 
-type GetBarGetterProps = {
-  type: BarChartSubtype | undefined;
-  layout: BarChartLayout | undefined;
-} & Group.ValueGetterProps;
+export type Info = Chart.BaseInfo & {
+  type: "bar";
+  subtype: BarChartSubtype;
+  layout: BarChartLayout;
+  groups: InputGroupValue[];
+  maxValue: BaseMax;
+  verticalAxis: InputAxis | undefined;
+  horizontalAxis: InputAxis | undefined;
+};
 
-export const getBarGetters = (props: GetBarGetterProps): Group.Getter[] => {
+export const info = (inputStep: BarInputStep): Info => {
   const {
-    type = "grouped",
+    chartSubtype = "grouped",
     layout = "vertical",
     groups,
-    maxValue,
+    shareDomain = true,
+  } = inputStep;
+
+  return {
+    ...Chart.baseInfo(inputStep, shareDomain),
+    type: "bar",
+    subtype: chartSubtype,
+    layout,
+    groups,
+    maxValue: getMaxValue(inputStep),
+    verticalAxis:
+      inputStep.layout === "vertical" || inputStep.layout === undefined
+        ? inputStep.verticalAxis
+        : undefined,
+    horizontalAxis:
+      inputStep.layout === "horizontal" ? inputStep.horizontalAxis : undefined,
+  };
+};
+
+const getMaxValue = (step: BarInputStep): BaseMax => {
+  let valueMax = 0;
+
+  switch (step.chartSubtype) {
+    case "stacked":
+      step.groups.forEach((d) => {
+        const groupSum = sum(d.data.map((d) => d.value));
+
+        if (groupSum > valueMax) {
+          valueMax = groupSum;
+        }
+      });
+      break;
+    default:
+      const values = step.groups.flatMap((d) => d.data.map((d) => d.value));
+      valueMax = max(values) ?? 0;
+      break;
+  }
+
+  return getBaseMax(step.valueScale?.maxValue, valueMax);
+};
+
+export const updateDims = (info: Info, dims: Dimensions, svg: Svg) => {
+  const { subtype, layout, maxValue } = info;
+  const { BASE_MARGIN } = dims;
+
+  if (layout === "vertical") {
+    dims.addBottom(BASE_MARGIN);
+  }
+
+  if (subtype === "grouped" && layout === "horizontal" && info.showValues) {
+    const { width } = svg.measureText(maxValue.actual, "datumValue");
+    dims.addRight(Math.max(BASE_MARGIN * 3, width + BASE_MARGIN * 0.5));
+  }
+
+  dims.addTop(BASE_MARGIN).addBottom(BASE_MARGIN);
+};
+
+export const getters = (
+  info: Info,
+  props: {
+    showDatumLabels: boolean;
+    svg: Svg;
+    dims: ResolvedDimensions;
+    textDims: TextDims;
+    colorMap: ColorMap;
+    cartoonize: boolean;
+  }
+) => {
+  const {
+    subtype,
+    layout,
+    groups,
     groupsKeys,
     dataKeys,
     shareDomain,
     showValues,
+    maxValue,
+  } = info;
+  const {
     showDatumLabels,
     svg,
     dims: { width, fullWidth, height, fullHeight, margin, BASE_MARGIN },
@@ -32,7 +124,7 @@ export const getBarGetters = (props: GetBarGetterProps): Group.Getter[] => {
     colorMap,
     cartoonize,
   } = props;
-  const isGrouped = type === "grouped";
+  const isGrouped = subtype === "grouped";
   const isVertical = layout === "vertical";
   const labelHeight = textDims.datumLabel.height;
   const labelYShift = textDims.datumLabel.yShift;
@@ -48,12 +140,12 @@ export const getBarGetters = (props: GetBarGetterProps): Group.Getter[] => {
       width,
       height,
     });
-    const groupsGetters: Group.Getter[] = [];
+    const groupsGetters: Chart.Getter[] = [];
 
     for (const group of groups) {
       const { key } = group;
       const groupX0 = x0Scale(key) as number;
-      const groupGetters: Group.Getter = {
+      const groupGetters: Chart.Getter = {
         key,
         g: ({ s, _g }) => {
           const d = BAR;
@@ -194,12 +286,12 @@ export const getBarGetters = (props: GetBarGetterProps): Group.Getter[] => {
       height,
       labelMargin: textDims.groupLabel.height + BASE_MARGIN * 0.5,
     });
-    const groupsGetters: Group.Getter[] = [];
+    const groupsGetters: Chart.Getter[] = [];
 
     for (const group of groups) {
       const { key } = group;
       const groupY0 = y0Scale(key) as number;
-      const groupGetters: Group.Getter = {
+      const groupGetters: Chart.Getter = {
         key,
         g: ({ s, _g }) => {
           const d = BAR;

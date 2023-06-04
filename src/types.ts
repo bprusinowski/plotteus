@@ -41,6 +41,18 @@ export type BarInputStep = BaseInputStep & {
       }
   );
 
+export type BubbleInputStep = BaseInputStep & {
+  chartType: "bubble";
+  valueScale?: InputScale;
+  groups: InputGroupValue[];
+};
+
+export type PieInputStep = BaseInputStep & {
+  chartType: "pie";
+  valueScale?: InputScale;
+  groups: InputGroupValue[];
+};
+
 export type ScatterInputStep = BaseInputStep & {
   chartType: "scatter";
   xScale?: InputScale;
@@ -57,17 +69,12 @@ export type TreemapInputStep = BaseInputStep & {
   groups: InputGroupValue[];
 };
 
-export type DefaultInputStep = BaseInputStep & {
-  chartType: Exclude<ChartType, "bar" | "scatter" | "treemap">;
-  valueScale?: InputScale;
-  groups: InputGroupValue[];
-};
-
 export type InputStep =
   | BarInputStep
+  | BubbleInputStep
+  | PieInputStep
   | ScatterInputStep
-  | TreemapInputStep
-  | DefaultInputStep;
+  | TreemapInputStep;
 
 export type InputScale = {
   maxValue?: number;
@@ -99,6 +106,8 @@ type BaseInputDatum = BaseInputGroup & {
   teleportFrom?: string;
   fill?: string;
 };
+
+export type InputDatum = InputDatumValue | InputDatumXY;
 
 export type InputDatumValue = BaseInputDatum & {
   value: number;
@@ -168,12 +177,10 @@ export type BaseMax = {
 };
 
 export type MaxValue = {
-  type: "value";
   value: BaseMax;
 };
 
 export type MaxXY = {
-  type: "xy";
   x: BaseMax;
   y: BaseMax;
 };

@@ -1,7 +1,7 @@
-import { Axis, AxisTick, ColorLegend, Group, Svg, Text, Tooltip } from ".";
+import { Axis, AxisTick, ColorLegend, Svg, Text, Tooltip } from ".";
+import * as Chart from "../charts/Chart";
 import { ColorMap } from "../colors";
 import { Dimensions } from "../dims";
-import { StepMeta } from "../step-meta";
 import { InputStep } from "../types";
 import { getTextDims, stateOrderComparator } from "../utils";
 
@@ -9,7 +9,7 @@ export type Getter = {
   key: string;
   title: Text.Getter | undefined;
   subtitle: Text.Getter | undefined;
-  groups: Group.Getter[];
+  groups: Chart.Getter[];
   colorLegends: ColorLegend.Getter[] | undefined;
   verticalAxis: Axis.Getter | undefined;
   horizontalAxis: Axis.Getter | undefined;
@@ -27,8 +27,6 @@ export const getters = ({
   height: number;
 }): Getter[] => {
   const steps: Getter[] = [];
-  let _showHorizontalAxis: boolean | undefined;
-  let _showVerticalAxis: boolean | undefined;
   let _maxHorizontalAxisValue: number | undefined;
   let _maxVerticalAxisValue: number | undefined;
   const textDims = getTextDims(svg);
@@ -43,16 +41,15 @@ export const getters = ({
       subtitleAnchor = "start",
       legendTitle = "",
       legendAnchor = "middle",
-      showValues = false,
       showDatumLabels = false,
       cartoonize = false,
     } = step;
 
-    const { chart, legend, horizontalAxis, verticalAxis } = new StepMeta(
-      step,
-      colorMap
-    );
     const dims = new Dimensions(width, height);
+    const chartInfo = Chart.info(step);
+    const colorLegendInfo = ColorLegend.info(step, chartInfo, colorMap);
+    const verticalAxisInfo = Axis.info("vertical", chartInfo);
+    const horizontalAxisInfo = Axis.info("horizontal", chartInfo);
 
     let titleGetter: Text.Getter | undefined;
     if (title !== undefined) {
@@ -89,11 +86,11 @@ export const getters = ({
     }
 
     if (title || subtitle) {
-      dims.addTop(dims.BASE_MARGIN * 2);
+      dims.addTop(dims.BASE_MARGIN);
     }
 
     let colorLegendsGetters: ColorLegend.Getter[] | undefined;
-    if (legend.show) {
+    if (colorLegendInfo.show) {
       colorLegendsGetters = ColorLegend.getters({
         colorMap,
         anchor: legendAnchor,
@@ -106,198 +103,133 @@ export const getters = ({
         dims,
         getters: colorLegendsGetters,
         itemHeight: textDims.legendItem.height,
-        chartType: chart.type,
       });
     }
 
-    if (chart.showsGroupLabelsOnBottom) {
-      dims.addBottom(dims.BASE_MARGIN);
+    if (verticalAxisInfo.show) {
+      const { title, tickFormat, maxValue } = verticalAxisInfo;
+      const titleHeight = textDims.axisTitle.height;
+      const ticksCount = Axis.getTicksCount(dims.resolve().height);
+      Axis.updateDims({
+        type: "vertical",
+        dims,
+        svg,
+        titleHeight: title ? titleHeight : 0,
+        maxValue,
+        tickHeight: textDims.axisTick.height,
+        ticksCount,
+        tickFormat,
+      });
     }
 
-    dims.addBottom(dims.BASE_MARGIN);
-
-    if (verticalAxis) {
-      const { show, title, tickFormat, maxValue } = verticalAxis;
-
-      if (show) {
-        const titleHeight = textDims.axisTitle.height;
-        const ticksCount = Axis.getTicksCount(dims.resolve().height);
-        Axis.updateDims({
-          type: "vertical",
-          dims,
-          svg,
-          titleHeight: title ? titleHeight : 0,
-          maxValue,
-          tickHeight: textDims.axisTick.height,
-          ticksCount,
-          tickFormat,
-        });
-      }
-    }
-
-    if (
-      chart.type === "bar" &&
-      chart.layout === "horizontal" &&
-      (chart.subtype === undefined || chart.subtype === "grouped")
-    ) {
-      const maxValueWidth = svg.measureText(
-        chart.max.value.actual,
-        "datumValue"
-      ).width;
-      dims.addRight(
-        Math.max(dims.BASE_MARGIN * 3, maxValueWidth + dims.BASE_MARGIN * 0.5)
-      );
-    }
+    Chart.updateDims(chartInfo, dims, svg);
 
     let horizontalAxisGetters: Axis.Getter | undefined;
-    if (horizontalAxis) {
-      const { show, title, tickFormat, maxValue } = horizontalAxis;
+    if (horizontalAxisInfo.show) {
+      const { title, tickFormat, maxValue } = horizontalAxisInfo;
 
-      if (show) {
-        const titleHeight = textDims.axisTitle.height;
-        const ticksCount = Axis.getTicksCount(dims.resolve().width);
-        const width = Axis.getWidth({
-          svg,
-          ticksCount,
-          tickFormat,
-          maxValue,
-        });
-        Axis.updateDims({
-          type: "horizontal",
-          dims,
-          svg,
-          maxValue,
-          titleHeight: title ? titleHeight : 0,
-          tickHeight: textDims.axisTick.height,
-          ticksCount,
-          tickFormat,
-        });
-        const resolvedDims = dims.resolve();
+      const titleHeight = textDims.axisTitle.height;
+      const ticksCount = Axis.getTicksCount(dims.resolve().width);
+      const width = Axis.getWidth({
+        svg,
+        ticksCount,
+        tickFormat,
+        maxValue,
+      });
+      Axis.updateDims({
+        type: "horizontal",
+        dims,
+        svg,
+        maxValue,
+        titleHeight: title ? titleHeight : 0,
+        tickHeight: textDims.axisTick.height,
+        ticksCount,
+        tickFormat,
+      });
+      const resolvedDims = dims.resolve();
 
-        horizontalAxisGetters = Axis.getters({
-          type: "horizontal",
-          title,
-          titleMargin: {
-            top:
-              titleHeight +
-              dims.BASE_MARGIN +
-              AxisTick.SIZE +
-              AxisTick.LABEL_MARGIN,
-            right:
-              resolvedDims.margin.right +
-              resolvedDims.margin.left -
-              width * 0.5,
-            bottom: 0,
-            left: 0,
-          },
-          svg,
-          dims: resolvedDims,
-          tickHeight: textDims.axisTick.height,
-          ticksCount,
-          tickFormat,
-          maxValue,
-          _maxValue: _showHorizontalAxis ? _maxHorizontalAxisValue : undefined,
-        });
-      }
+      horizontalAxisGetters = Axis.getters({
+        type: "horizontal",
+        title,
+        titleMargin: {
+          top:
+            titleHeight +
+            dims.BASE_MARGIN +
+            AxisTick.SIZE +
+            AxisTick.LABEL_MARGIN,
+          right:
+            resolvedDims.margin.right + resolvedDims.margin.left - width * 0.5,
+          bottom: 0,
+          left: 0,
+        },
+        svg,
+        dims: resolvedDims,
+        tickHeight: textDims.axisTick.height,
+        ticksCount,
+        tickFormat,
+        maxValue,
+        _maxValue: _maxHorizontalAxisValue,
+      });
 
-      _showHorizontalAxis = show;
+      _maxHorizontalAxisValue = maxValue;
     } else {
-      _showHorizontalAxis = false;
+      _maxHorizontalAxisValue = undefined;
     }
 
     let verticalAxisGetters: Axis.Getter | undefined;
-    if (verticalAxis) {
-      const { show, title, tickFormat, maxValue } = verticalAxis;
+    if (verticalAxisInfo.show) {
+      const { title, tickFormat, maxValue, addTopMargin } = verticalAxisInfo;
+      const ticksCount = Axis.getTicksCount(dims.resolve().height);
+      const width = Axis.getWidth({
+        svg,
+        ticksCount,
+        tickFormat,
+        maxValue,
+      });
+      const titleHeight = textDims.axisTitle.height;
 
-      if (show) {
-        if (chart.showsDatumValuesOnTop && showValues) {
-          dims.addTop(dims.BASE_MARGIN);
-        }
+      verticalAxisGetters = Axis.getters({
+        type: "vertical",
+        title,
+        titleMargin: title
+          ? {
+              top: -(
+                titleHeight +
+                dims.BASE_MARGIN +
+                (addTopMargin ? textDims.datumValue.height : 0)
+              ),
+              right: 0,
+              bottom: 0,
+              left: -(width + AxisTick.SIZE + AxisTick.LABEL_MARGIN),
+            }
+          : {
+              top: 0,
+              right: 0,
+              bottom: 0,
+              left: 0,
+            },
+        svg,
+        dims: dims.resolve(),
+        maxValue,
+        _maxValue: _maxVerticalAxisValue,
+        ticksCount,
+        tickHeight: textDims.axisTick.height,
+        tickFormat,
+      });
 
-        const ticksCount = Axis.getTicksCount(dims.resolve().height);
-        const width = Axis.getWidth({
-          svg,
-          ticksCount,
-          tickFormat,
-          maxValue,
-        });
-        const titleHeight = textDims.axisTitle.height;
-
-        verticalAxisGetters = Axis.getters({
-          type: "vertical",
-          title,
-          titleMargin: title
-            ? {
-                top: -(
-                  titleHeight +
-                  dims.BASE_MARGIN +
-                  (chart.showsDatumValuesOnTop && showValues
-                    ? textDims.datumValue.height
-                    : 0)
-                ),
-                right: 0,
-                bottom: 0,
-                left: -width - AxisTick.SIZE - AxisTick.LABEL_MARGIN,
-              }
-            : {
-                top: 0,
-                right: 0,
-                bottom: 0,
-                left: 0,
-              },
-          svg,
-          dims: dims.resolve(),
-          maxValue,
-          _maxValue: _showVerticalAxis ? _maxVerticalAxisValue : undefined,
-          ticksCount,
-          tickHeight: textDims.axisTick.height,
-          tickFormat,
-        });
-      }
-
-      _showVerticalAxis = show;
+      _maxVerticalAxisValue = maxValue;
     } else {
-      _showVerticalAxis = false;
+      _maxVerticalAxisValue = undefined;
     }
 
-    const baseGroupGetterProps: Group.BaseGetterProps = {
-      groupsKeys: chart.groupsKeys,
-      dataKeys: chart.dataKeys,
-      shareDomain: chart.shareDomain,
-      showValues,
+    const groupsGetters = Chart.getters(chartInfo, {
       showDatumLabels,
       svg,
       dims: dims.resolve(),
       textDims,
       colorMap,
       cartoonize,
-    };
-    let groupsGetters: Group.Getter[];
-    switch (chart.groupsType) {
-      case "value":
-        groupsGetters = Group.valueGetters({
-          chartType: chart.type,
-          subtype: chart.subtype,
-          layout: chart.layout,
-          props: {
-            ...baseGroupGetterProps,
-            groups: chart.groups,
-            maxValue: chart.max.value,
-          },
-        } as Group.ValueGettersProps);
-        break;
-      case "xy":
-        groupsGetters = Group.xyGetters({
-          chartType: chart.type,
-          props: {
-            ...baseGroupGetterProps,
-            groups: chart.groups,
-            xMaxValue: chart.max.x,
-            yMaxValue: chart.max.y,
-          },
-        });
-        break;
-    }
+    });
 
     steps.push({
       key,
@@ -308,9 +240,6 @@ export const getters = ({
       verticalAxis: verticalAxisGetters,
       groups: groupsGetters,
     });
-
-    _maxHorizontalAxisValue = horizontalAxis?.maxValue ?? 0;
-    _maxVerticalAxisValue = verticalAxis?.maxValue ?? 0;
   }
 
   return steps;
@@ -319,7 +248,7 @@ export const getters = ({
 export type Int = {
   titles: Text.Int[];
   subtitles: Text.Int[];
-  groups: Group.Int[];
+  groups: Chart.Int[];
   colorLegends: ColorLegend.Int[];
   horizontalAxes: Axis.Int[];
   verticalAxes: Axis.Int[];
@@ -337,7 +266,7 @@ export const intsMap = ({
   const intsMap: IntsMap = new Map();
   let _titleInts: Text.Int[] | undefined;
   let _subtitleInts: Text.Int[] | undefined;
-  let _groupInts: Group.Int[] | undefined;
+  let _groupInts: Chart.Int[] | undefined;
   let _colorLegendInts: ColorLegend.Int[] | undefined;
   let _verticalAxisInts: Axis.Int[] | undefined;
   let _horizontalAxisInts: Axis.Int[] | undefined;
@@ -388,7 +317,7 @@ export const intsMap = ({
       _ints: _verticalAxisInts,
     });
 
-    const groupsInts = Group.ints({
+    const groupsInts = Chart.ints({
       getters: groups,
       _getters: _stepGetters?.groups,
       _ints: _groupInts,
@@ -411,7 +340,7 @@ export const intsMap = ({
 export type Resolved = {
   titles: Text.Resolved[];
   subtitles: Text.Resolved[];
-  groups: Group.Resolved[];
+  groups: Chart.Resolved[];
   colors: ColorLegend.Resolved[];
   horizontalAxes: Axis.Resolved[];
   verticalAxes: Axis.Resolved[];
@@ -430,7 +359,7 @@ export const resolve = (ints: Int, t: number) => {
   return {
     titles: Text.resolve({ ints: titles, t }),
     subtitles: Text.resolve({ ints: subtitles, t }),
-    groups: Group.resolve({ ints: groups, t }),
+    groups: Chart.resolve({ ints: groups, t }),
     colors: ColorLegend.resolve({ ints: colorLegends, t }),
     horizontalAxes: Axis.resolve({ ints: horizontalAxes, t }),
     verticalAxes: Axis.resolve({ ints: verticalAxes, t }),
@@ -482,7 +411,7 @@ export const render = ({
     type: "vertical",
   });
 
-  Group.render({
+  Chart.render({
     resolved: groups,
     svg,
     tooltip: finished ? tooltip : undefined,

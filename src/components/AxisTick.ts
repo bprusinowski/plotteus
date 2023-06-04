@@ -10,6 +10,8 @@ import * as Generic from "./Generic";
 export const SIZE = 5;
 export const LABEL_MARGIN = 3;
 
+export const defaultFormat = (d: number) => d.toString();
+
 type G = {
   x: number;
   y: number;

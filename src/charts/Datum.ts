@@ -1,8 +1,8 @@
 import { interpolate } from "d3-interpolate";
 import { select, Selection } from "d3-selection";
+import * as Generic from "../components/Generic";
 import { FONT_WEIGHT } from "../utils";
-import * as Generic from "./Generic";
-import * as Group from "./Group";
+import * as Chart from "./Chart";
 
 export type G = {
   d: string;
@@ -39,8 +39,6 @@ export type Getter = Generic.Getter<
       yValue: number;
     }
 >;
-
-// Getters are defined per chart type in GroupsGetters.
 
 export type Int = Generic.Int<
   G,
@@ -80,7 +78,8 @@ export const ints = ({
             _value:
               _updateInt?.type === "value"
                 ? _updateInt?.value ?? getter.value
-                : 0,
+                : // Keep artificial value as bubble size?
+                  0,
           };
         case "xy":
           return {
@@ -136,7 +135,7 @@ export const resolve = ({
 export const render = ({
   dataSelection,
 }: {
-  dataSelection: Selection<SVGGElement, Resolved, SVGGElement, Group.Resolved>;
+  dataSelection: Selection<SVGGElement, Resolved, SVGGElement, Chart.Resolved>;
 }): void => {
   const pathSelection = dataSelection
     .selectAll<SVGPathElement, Resolved>(".shape")
@@ -160,7 +159,7 @@ export const render = ({
     .join("clipPath")
     .attr("id", function (d) {
       const parentEl = this.parentNode?.parentNode as SVGGElement;
-      const g = select(parentEl).datum() as Group.Resolved;
+      const g = select(parentEl).datum() as Chart.Resolved;
       return `clip${g.key}${d.key}`.replace(/[^a-zA-Z0-9]/g, "");
     })
     .attr("class", "clip-path")
@@ -182,7 +181,7 @@ export const render = ({
     .attr("class", "labels")
     .style("clip-path", function (d) {
       const parentEl = this.parentNode?.parentNode as SVGGElement;
-      const g = select(parentEl).datum() as Group.Resolved;
+      const g = select(parentEl).datum() as Chart.Resolved;
       const clipPathId = `clip${g.key}${d.key}`.replace(/[^a-zA-Z0-9]/g, "");
       return `url(#${clipPathId})`;
     });

@@ -8,33 +8,67 @@ import {
   treemapSliceDice,
   treemapSquarify,
 } from "d3-hierarchy";
-import { Datum, Group } from "../components";
+import { Datum } from ".";
+import { ColorMap } from "../colors";
+import { Svg } from "../components";
 import { BAR, getPathData } from "../coords";
-import { InputGroupValue, TreemapLayout } from "../types";
+import { Dimensions, ResolvedDimensions } from "../dims";
+import {
+  BaseMax,
+  InputGroupValue,
+  TextDims,
+  TreemapInputStep,
+  TreemapLayout,
+} from "../types";
 import { FONT_SIZE, getTextColor } from "../utils";
+import * as Chart from "./Chart";
 import { TreemapHierarchyRoot } from "./types";
 import {
+  PADDING,
   STROKE_WIDTH,
   TEXT_MARGIN,
   getGroupLabelStrokeWidth,
+  getMaxValue,
   getRotate,
 } from "./utils";
 
-const PADDING = 2;
+export type Info = Chart.BaseInfo & {
+  type: "treemap";
+  layout: TreemapLayout;
+  groups: InputGroupValue[];
+  maxValue: BaseMax;
+};
 
-type GetTreemapGettersProps = {
-  layout: TreemapLayout | undefined;
-} & Group.ValueGetterProps;
+export const info = (inputStep: TreemapInputStep): Info => {
+  const { layout = "resquarify", groups, shareDomain = false } = inputStep;
 
-export const getTreemapGetters = (
-  props: GetTreemapGettersProps
-): Group.Getter[] => {
-  const {
-    layout = "resquarify",
+  return {
+    ...Chart.baseInfo(inputStep, shareDomain),
+    type: "treemap",
+    layout,
     groups,
-    maxValue,
-    shareDomain,
-    showValues,
+    maxValue: getMaxValue(inputStep),
+  };
+};
+
+export const updateDims = (dims: Dimensions) => {
+  const { BASE_MARGIN } = dims;
+  dims.addBottom(BASE_MARGIN);
+};
+
+export const getters = (
+  info: Info,
+  props: {
+    showDatumLabels: boolean;
+    svg: Svg;
+    dims: ResolvedDimensions;
+    textDims: TextDims;
+    colorMap: ColorMap;
+    cartoonize: boolean;
+  }
+) => {
+  const { layout, groups, maxValue, shareDomain, showValues } = info;
+  const {
     showDatumLabels,
     svg,
     dims: { width, height, margin },
@@ -48,7 +82,7 @@ export const getTreemapGetters = (
     height: maxValue.k * height,
     layout,
   });
-  const groupsGetters: Group.Getter[] = [];
+  const groupsGetters: Chart.Getter[] = [];
 
   for (const group of root.children || []) {
     const { key } = group.data;
@@ -64,7 +98,7 @@ export const getTreemapGetters = (
     const groupWidth = group.x1 - group.x0;
     const groupHeight = group.y1 - group.y0;
 
-    const groupGetters: Group.Getter = {
+    const groupGetters: Chart.Getter = {
       key,
       g: ({ s, _g }) => {
         const d = BAR;
