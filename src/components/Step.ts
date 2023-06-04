@@ -1,5 +1,5 @@
 import { Axis, AxisTick, ColorLegend, Group, Svg, Text, Tooltip } from ".";
-import { BarChart, BubbleChart } from "../charts";
+import { BarChart, BubbleChart, PieChart } from "../charts";
 import * as GenericChart from "../charts/GenericChart";
 import { ColorMap } from "../colors";
 import { Dimensions } from "../dims";
@@ -111,7 +111,11 @@ export const getters = ({
       });
     }
 
-    if (chart.type !== "bar" && chart.type !== "bubble") {
+    if (
+      chart.type !== "bar" &&
+      chart.type !== "bubble" &&
+      chart.type !== "pie"
+    ) {
       if (chart.showsGroupLabelsOnBottom) {
         dims.addBottom(dims.BASE_MARGIN);
       }
@@ -143,6 +147,8 @@ export const getters = ({
       BarChart.updateDims(info, dims, svg, showValues);
     } else if (chart.type === "bubble") {
       BubbleChart.updateDims(dims);
+    } else if (chart.type === "pie") {
+      PieChart.updateDims(dims);
     }
 
     let horizontalAxisGetters: Axis.Getter | undefined;
@@ -292,9 +298,24 @@ export const getters = ({
         colorMap,
         cartoonize,
       });
+    } else if (chart.type === "pie") {
+      const info = PieChart.info(step as DefaultInputStep);
+      groupsGetters = PieChart.getters(info, {
+        showValues,
+        showDatumLabels,
+        svg,
+        dims: dims.resolve(),
+        textDims,
+        colorMap,
+        cartoonize,
+      });
     }
 
-    if (chart.type !== "bar" && chart.type !== "bubble") {
+    if (
+      chart.type !== "bar" &&
+      chart.type !== "bubble" &&
+      chart.type !== "pie"
+    ) {
       switch (chart.groupsType) {
         case "value":
           groupsGetters = Group.valueGetters({

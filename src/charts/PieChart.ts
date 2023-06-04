@@ -1,19 +1,70 @@
 import { hierarchy, pack } from "d3-hierarchy";
 import { PieArcDatum, pie } from "d3-shape";
-import { Datum, Group } from "../components";
+import { ColorMap } from "../colors";
+import { Datum, Svg } from "../components";
 import { BUBBLE, getPathData } from "../coords";
-import { InputDatumValue, InputGroupValue } from "../types";
-import { FONT_SIZE, getTextColor, radiansToDegrees } from "../utils";
+import { Dimensions, ResolvedDimensions } from "../dims";
+import {
+  BaseMax,
+  DefaultInputStep,
+  InputDatumValue,
+  InputGroupValue,
+  TextDims,
+} from "../types";
+import { FONT_SIZE, getTextColor, max, radiansToDegrees } from "../utils";
+import * as GenericChart from "./GenericChart";
 import { HierarchyRoot } from "./types";
-import { PADDING, STROKE_WIDTH, getGroupLabelStrokeWidth } from "./utils";
+import {
+  PADDING,
+  STROKE_WIDTH,
+  getBaseMax,
+  getGroupLabelStrokeWidth,
+} from "./utils";
 
-type GetPieGettersProps = Group.ValueGetterProps;
+type Info = {
+  groups: InputGroupValue[];
+  shareDomain: boolean;
+  maxValue: BaseMax;
+};
 
-export const getPieGetters = (props: GetPieGettersProps): Group.Getter[] => {
-  const {
+export const info = (inputStep: DefaultInputStep): Info => {
+  const { groups, shareDomain = true } = inputStep;
+
+  return {
     groups,
-    maxValue,
     shareDomain,
+    maxValue: getMaxValue(inputStep),
+  };
+};
+
+const getMaxValue = (step: DefaultInputStep): BaseMax => {
+  const values = step.groups.flatMap((d) =>
+    d.data.reduce((acc, d) => acc + d.value, 0)
+  );
+  const valueMax = max(values) ?? 0;
+
+  return getBaseMax(step.valueScale?.maxValue, valueMax);
+};
+
+export const updateDims = (dims: Dimensions) => {
+  const { BASE_MARGIN } = dims;
+  dims.addBottom(BASE_MARGIN);
+};
+
+export const getters = (
+  info: Info,
+  props: {
+    showValues: boolean;
+    showDatumLabels: boolean;
+    svg: Svg;
+    dims: ResolvedDimensions;
+    textDims: TextDims;
+    colorMap: ColorMap;
+    cartoonize: boolean;
+  }
+) => {
+  const { groups, maxValue, shareDomain } = info;
+  const {
     showValues,
     showDatumLabels,
     dims: { width, height, size, margin },
@@ -22,7 +73,7 @@ export const getPieGetters = (props: GetPieGettersProps): Group.Getter[] => {
     cartoonize,
   } = props;
   const root = getRoot({ groups, size: maxValue.k * size });
-  const groupsGetters: Group.Getter[] = [];
+  const groupsGetters: GenericChart.Getter[] = [];
   const maxValueShift = maxValue.kc * size * 0.5;
   const showDatumLabelsAndValues = showDatumLabels && showValues;
 
@@ -37,7 +88,7 @@ export const getPieGetters = (props: GetPieGettersProps): Group.Getter[] => {
       continue;
     }
 
-    const groupGetters: Group.Getter = {
+    const groupGetters: GenericChart.Getter = {
       key,
       g: ({ s, _g }) => {
         const d = BUBBLE;
@@ -172,6 +223,7 @@ export const getPieGetters = (props: GetPieGettersProps): Group.Getter[] => {
   return groupsGetters;
 };
 
+// TODO: share between Bubble and Pie
 const getRoot = ({
   groups,
   size,

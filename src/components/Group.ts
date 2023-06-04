@@ -1,4 +1,3 @@
-import { getPieGetters } from "../charts/pie";
 import { getScatterGetters } from "../charts/scatter";
 import { getTreemapGetters } from "../charts/treemap";
 import { ColorMap } from "../colors";
@@ -56,24 +55,15 @@ export type XYGetterProps = BaseGetterProps & {
   yMaxValue: BaseMax;
 };
 
-export type ValueGettersProps =
-  | {
-      chartType: "pie";
-      subtype: undefined;
-      layout: undefined;
-      props: ValueGetterProps;
-    }
-  | {
-      chartType: "treemap";
-      subtype: undefined;
-      layout: TreemapLayout | undefined;
-      props: ValueGetterProps;
-    };
+export type ValueGettersProps = {
+  chartType: "treemap";
+  subtype: undefined;
+  layout: TreemapLayout | undefined;
+  props: ValueGetterProps;
+};
 
 export const valueGetters = (props: ValueGettersProps): Getter[] => {
   switch (props.chartType) {
-    case "pie":
-      return getPieGetters(props.props);
     case "treemap":
       return getTreemapGetters({
         layout: props.layout,
