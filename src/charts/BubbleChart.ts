@@ -3,7 +3,7 @@ import { ColorMap } from "../colors";
 import { Datum, Svg } from "../components";
 import { BUBBLE, getPathData } from "../coords";
 import { Dimensions, ResolvedDimensions } from "../dims";
-import { BaseMax, DefaultInputStep, InputGroupValue, TextDims } from "../types";
+import { BaseMax, BubbleInputStep, InputGroupValue, TextDims } from "../types";
 import { FONT_SIZE, getTextColor, max } from "../utils";
 import * as GenericChart from "./GenericChart";
 import { HierarchyRoot } from "./types";
@@ -21,7 +21,7 @@ type Info = {
   maxValue: BaseMax;
 };
 
-export const info = (inputStep: DefaultInputStep): Info => {
+export const info = (inputStep: BubbleInputStep): Info => {
   const { groups, shareDomain = false } = inputStep;
 
   return {
@@ -31,7 +31,7 @@ export const info = (inputStep: DefaultInputStep): Info => {
   };
 };
 
-const getMaxValue = (step: DefaultInputStep): BaseMax => {
+const getMaxValue = (step: BubbleInputStep): BaseMax => {
   const values = step.groups.flatMap((d) =>
     d.data.reduce((acc, d) => acc + d.value, 0)
   );

@@ -6,9 +6,9 @@ import { BUBBLE, getPathData } from "../coords";
 import { Dimensions, ResolvedDimensions } from "../dims";
 import {
   BaseMax,
-  DefaultInputStep,
   InputDatumValue,
   InputGroupValue,
+  PieInputStep,
   TextDims,
 } from "../types";
 import { FONT_SIZE, getTextColor, max, radiansToDegrees } from "../utils";
@@ -27,7 +27,7 @@ type Info = {
   maxValue: BaseMax;
 };
 
-export const info = (inputStep: DefaultInputStep): Info => {
+export const info = (inputStep: PieInputStep): Info => {
   const { groups, shareDomain = true } = inputStep;
 
   return {
@@ -37,7 +37,7 @@ export const info = (inputStep: DefaultInputStep): Info => {
   };
 };
 
-const getMaxValue = (step: DefaultInputStep): BaseMax => {
+const getMaxValue = (step: PieInputStep): BaseMax => {
   const values = step.groups.flatMap((d) =>
     d.data.reduce((acc, d) => acc + d.value, 0)
   );

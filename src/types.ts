@@ -41,6 +41,18 @@ export type BarInputStep = BaseInputStep & {
       }
   );
 
+export type BubbleInputStep = BaseInputStep & {
+  chartType: "bubble";
+  valueScale?: InputScale;
+  groups: InputGroupValue[];
+};
+
+export type PieInputStep = BaseInputStep & {
+  chartType: "pie";
+  valueScale?: InputScale;
+  groups: InputGroupValue[];
+};
+
 export type ScatterInputStep = BaseInputStep & {
   chartType: "scatter";
   xScale?: InputScale;
@@ -57,18 +69,12 @@ export type TreemapInputStep = BaseInputStep & {
   groups: InputGroupValue[];
 };
 
-// TODO: Split into Bubble & Pie.
-export type DefaultInputStep = BaseInputStep & {
-  chartType: Exclude<ChartType, "bar" | "scatter" | "treemap">;
-  valueScale?: InputScale;
-  groups: InputGroupValue[];
-};
-
 export type InputStep =
   | BarInputStep
+  | BubbleInputStep
+  | PieInputStep
   | ScatterInputStep
-  | TreemapInputStep
-  | DefaultInputStep;
+  | TreemapInputStep;
 
 export type InputScale = {
   maxValue?: number;

@@ -4,8 +4,8 @@ import {
   BarChartSubtype,
   BarInputStep,
   BaseMax,
+  BubbleInputStep,
   ChartType,
-  DefaultInputStep,
   InputDatumValue,
   InputDatumXY,
   InputGroupValue,
@@ -13,6 +13,7 @@ import {
   InputStep,
   MaxValue,
   MaxXY,
+  PieInputStep,
   ScatterInputStep,
   TreemapInputStep,
   TreemapLayout,
@@ -187,7 +188,7 @@ export class StepMeta {
   }
 
   private getMaxValueDefault(
-    step: DefaultInputStep | TreemapInputStep
+    step: BubbleInputStep | PieInputStep | TreemapInputStep
   ): MaxValue {
     const values = step.groups.flatMap((d) =>
       d.data.reduce((acc, d) => acc + d.value, 0)
