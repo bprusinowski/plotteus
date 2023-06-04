@@ -1,62 +1,16 @@
+import { getBaseMax } from "./charts/utils";
 import {
-  BarChartLayout,
-  BarChartSubtype,
   BarInputStep,
-  BaseMax,
-  BubbleInputStep,
-  ChartType,
-  InputGroupValue,
-  InputGroupXY,
   InputStep,
   MaxValue,
   MaxXY,
-  PieInputStep,
   ScatterInputStep,
-  TreemapInputStep,
-  TreemapLayout,
 } from "./types";
-import { max, sum, unique } from "./utils";
+import { max, sum } from "./utils";
 
 type ChartMeta = {
-  groupsKeys: string[];
-  dataKeys: string[];
-  shareDomain: boolean;
-  showsGroupLabelsOnBottom: boolean;
   showsDatumValuesOnTop: boolean;
-} & (
-  | {
-      groups: InputGroupValue[];
-      groupsType: "value";
-      type: "bar";
-      subtype: BarChartSubtype | undefined;
-      layout: BarChartLayout | undefined;
-      max: MaxValue;
-    }
-  | {
-      groups: InputGroupValue[];
-      groupsType: "value";
-      type: "treemap";
-      subtype: undefined;
-      layout: TreemapLayout | undefined;
-      max: MaxValue;
-    }
-  | {
-      groups: InputGroupValue[];
-      groupsType: "value";
-      type: Exclude<ChartType, "bar" | "treemap" | "scatter">;
-      subtype: undefined;
-      layout: undefined;
-      max: MaxValue;
-    }
-  | {
-      groups: InputGroupXY[];
-      groupsType: "xy";
-      type: "scatter";
-      subtype: undefined;
-      layout: undefined;
-      max: MaxXY;
-    }
-);
+};
 
 type AxisMeta = {
   show: boolean;
@@ -79,60 +33,22 @@ export class StepMeta {
   }
 
   private getChartMeta(step: InputStep): ChartMeta {
-    const common = {
-      shareDomain: step.shareDomain ?? shouldShareDomain(step.chartType),
-      groupsKeys: this.getGroupsKeys(step),
-      dataKeys: this.getDataKeys(step),
-    };
-
     switch (step.chartType) {
       case "bar":
         return {
-          showsGroupLabelsOnBottom: true,
           showsDatumValuesOnTop: true,
-          groups: step.groups,
-          groupsType: "value",
-          type: "bar",
-          subtype: step.chartSubtype,
-          layout: step.layout,
-          max: this.getMaxValueBar(step),
-          ...common,
         };
       case "scatter":
         return {
-          showsGroupLabelsOnBottom: false,
           showsDatumValuesOnTop: false,
-          groups: step.groups,
-          groupsType: "xy",
-          type: "scatter",
-          subtype: undefined,
-          layout: undefined,
-          max: this.getMaxXY(step),
-          ...common,
         };
       case "treemap":
         return {
-          showsGroupLabelsOnBottom: true,
           showsDatumValuesOnTop: true,
-          groups: step.groups,
-          groupsType: "value",
-          type: "treemap",
-          subtype: undefined,
-          layout: step.layout,
-          max: this.getMaxValueDefault(step),
-          ...common,
         };
       default:
         return {
-          showsGroupLabelsOnBottom: false,
           showsDatumValuesOnTop: false,
-          groups: step.groups,
-          groupsType: "value",
-          type: step.chartType,
-          subtype: undefined,
-          layout: undefined,
-          max: this.getMaxValueDefault(step),
-          ...common,
         };
     }
   }
@@ -163,20 +79,6 @@ export class StepMeta {
     };
   }
 
-  private getMaxValueDefault(
-    step: BubbleInputStep | PieInputStep | TreemapInputStep
-  ): MaxValue {
-    const values = step.groups.flatMap((d) =>
-      d.data.reduce((acc, d) => acc + d.value, 0)
-    );
-    const valueMax = max(values) ?? 0;
-
-    return {
-      type: "value",
-      value: getBaseMax(step.valueScale?.maxValue, valueMax),
-    };
-  }
-
   private getMaxXY(step: ScatterInputStep): MaxXY {
     const xValues = step.groups.flatMap((d) => d.data.map((d) => d.x));
     const xMax = max(xValues) ?? 0;
@@ -188,14 +90,6 @@ export class StepMeta {
       x: getBaseMax(step.xScale?.maxValue, xMax),
       y: getBaseMax(step.yScale?.maxValue, yMax),
     };
-  }
-
-  private getGroupsKeys(step: InputStep): string[] {
-    return step.groups.map((d) => d.key);
-  }
-
-  private getDataKeys(step: InputStep): string[] {
-    return unique(step.groups.flatMap((d) => d.data.map((d) => d.key)));
   }
 
   private getHorizontalAxis(step: InputStep): AxisMeta | undefined {
@@ -244,27 +138,3 @@ export class StepMeta {
     }
   }
 }
-
-const shouldShareDomain = (type: ChartType): boolean => {
-  switch (type) {
-    case "bar":
-    case "pie":
-      return true;
-    case "bubble":
-    case "scatter":
-    case "treemap":
-      return false;
-  }
-};
-
-const getBaseMax = (inputMax: number | undefined, dataMax: number): BaseMax => {
-  const k = inputMax ? dataMax / inputMax : 1;
-
-  return {
-    data: dataMax,
-    scale: inputMax,
-    actual: inputMax ?? dataMax,
-    k,
-    kc: 1 - k,
-  };
-};
