@@ -57,6 +57,7 @@ export type TreemapInputStep = BaseInputStep & {
   groups: InputGroupValue[];
 };
 
+// TODO: Split into Bubble & Pie.
 export type DefaultInputStep = BaseInputStep & {
   chartType: Exclude<ChartType, "bar" | "scatter" | "treemap">;
   valueScale?: InputScale;

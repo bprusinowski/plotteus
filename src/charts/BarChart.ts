@@ -95,7 +95,6 @@ export const updateDims = (
   dims.addBottom(BASE_MARGIN);
 };
 
-// Bar-specific logic.
 export const getters = (
   info: Info,
   props: {

@@ -1,10 +1,10 @@
 import { Axis, AxisTick, ColorLegend, Group, Svg, Text, Tooltip } from ".";
-import { BarChart } from "../charts";
+import { BarChart, BubbleChart } from "../charts";
 import * as GenericChart from "../charts/GenericChart";
 import { ColorMap } from "../colors";
 import { Dimensions } from "../dims";
 import { StepMeta } from "../step-meta";
-import { BarInputStep, InputStep } from "../types";
+import { BarInputStep, DefaultInputStep, InputStep } from "../types";
 import { getTextDims, stateOrderComparator } from "../utils";
 
 export type Getter = {
@@ -111,7 +111,7 @@ export const getters = ({
       });
     }
 
-    if (chart.type !== "bar") {
+    if (chart.type !== "bar" && chart.type !== "bubble") {
       if (chart.showsGroupLabelsOnBottom) {
         dims.addBottom(dims.BASE_MARGIN);
       }
@@ -141,6 +141,8 @@ export const getters = ({
     if (chart.type === "bar") {
       const info = BarChart.info(step as BarInputStep);
       BarChart.updateDims(info, dims, svg, showValues);
+    } else if (chart.type === "bubble") {
+      BubbleChart.updateDims(dims);
     }
 
     let horizontalAxisGetters: Axis.Getter | undefined;
@@ -279,9 +281,20 @@ export const getters = ({
         colorMap,
         cartoonize,
       });
+    } else if (chart.type === "bubble") {
+      const info = BubbleChart.info(step as DefaultInputStep);
+      groupsGetters = BubbleChart.getters(info, {
+        showValues,
+        showDatumLabels,
+        svg,
+        dims: dims.resolve(),
+        textDims,
+        colorMap,
+        cartoonize,
+      });
     }
 
-    if (chart.type !== "bar") {
+    if (chart.type !== "bar" && chart.type !== "bubble") {
       switch (chart.groupsType) {
         case "value":
           groupsGetters = Group.valueGetters({

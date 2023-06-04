@@ -1,4 +1,3 @@
-import { getBubbleGetters } from "../charts/bubble";
 import { getPieGetters } from "../charts/pie";
 import { getScatterGetters } from "../charts/scatter";
 import { getTreemapGetters } from "../charts/treemap";
@@ -59,7 +58,7 @@ export type XYGetterProps = BaseGetterProps & {
 
 export type ValueGettersProps =
   | {
-      chartType: "bubble" | "pie";
+      chartType: "pie";
       subtype: undefined;
       layout: undefined;
       props: ValueGetterProps;
@@ -73,8 +72,6 @@ export type ValueGettersProps =
 
 export const valueGetters = (props: ValueGettersProps): Getter[] => {
   switch (props.chartType) {
-    case "bubble":
-      return getBubbleGetters(props.props);
     case "pie":
       return getPieGetters(props.props);
     case "treemap":

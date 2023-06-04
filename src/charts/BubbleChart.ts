@@ -1,25 +1,64 @@
 import { hierarchy, pack } from "d3-hierarchy";
-import { Datum, Group } from "../components";
+import { ColorMap } from "../colors";
+import { Datum, Svg } from "../components";
 import { BUBBLE, getPathData } from "../coords";
-import { InputGroupValue } from "../types";
-import { FONT_SIZE, getTextColor } from "../utils";
+import { Dimensions, ResolvedDimensions } from "../dims";
+import { BaseMax, DefaultInputStep, InputGroupValue, TextDims } from "../types";
+import { FONT_SIZE, getTextColor, max } from "../utils";
+import * as GenericChart from "./GenericChart";
 import { HierarchyRoot } from "./types";
 import {
   PADDING,
   STROKE_WIDTH,
+  getBaseMax,
   getGroupLabelStrokeWidth,
   getRotate,
 } from "./utils";
 
-type GetBubbleGettersProps = Group.ValueGetterProps;
+type Info = {
+  groups: InputGroupValue[];
+  shareDomain: boolean;
+  maxValue: BaseMax;
+};
 
-export const getBubbleGetters = (
-  props: GetBubbleGettersProps
-): Group.Getter[] => {
-  const {
+export const info = (inputStep: DefaultInputStep): Info => {
+  const { groups, shareDomain = false } = inputStep;
+
+  return {
     groups,
-    maxValue,
     shareDomain,
+    maxValue: getMaxValue(inputStep),
+  };
+};
+
+const getMaxValue = (step: DefaultInputStep): BaseMax => {
+  const values = step.groups.flatMap((d) =>
+    d.data.reduce((acc, d) => acc + d.value, 0)
+  );
+  const valueMax = max(values) ?? 0;
+
+  return getBaseMax(step.valueScale?.maxValue, valueMax);
+};
+
+export const updateDims = (dims: Dimensions) => {
+  const { BASE_MARGIN } = dims;
+  dims.addBottom(BASE_MARGIN);
+};
+
+export const getters = (
+  info: Info,
+  props: {
+    showValues: boolean;
+    showDatumLabels: boolean;
+    svg: Svg;
+    dims: ResolvedDimensions;
+    textDims: TextDims;
+    colorMap: ColorMap;
+    cartoonize: boolean;
+  }
+) => {
+  const { groups, maxValue, shareDomain } = info;
+  const {
     showValues,
     showDatumLabels,
     dims: { width, height, size, margin },
@@ -28,7 +67,7 @@ export const getBubbleGetters = (
     cartoonize,
   } = props;
   const root = getRoot({ groups, size: maxValue.k * size });
-  const groupsGetters: Group.Getter[] = [];
+  const groupsGetters: GenericChart.Getter[] = [];
   // If a custom maxValue was provided, we need to shift the bubbles to the center.
   const maxValueShift = maxValue.kc * size * 0.5;
   const showDatumLabelsAndValues = showDatumLabels && showValues;
@@ -45,7 +84,7 @@ export const getBubbleGetters = (
     }
 
     const singleDatum = group.children?.length === 1;
-    const groupGetters: Group.Getter = {
+    const groupGetters: GenericChart.Getter = {
       key,
       g: ({ s, _g }) => {
         const d = s(
