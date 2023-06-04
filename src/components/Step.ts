@@ -1,5 +1,11 @@
-import { Axis, AxisTick, ColorLegend, Group, Svg, Text, Tooltip } from ".";
-import { BarChart, BubbleChart, PieChart, TreemapChart } from "../charts";
+import { Axis, AxisTick, ColorLegend, Svg, Text, Tooltip } from ".";
+import {
+  BarChart,
+  BubbleChart,
+  PieChart,
+  ScatterChart,
+  TreemapChart,
+} from "../charts";
 import * as GenericChart from "../charts/GenericChart";
 import { ColorMap } from "../colors";
 import { Dimensions } from "../dims";
@@ -8,6 +14,7 @@ import {
   BarInputStep,
   DefaultInputStep,
   InputStep,
+  ScatterInputStep,
   TreemapInputStep,
 } from "../types";
 import { getTextDims, stateOrderComparator } from "../utils";
@@ -116,19 +123,6 @@ export const getters = ({
       });
     }
 
-    if (
-      chart.type !== "bar" &&
-      chart.type !== "bubble" &&
-      chart.type !== "pie" &&
-      chart.type !== "treemap"
-    ) {
-      if (chart.showsGroupLabelsOnBottom) {
-        dims.addBottom(dims.BASE_MARGIN);
-      }
-
-      dims.addBottom(dims.BASE_MARGIN);
-    }
-
     if (verticalAxis) {
       const { show, title, tickFormat, maxValue } = verticalAxis;
 
@@ -155,6 +149,8 @@ export const getters = ({
       BubbleChart.updateDims(dims);
     } else if (chart.type === "pie") {
       PieChart.updateDims(dims);
+    } else if (chart.type === "scatter") {
+      ScatterChart.updateDims(dims);
     } else if (chart.type === "treemap") {
       TreemapChart.updateDims(dims);
     }
@@ -270,18 +266,6 @@ export const getters = ({
       _showVerticalAxis = false;
     }
 
-    const baseGroupGetterProps: GenericChart.BaseGetterProps = {
-      groupsKeys: chart.groupsKeys,
-      dataKeys: chart.dataKeys,
-      shareDomain: chart.shareDomain,
-      showValues,
-      showDatumLabels,
-      svg,
-      dims: dims.resolve(),
-      textDims,
-      colorMap,
-      cartoonize,
-    };
     let groupsGetters: GenericChart.Getter[] = [];
 
     if (chart.type === "bar") {
@@ -317,6 +301,17 @@ export const getters = ({
         colorMap,
         cartoonize,
       });
+    } else if (chart.type === "scatter") {
+      const info = ScatterChart.info(step as ScatterInputStep);
+      groupsGetters = ScatterChart.getters(info, {
+        showValues,
+        showDatumLabels,
+        svg,
+        dims: dims.resolve(),
+        textDims,
+        colorMap,
+        cartoonize,
+      });
     } else if (chart.type === "treemap") {
       const info = TreemapChart.info(step as TreemapInputStep);
       groupsGetters = TreemapChart.getters(info, {
@@ -328,20 +323,6 @@ export const getters = ({
         colorMap,
         cartoonize,
       });
-    }
-
-    switch (chart.groupsType) {
-      case "xy":
-        groupsGetters = Group.xyGetters({
-          chartType: chart.type,
-          props: {
-            ...baseGroupGetterProps,
-            groups: chart.groups,
-            xMaxValue: chart.max.x,
-            yMaxValue: chart.max.y,
-          },
-        });
-        break;
     }
 
     steps.push({

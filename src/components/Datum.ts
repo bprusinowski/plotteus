@@ -1,8 +1,8 @@
 import { interpolate } from "d3-interpolate";
 import { select, Selection } from "d3-selection";
+import * as GenericChart from "../charts/GenericChart";
 import { FONT_WEIGHT } from "../utils";
 import * as Generic from "./Generic";
-import * as Group from "./Group";
 
 export type G = {
   d: string;
@@ -135,7 +135,12 @@ export const resolve = ({
 export const render = ({
   dataSelection,
 }: {
-  dataSelection: Selection<SVGGElement, Resolved, SVGGElement, Group.Resolved>;
+  dataSelection: Selection<
+    SVGGElement,
+    Resolved,
+    SVGGElement,
+    GenericChart.Resolved
+  >;
 }): void => {
   const pathSelection = dataSelection
     .selectAll<SVGPathElement, Resolved>(".shape")
@@ -159,7 +164,7 @@ export const render = ({
     .join("clipPath")
     .attr("id", function (d) {
       const parentEl = this.parentNode?.parentNode as SVGGElement;
-      const g = select(parentEl).datum() as Group.Resolved;
+      const g = select(parentEl).datum() as GenericChart.Resolved;
       return `clip${g.key}${d.key}`.replace(/[^a-zA-Z0-9]/g, "");
     })
     .attr("class", "clip-path")
@@ -181,7 +186,7 @@ export const render = ({
     .attr("class", "labels")
     .style("clip-path", function (d) {
       const parentEl = this.parentNode?.parentNode as SVGGElement;
-      const g = select(parentEl).datum() as Group.Resolved;
+      const g = select(parentEl).datum() as GenericChart.Resolved;
       const clipPathId = `clip${g.key}${d.key}`.replace(/[^a-zA-Z0-9]/g, "");
       return `url(#${clipPathId})`;
     });

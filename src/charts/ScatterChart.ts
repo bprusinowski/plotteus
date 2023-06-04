@@ -1,31 +1,87 @@
-import { scaleLinear, ScaleLinear } from "d3-scale";
-import { Datum, Group } from "../components";
+import { ScaleLinear, scaleLinear } from "d3-scale";
+import { ColorMap } from "../colors";
+import { Datum, Svg } from "../components";
 import { BAR, getPathData } from "../coords";
-import { BaseMax } from "../types";
-import { FONT_SIZE, getTextColor } from "../utils";
-import { getGroupLabelStrokeWidth, getRotate, STROKE_WIDTH } from "./utils";
+import { Dimensions, ResolvedDimensions } from "../dims";
+import {
+  BaseMax,
+  InputGroupXY,
+  MaxXY,
+  ScatterInputStep,
+  TextDims,
+} from "../types";
+import { FONT_SIZE, getTextColor, max } from "../utils";
+import * as GenericChart from "./GenericChart";
+import {
+  STROKE_WIDTH,
+  getBaseMax,
+  getGroupLabelStrokeWidth,
+  getRotate,
+} from "./utils";
 
-type GetScatterGettersProps = Group.XYGetterProps;
+type Info = {
+  groups: InputGroupXY[];
+  shareDomain: boolean;
+  maxValue: MaxXY;
+};
 
-export const getScatterGetters = (
-  props: GetScatterGettersProps
-): Group.Getter[] => {
+export const info = (inputStep: ScatterInputStep): Info => {
+  const { groups, shareDomain = false } = inputStep;
+
+  return {
+    groups,
+    shareDomain,
+    maxValue: getMaxXY(inputStep),
+  };
+};
+
+const getMaxXY = (step: ScatterInputStep): MaxXY => {
+  const xValues = step.groups.flatMap((d) => d.data.map((d) => d.x));
+  const xMax = max(xValues) ?? 0;
+  const yValues = step.groups.flatMap((d) => d.data.map((d) => d.y));
+  const yMax = max(yValues) ?? 0;
+
+  return {
+    type: "xy",
+    x: getBaseMax(step.xScale?.maxValue, xMax),
+    y: getBaseMax(step.yScale?.maxValue, yMax),
+  };
+};
+
+export const updateDims = (dims: Dimensions) => {
+  const { BASE_MARGIN } = dims;
+  dims.addBottom(BASE_MARGIN);
+};
+
+export const getters = (
+  info: Info,
+  props: {
+    showValues: boolean;
+    showDatumLabels: boolean;
+    svg: Svg;
+    dims: ResolvedDimensions;
+    textDims: TextDims;
+    colorMap: ColorMap;
+    cartoonize: boolean;
+  }
+) => {
   const {
     groups,
-    xMaxValue,
-    yMaxValue,
+    maxValue: { x: xMaxValue, y: yMaxValue },
     shareDomain,
+  } = info;
+  const {
     showDatumLabels,
     dims: { width, height, margin, BASE_MARGIN },
     colorMap,
     cartoonize,
   } = props;
   const { xScale, yScale } = getScales({ xMaxValue, yMaxValue, width, height });
-  const groupsGetters: Group.Getter[] = [];
+  const groupsGetters: GenericChart.Getter[] = [];
 
   for (const group of groups) {
     const { key } = group;
-    const groupGetters: Group.Getter = {
+    const groupGetters: GenericChart.Getter = {
       key,
       g: ({ s, _g }) => {
         const d = BAR;
