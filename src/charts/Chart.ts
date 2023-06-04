@@ -8,13 +8,16 @@ import { ResolvedDimensions } from "../dims";
 import { InputStep, TextDims } from "../types";
 import { FONT_WEIGHT, stateOrderComparator, unique } from "../utils";
 
-export type Info = {
+export type BaseInfo = {
   groupsKeys: string[];
   dataKeys: string[];
   shareDomain: boolean;
 };
 
-export const baseInfo = (inputStep: InputStep, shareDomain: boolean): Info => {
+export const baseInfo = (
+  inputStep: InputStep,
+  shareDomain: boolean
+): BaseInfo => {
   const groupsKeys = inputStep.groups.map((d) => d.key);
   const dataKeys = unique(
     inputStep.groups.flatMap((d) => d.data.map((d) => d.key))
@@ -37,6 +40,8 @@ export const info = (inputStep: InputStep) => {
       return TreemapChart.info(inputStep);
   }
 };
+
+export type Info = ReturnType<typeof info>;
 
 export type G = {
   d: string;

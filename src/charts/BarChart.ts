@@ -21,7 +21,7 @@ import {
   getRotate,
 } from "./utils";
 
-export type Info = Chart.Info & {
+export type Info = Chart.BaseInfo & {
   subtype: BarChartSubtype;
   layout: BarChartLayout;
   groups: InputGroupValue[];

@@ -19,7 +19,7 @@ import {
   getRotate,
 } from "./utils";
 
-export type Info = Chart.Info & {
+export type Info = Chart.BaseInfo & {
   groups: InputGroupXY[];
   maxValue: MaxXY;
 };

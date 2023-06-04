@@ -15,9 +15,11 @@ import {
   getRotate,
 } from "./utils";
 
-export type Info = Chart.Info & {
+export type Info = Chart.BaseInfo & {
   groups: InputGroupValue[];
   maxValue: BaseMax;
+  canUseVerticalAxis: false;
+  canUseHorizontalAxis: false;
 };
 
 export const info = (inputStep: BubbleInputStep): Info => {
@@ -27,6 +29,8 @@ export const info = (inputStep: BubbleInputStep): Info => {
     ...Chart.baseInfo(inputStep, shareDomain),
     groups,
     maxValue: getMaxValue(inputStep),
+    canUseVerticalAxis: false,
+    canUseHorizontalAxis: false,
   };
 };
 

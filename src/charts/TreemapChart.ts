@@ -31,7 +31,7 @@ import {
   getRotate,
 } from "./utils";
 
-export type Info = Chart.Info & {
+export type Info = Chart.BaseInfo & {
   layout: TreemapLayout;
   groups: InputGroupValue[];
   maxValue: BaseMax;
