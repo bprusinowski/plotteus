@@ -36,13 +36,13 @@ export const info = (inputStep: ScatterInputStep): Info => {
     ...Chart.baseInfo(inputStep, shareDomain),
     type: "scatter",
     groups,
-    maxValue: getMaxXY(inputStep),
+    maxValue: getMaxValue(inputStep),
     verticalAxis: inputStep.verticalAxis,
     horizontalAxis: inputStep.horizontalAxis,
   };
 };
 
-const getMaxXY = (step: ScatterInputStep): MaxXY => {
+const getMaxValue = (step: ScatterInputStep): MaxXY => {
   const xValues = step.groups.flatMap((d) => d.data.map((d) => d.x));
   const xMax = max(xValues) ?? 0;
   const yValues = step.groups.flatMap((d) => d.data.map((d) => d.y));
