@@ -10,13 +10,7 @@ import * as GenericChart from "../charts/GenericChart";
 import { ColorMap } from "../colors";
 import { Dimensions } from "../dims";
 import { StepMeta } from "../step-meta";
-import {
-  BarInputStep,
-  DefaultInputStep,
-  InputStep,
-  ScatterInputStep,
-  TreemapInputStep,
-} from "../types";
+import { InputStep } from "../types";
 import { getTextDims, stateOrderComparator } from "../utils";
 
 export type Getter = {
@@ -142,17 +136,28 @@ export const getters = ({
       }
     }
 
-    if (chart.type === "bar") {
-      const info = BarChart.info(step as BarInputStep);
-      BarChart.updateDims(info, dims, svg, showValues);
-    } else if (chart.type === "bubble") {
-      BubbleChart.updateDims(dims);
-    } else if (chart.type === "pie") {
-      PieChart.updateDims(dims);
-    } else if (chart.type === "scatter") {
-      ScatterChart.updateDims(dims);
-    } else if (chart.type === "treemap") {
-      TreemapChart.updateDims(dims);
+    switch (step.chartType) {
+      case "bar": {
+        const info = BarChart.info(step);
+        BarChart.updateDims(info, dims, svg, showValues);
+        break;
+      }
+      case "bubble": {
+        BubbleChart.updateDims(dims);
+        break;
+      }
+      case "pie": {
+        PieChart.updateDims(dims);
+        break;
+      }
+      case "scatter": {
+        ScatterChart.updateDims(dims);
+        break;
+      }
+      case "treemap": {
+        TreemapChart.updateDims(dims);
+        break;
+      }
     }
 
     let horizontalAxisGetters: Axis.Getter | undefined;
@@ -267,62 +272,42 @@ export const getters = ({
     }
 
     let groupsGetters: GenericChart.Getter[] = [];
+    const chartGetterProps = {
+      showValues,
+      showDatumLabels,
+      svg,
+      dims: dims.resolve(),
+      textDims,
+      colorMap,
+      cartoonize,
+    };
 
-    if (chart.type === "bar") {
-      const info = BarChart.info(step as BarInputStep);
-      groupsGetters = BarChart.getters(info, {
-        showValues,
-        showDatumLabels,
-        svg,
-        dims: dims.resolve(),
-        textDims,
-        colorMap,
-        cartoonize,
-      });
-    } else if (chart.type === "bubble") {
-      const info = BubbleChart.info(step as DefaultInputStep);
-      groupsGetters = BubbleChart.getters(info, {
-        showValues,
-        showDatumLabels,
-        svg,
-        dims: dims.resolve(),
-        textDims,
-        colorMap,
-        cartoonize,
-      });
-    } else if (chart.type === "pie") {
-      const info = PieChart.info(step as DefaultInputStep);
-      groupsGetters = PieChart.getters(info, {
-        showValues,
-        showDatumLabels,
-        svg,
-        dims: dims.resolve(),
-        textDims,
-        colorMap,
-        cartoonize,
-      });
-    } else if (chart.type === "scatter") {
-      const info = ScatterChart.info(step as ScatterInputStep);
-      groupsGetters = ScatterChart.getters(info, {
-        showValues,
-        showDatumLabels,
-        svg,
-        dims: dims.resolve(),
-        textDims,
-        colorMap,
-        cartoonize,
-      });
-    } else if (chart.type === "treemap") {
-      const info = TreemapChart.info(step as TreemapInputStep);
-      groupsGetters = TreemapChart.getters(info, {
-        showValues,
-        showDatumLabels,
-        svg,
-        dims: dims.resolve(),
-        textDims,
-        colorMap,
-        cartoonize,
-      });
+    switch (step.chartType) {
+      case "bar": {
+        const info = BarChart.info(step);
+        groupsGetters = BarChart.getters(info, chartGetterProps);
+        break;
+      }
+      case "bubble": {
+        const info = BubbleChart.info(step);
+        groupsGetters = BubbleChart.getters(info, chartGetterProps);
+        break;
+      }
+      case "pie": {
+        const info = PieChart.info(step);
+        groupsGetters = PieChart.getters(info, chartGetterProps);
+        break;
+      }
+      case "scatter": {
+        const info = ScatterChart.info(step);
+        groupsGetters = ScatterChart.getters(info, chartGetterProps);
+        break;
+      }
+      case "treemap": {
+        const info = TreemapChart.info(step);
+        groupsGetters = TreemapChart.getters(info, chartGetterProps);
+        break;
+      }
     }
 
     steps.push({
