@@ -1,12 +1,12 @@
 import { BarChart, BubbleChart, PieChart, ScatterChart, TreemapChart } from ".";
 import { ColorMap } from "../colors";
-import * as Datum from "../components/Datum";
 import * as Generic from "../components/Generic";
 import { Svg } from "../components/Svg";
 import { Tooltip } from "../components/Tooltip";
 import { Dimensions, ResolvedDimensions } from "../dims";
 import { InputStep, TextDims } from "../types";
 import { FONT_WEIGHT, stateOrderComparator, unique } from "../utils";
+import * as Datum from "./Datum";
 
 export type BaseInfo = {
   groupsKeys: string[];

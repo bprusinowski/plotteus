@@ -1,8 +1,8 @@
 import { interpolate } from "d3-interpolate";
 import { select, Selection } from "d3-selection";
-import * as Chart from "../charts/Chart";
+import * as Generic from "../components/Generic";
 import { FONT_WEIGHT } from "../utils";
-import * as Generic from "./Generic";
+import * as Chart from "./Chart";
 
 export type G = {
   d: string;

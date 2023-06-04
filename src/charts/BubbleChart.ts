@@ -1,6 +1,7 @@
 import { hierarchy, pack } from "d3-hierarchy";
+import { Datum } from ".";
 import { ColorMap } from "../colors";
-import { Datum, Svg } from "../components";
+import { Svg } from "../components";
 import { BUBBLE, getPathData } from "../coords";
 import { Dimensions, ResolvedDimensions } from "../dims";
 import { BaseMax, BubbleInputStep, InputGroupValue, TextDims } from "../types";

@@ -8,8 +8,9 @@ import {
   treemapSliceDice,
   treemapSquarify,
 } from "d3-hierarchy";
+import { Datum } from ".";
 import { ColorMap } from "../colors";
-import { Datum, Svg } from "../components";
+import { Svg } from "../components";
 import { BAR, getPathData } from "../coords";
 import { Dimensions, ResolvedDimensions } from "../dims";
 import {

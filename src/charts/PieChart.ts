@@ -1,7 +1,8 @@
 import { hierarchy, pack } from "d3-hierarchy";
 import { PieArcDatum, pie } from "d3-shape";
+import { Datum } from ".";
 import { ColorMap } from "../colors";
-import { Datum, Svg } from "../components";
+import { Svg } from "../components";
 import { BUBBLE, getPathData } from "../coords";
 import { Dimensions, ResolvedDimensions } from "../dims";
 import {

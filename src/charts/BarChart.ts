@@ -1,6 +1,7 @@
 import { ScaleBand, ScaleLinear, scaleBand, scaleLinear } from "d3-scale";
+import { Datum } from ".";
 import { ColorMap } from "../colors";
-import { AxisTick, Datum, Svg } from "../components";
+import { AxisTick, Svg } from "../components";
 import { BAR, getPathData } from "../coords";
 import { Dimensions, ResolvedDimensions } from "../dims";
 import {
