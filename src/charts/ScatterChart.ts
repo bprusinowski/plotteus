@@ -90,8 +90,8 @@ export const getters = (
       key,
       g: ({ s, _g }) => {
         const d = BAR;
-        const x = margin.left + width * 0.5;
-        const y = margin.top + height * 0.5;
+        const x = 0;
+        const y = 0;
         const labelX = 0;
         const labelY = BASE_MARGIN;
         const labelFontSize = 0;
@@ -141,8 +141,8 @@ export const getters = (
             height,
             cartoonize,
           });
-          const x = s(0, datumX - width * 0.5);
-          const y = s(0, datumY - height * 0.5);
+          const x = s(0, margin.left + datumX);
+          const y = s(0, margin.top + datumY);
           const rotate = getRotate(_g?.rotate);
           const strokeWidth = s(0, STROKE_WIDTH);
           const labelX = 0;
