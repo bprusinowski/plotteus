@@ -4,7 +4,7 @@ import * as Datum from "../components/Datum";
 import * as Generic from "../components/Generic";
 import { Svg } from "../components/Svg";
 import { Tooltip } from "../components/Tooltip";
-import { ResolvedDimensions } from "../dims";
+import { Dimensions, ResolvedDimensions } from "../dims";
 import { InputStep, TextDims } from "../types";
 import { FONT_WEIGHT, stateOrderComparator, unique } from "../utils";
 
@@ -40,10 +40,31 @@ export const info = (inputStep: InputStep) => {
       return ScatterChart.info(inputStep);
     case "treemap":
       return TreemapChart.info(inputStep);
+    default:
+      const _exhaustiveCheck: never = inputStep;
+      return _exhaustiveCheck;
   }
 };
 
 export type Info = ReturnType<typeof info>;
+
+export const updateDims = (info: Info, dims: Dimensions, svg: Svg) => {
+  switch (info.type) {
+    case "bar":
+      return BarChart.updateDims(info, dims, svg);
+    case "bubble":
+      return BubbleChart.updateDims(dims);
+    case "pie":
+      return PieChart.updateDims(dims);
+    case "scatter":
+      return ScatterChart.updateDims(dims);
+    case "treemap":
+      return TreemapChart.updateDims(dims);
+    default:
+      const _exhaustiveCheck: never = info;
+      return _exhaustiveCheck;
+  }
+};
 
 export type G = {
   d: string;

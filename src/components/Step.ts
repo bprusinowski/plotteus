@@ -129,29 +129,7 @@ export const getters = ({
       });
     }
 
-    switch (step.chartType) {
-      case "bar": {
-        const info = BarChart.info(step);
-        BarChart.updateDims(info, dims, svg);
-        break;
-      }
-      case "bubble": {
-        BubbleChart.updateDims(dims);
-        break;
-      }
-      case "pie": {
-        PieChart.updateDims(dims);
-        break;
-      }
-      case "scatter": {
-        ScatterChart.updateDims(dims);
-        break;
-      }
-      case "treemap": {
-        TreemapChart.updateDims(dims);
-        break;
-      }
-    }
+    Chart.updateDims(chartInfo, dims, svg);
 
     let horizontalAxisGetters: Axis.Getter | undefined;
     if (horizontalAxisInfo.show) {
