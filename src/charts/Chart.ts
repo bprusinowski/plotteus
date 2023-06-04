@@ -79,17 +79,31 @@ export type G = {
 
 export type Getter = Generic.Getter<G, { data: Datum.Getter[] }>;
 
-export type BaseGetterProps = {
-  groupsKeys: string[];
-  dataKeys: string[];
-  shareDomain: boolean;
-  showValues: boolean;
+export type GetterProps = {
   showDatumLabels: boolean;
   svg: Svg;
   dims: ResolvedDimensions;
   textDims: TextDims;
   colorMap: ColorMap;
   cartoonize: boolean;
+};
+
+export const getters = (info: Info, props: GetterProps): Getter[] => {
+  switch (info.type) {
+    case "bar":
+      return BarChart.getters(info, props);
+    case "bubble":
+      return BubbleChart.getters(info, props);
+    case "pie":
+      return PieChart.getters(info, props);
+    case "scatter":
+      return ScatterChart.getters(info, props);
+    case "treemap":
+      return TreemapChart.getters(info, props);
+    default:
+      const _exhaustiveCheck: never = info;
+      return _exhaustiveCheck;
+  }
 };
 
 export type Int = Generic.Int<G, { data: Datum.Int[] }>;

@@ -1,11 +1,4 @@
 import { Axis, AxisTick, ColorLegend, Svg, Text, Tooltip } from ".";
-import {
-  BarChart,
-  BubbleChart,
-  PieChart,
-  ScatterChart,
-  TreemapChart,
-} from "../charts";
 import * as Chart from "../charts/Chart";
 import { ColorMap } from "../colors";
 import { Dimensions } from "../dims";
@@ -229,43 +222,14 @@ export const getters = ({
       _maxVerticalAxisValue = undefined;
     }
 
-    let groupsGetters: Chart.Getter[] = [];
-    const chartGetterProps = {
+    const groupsGetters = Chart.getters(chartInfo, {
       showDatumLabels,
       svg,
       dims: dims.resolve(),
       textDims,
       colorMap,
       cartoonize,
-    };
-
-    switch (step.chartType) {
-      case "bar": {
-        const info = BarChart.info(step);
-        groupsGetters = BarChart.getters(info, chartGetterProps);
-        break;
-      }
-      case "bubble": {
-        const info = BubbleChart.info(step);
-        groupsGetters = BubbleChart.getters(info, chartGetterProps);
-        break;
-      }
-      case "pie": {
-        const info = PieChart.info(step);
-        groupsGetters = PieChart.getters(info, chartGetterProps);
-        break;
-      }
-      case "scatter": {
-        const info = ScatterChart.info(step);
-        groupsGetters = ScatterChart.getters(info, chartGetterProps);
-        break;
-      }
-      case "treemap": {
-        const info = TreemapChart.info(step);
-        groupsGetters = TreemapChart.getters(info, chartGetterProps);
-        break;
-      }
-    }
+    });
 
     steps.push({
       key,
