@@ -11,12 +11,10 @@ export const getInts = <
   exiting,
   g,
   _int,
-  modifyPreviousG,
 }: {
   exiting: boolean;
   g: (props: Stateful<G>) => G;
   _int?: I;
-  modifyPreviousG?: (_g: G) => void;
 }) => {
   // State.
   const updating = _int !== undefined && _int.state !== "exit";
@@ -25,8 +23,6 @@ export const getInts = <
   const _updateInt = updating ? _int : undefined;
 
   const _g = _updateInt?.i(1);
-
-  if (_g) modifyPreviousG?.(_g);
 
   const from = _g ?? g({ s: (enter) => enter });
   const to = g({

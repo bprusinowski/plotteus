@@ -81,14 +81,14 @@ export const getters = (
       continue;
     }
 
+    const groupX = margin.left + group.x + maxValueShift + (width - size) * 0.5;
+    const groupY = margin.top + group.y + maxValueShift + (height - size) * 0.5;
     const groupGetters: Chart.Getter = {
       key,
       g: ({ s, _g }) => {
         const d = BUBBLE;
-        const x = margin.left + group.x + maxValueShift + (width - size) * 0.5;
-        const y = margin.top + group.y + maxValueShift + (height - size) * 0.5;
-        const labelX = 0;
-        const labelY = textDims.groupLabel.yShift;
+        const labelX = groupX;
+        const labelY = groupY + textDims.groupLabel.yShift;
         const labelFontSize =
           groups.length > 1 ? s(0, shareDomain ? FONT_SIZE.groupLabel : 0) : 0;
         const labelStrokeWidth = getGroupLabelStrokeWidth(labelFontSize);
@@ -96,8 +96,8 @@ export const getters = (
 
         return {
           d,
-          x: s(x, null, _g?.x),
-          y: s(y, null, _g?.y),
+          x: s(groupX, null, _g?.x),
+          y: s(groupY, null, _g?.y),
           labelX,
           labelY,
           labelFontSize,
@@ -157,8 +157,11 @@ export const getters = (
                 })
           );
           const clipPath = d;
-          const x = s(0, datumX - (singlePie ? group.r * 0.5 : 0));
-          const y = s(0, datumY);
+          const x = s(
+            groupX,
+            groupX + datumX - (singlePie ? group.r * 0.5 : 0)
+          );
+          const y = s(groupY, groupY + datumY);
           const strokeWidth = s(0, value ? STROKE_WIDTH : 0);
           const labelX = s(
             x,

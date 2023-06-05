@@ -12,7 +12,7 @@ import {
   ScatterInputStep,
   TextDims,
 } from "../types";
-import { FONT_SIZE, getTextColor, max } from "../utils";
+import { FONT_SIZE, getTextColor, max, min } from "../utils";
 import * as Chart from "./Chart";
 import {
   STROKE_WIDTH,
@@ -86,22 +86,30 @@ export const getters = (
 
   for (const group of groups) {
     const { key } = group;
+    const allX = group.data.map((d) => d.x);
+    const allY = group.data.map((d) => d.y);
+    const minX = xScale(min(allX) ?? 0);
+    const maxX = xScale(max(allX) ?? 0);
+    const minY = yScale(min(allY) ?? 0);
+    const maxY = yScale(max(allY) ?? 0);
+    const xExtent = maxX - minX;
+    const yExtent = maxY - minY;
+    const groupX = margin.left + xExtent / 2 + minX;
+    const groupY = margin.top + yExtent / 2 + minY;
     const groupGetters: Chart.Getter = {
       key,
       g: ({ s, _g }) => {
         const d = BAR;
-        const x = 0;
-        const y = 0;
-        const labelX = 0;
-        const labelY = BASE_MARGIN;
+        const labelX = groupX;
+        const labelY = groupY + BASE_MARGIN;
         const labelFontSize = 0;
         const labelStrokeWidth = getGroupLabelStrokeWidth(labelFontSize);
         const opacity = group.opacity ?? 1;
 
         return {
           d,
-          x: s(x, null, _g?.x),
-          y: s(y, null, _g?.y),
+          x: s(groupX, null, _g?.x),
+          y: s(groupY, null, _g?.y),
           labelX,
           labelY,
           labelFontSize,
@@ -115,10 +123,9 @@ export const getters = (
     for (const datum of group.data) {
       const { key, x, y, fill } = datum;
 
-      const datumX = xScale(x);
-      const datumY = yScale(y);
+      const datumX = groupX + xScale(x) - xExtent / 2 - minX;
+      const datumY = groupY + yScale(y) - yExtent / 2 - minY;
       const datumFill = fill ?? colorMap.get(key, group.key, shareDomain);
-
       const datumGetters: Datum.Getter = {
         key,
         type: "xy",
@@ -141,8 +148,8 @@ export const getters = (
             height,
             cartoonize,
           });
-          const x = s(0, margin.left + datumX);
-          const y = s(0, margin.top + datumY);
+          const x = s(groupX, datumX);
+          const y = s(groupY, datumY);
           const rotate = getRotate(_g?.rotate);
           const strokeWidth = s(0, STROKE_WIDTH);
           const labelX = 0;

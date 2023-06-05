@@ -139,27 +139,6 @@ export const ints = ({
         _getters: _data,
         _ints: _updateInt?.data,
         getPreviousInt: getPreviousDatumInt,
-        getModifyPreviousG: ({ getter }) => {
-          let _teleportInt: Datum.Int | undefined;
-          const _groupTeleportInt = _ints?.find((d) => {
-            return (_teleportInt = d.data.find(
-              (d) => d.teleportKey === getter.teleportFrom
-            ));
-          });
-
-          // Update datum's x and y by their groups' coords when teleporting.
-          const modifyPreviousG =
-            _teleportInt && _groupTeleportInt
-              ? (_g: Datum.G) => {
-                  const g = newInt.i(1);
-                  const _gt = _groupTeleportInt.i(1);
-                  _g.x += _gt.x - g.x;
-                  _g.y += _gt.y - g.y;
-                }
-              : undefined;
-
-          return modifyPreviousG;
-        },
       }).sort(stateOrderComparator);
 
       return newInt;
@@ -215,7 +194,6 @@ export const render = ({
     .data(resolved, (d) => d.key)
     .join("g")
     .attr("class", "group")
-    .attr("transform", (d) => `translate(${d.x}, ${d.y})`)
     .style("opacity", (d) => d.opacity);
 
   const backgroundsSelection = groupsSelection
@@ -226,6 +204,7 @@ export const render = ({
     )
     .join("path")
     .attr("class", "background")
+    .attr("transform", (d) => `translate(${d.x}, ${d.y})`)
     .style("fill", "#f5f5f5")
     .attr("d", (d) => d.d);
 

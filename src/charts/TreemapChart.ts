@@ -98,24 +98,24 @@ export const getters = (
     const groupWidth = group.x1 - group.x0;
     const groupHeight = group.y1 - group.y0;
 
+    const groupX =
+      margin.left + group.x0 + (maxValue.kc * width + groupWidth) * 0.5;
+    const groupY =
+      margin.top + group.y0 + (maxValue.kc * height + groupHeight) * 0.5;
     const groupGetters: Chart.Getter = {
       key,
       g: ({ s, _g }) => {
         const d = BAR;
-        const x =
-          margin.left + group.x0 + (maxValue.kc * width + groupWidth) * 0.5;
-        const y =
-          margin.top + group.y0 + (maxValue.kc * height + groupHeight) * 0.5;
-        const labelX = 0;
-        const labelY = textDims.groupLabel.yShift;
+        const labelX = groupX;
+        const labelY = groupY + textDims.groupLabel.yShift;
         const labelFontSize = s(0, shareDomain ? FONT_SIZE.groupLabel : 0);
         const labelStrokeWidth = getGroupLabelStrokeWidth(labelFontSize);
         const opacity = group.data.opacity ?? 1;
 
         return {
           d,
-          x: s(x, null, _g?.x),
-          y: s(y, null, _g?.y),
+          x: s(groupX, null, _g?.x),
+          y: s(groupY, null, _g?.y),
           labelX,
           labelY,
           labelFontSize,
@@ -149,8 +149,14 @@ export const getters = (
             })
           );
           const clipPath = d;
-          const x = s(0, datum.x0 - group.x0 - (groupWidth - dWidth) * 0.5);
-          const y = s(0, datum.y0 - group.y0 - (groupHeight - dHeight) * 0.5);
+          const x = s(
+            groupX,
+            groupX + datum.x0 - group.x0 - (groupWidth - dWidth) * 0.5
+          );
+          const y = s(
+            groupY,
+            groupY + datum.y0 - group.y0 - (groupHeight - dHeight) * 0.5
+          );
           const rotate = getRotate(_g?.rotate);
           const strokeWidth = s(0, value ? STROKE_WIDTH : 0);
           const labelWidth = svg.measureText(key, "datumLabel").width;

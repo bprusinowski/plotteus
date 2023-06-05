@@ -6,6 +6,10 @@ export const unique = <T>(array: T[]): T[] => {
   return Array.from(new Set(array));
 };
 
+export const min = (array: number[]): number | undefined => {
+  return array.length === 0 ? undefined : Math.min(...array);
+};
+
 export const max = (array: number[]): number | undefined => {
   return array.length === 0 ? undefined : Math.max(...array);
 };

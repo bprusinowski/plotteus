@@ -77,6 +77,8 @@ export const getters = (
     }
 
     const singleDatum = group.children?.length === 1;
+    const groupX = margin.left + group.x + maxValueShift + (width - size) * 0.5;
+    const groupY = margin.top + group.y + maxValueShift + (height - size) * 0.5;
     const groupGetters: Chart.Getter = {
       key,
       g: ({ s, _g }) => {
@@ -88,18 +90,16 @@ export const getters = (
             cartoonize,
           })
         );
-        const x = margin.left + group.x + maxValueShift + (width - size) * 0.5;
-        const y = margin.top + group.y + maxValueShift + (height - size) * 0.5;
-        const labelX = 0;
-        const labelY = textDims.groupLabel.yShift;
+        const labelX = groupX;
+        const labelY = groupY + textDims.groupLabel.yShift;
         const labelFontSize = s(0, shareDomain ? FONT_SIZE.groupLabel : 0);
         const labelStrokeWidth = getGroupLabelStrokeWidth(labelFontSize);
         const opacity = group.data.opacity ?? 1;
 
         return {
           d,
-          x: s(x, null, _g?.x),
-          y: s(y, null, _g?.y),
+          x: s(groupX, null, _g?.x),
+          y: s(groupY, null, _g?.y),
           labelX,
           labelY,
           labelFontSize,
@@ -129,8 +129,8 @@ export const getters = (
             })
           );
           const clipPath = d;
-          const x = s(0, group.x - datum.x);
-          const y = s(0, group.y - datum.y);
+          const x = s(groupX, groupX + group.x - datum.x);
+          const y = s(groupY, groupY + group.y - datum.y);
           const rotate = getRotate(_g?.rotate, cartoonize);
           const strokeWidth = s(0, value ? STROKE_WIDTH : 0);
           const labelX = 0;
