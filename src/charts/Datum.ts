@@ -61,7 +61,6 @@ export const ints = ({
   _getters,
   _ints,
   getPreviousInt,
-  getModifyPreviousG,
 }: Generic.IntsProps<G, Getter, Int>) => {
   return Generic.ints<G, Getter, Int>()({
     getters,
@@ -92,7 +91,6 @@ export const ints = ({
       }
     },
     getPreviousInt,
-    getModifyPreviousG,
   });
 };
 

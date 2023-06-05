@@ -145,22 +145,22 @@ export const getters = (
     for (const group of groups) {
       const { key } = group;
       const groupX0 = x0Scale(key) as number;
+      const groupX = margin.left + groupX0 + x0bw * 0.5;
+      const groupY = margin.top + height;
       const groupGetters: Chart.Getter = {
         key,
         g: ({ s, _g }) => {
           const d = BAR;
-          const x = margin.left + groupX0 + x0bw * 0.5;
-          const y = margin.top + height;
-          const labelX = 0;
-          const labelY = BASE_MARGIN;
+          const labelX = groupX;
+          const labelY = groupY + BASE_MARGIN;
           const labelFontSize = s(0, shareDomain ? FONT_SIZE.groupLabel : 0);
           const labelStrokeWidth = getGroupLabelStrokeWidth(labelFontSize);
           const opacity = group.opacity ?? 1;
 
           return {
             d,
-            x: s(x, null, _g?.x),
-            y: s(y, null, _g?.y),
+            x: s(groupX, null, _g?.x),
+            y: s(groupY, null, _g?.y),
             labelX,
             labelY,
             labelFontSize,
@@ -211,8 +211,11 @@ export const getters = (
             const clipPath =
               // Do not clip grouped bar labels.
               isGrouped && showValues ? s(BAR, getD(fullHeight * 2)) : d;
-            const x = s(0, datumX + (x1bw - x0bw) * 0.5);
-            const y = s(0, (datumY - height) * 0.5 - currentAccHeight);
+            const x = s(groupX, groupX + datumX + (x1bw - x0bw) * 0.5);
+            const y = s(
+              groupY,
+              groupY + (datumY - height) * 0.5 - currentAccHeight
+            );
             const rotate = getRotate(_g?.rotate);
             const strokeWidth = s(0, value ? STROKE_WIDTH : 0);
             const labelWidth = svg.measureText(key, "datumLabel").width;
@@ -290,17 +293,18 @@ export const getters = (
 
     for (const group of groups) {
       const { key } = group;
+      const groupX = margin.left;
       const groupY0 = y0Scale(key) as number;
+      const groupY = margin.top + groupY0 + y0bw * 0.5;
       const groupGetters: Chart.Getter = {
         key,
         g: ({ s, _g }) => {
           const d = BAR;
-          const x = margin.left;
-          const y = margin.top + groupY0 + y0bw * 0.5;
           const labelWidth = svg.measureText(key, "groupLabel").width;
-          const labelX = labelWidth * 0.5;
+          const labelX = groupX + labelWidth * 0.5;
           const labelY =
-            -(y1bw * (isGrouped ? dataKeys.length : 1)) * 0.5 -
+            groupY -
+            y1bw * (isGrouped ? dataKeys.length : 1) * 0.5 -
             textDims.groupLabel.height * 0.5;
           const labelFontSize = s(0, shareDomain ? FONT_SIZE.groupLabel : 0);
           const labelStrokeWidth = getGroupLabelStrokeWidth(labelFontSize);
@@ -308,8 +312,8 @@ export const getters = (
 
           return {
             d,
-            x: s(x, null, _g?.x),
-            y: s(y, null, _g?.y),
+            x: s(groupX, null, _g?.x),
+            y: s(groupY, null, _g?.y),
             labelX,
             labelY,
             labelFontSize,
@@ -362,8 +366,11 @@ export const getters = (
             const d = s(BAR, getD());
             // Do not clip grouped bar labels.
             const clipPath = isGrouped ? s(BAR, getD(fullWidth * 2)) : d;
-            const x = s(0, datumX + dWidth * 0.5 + currentAccWidth);
-            const y = s(0, datumY + (y1bw - y0bw) * 0.5);
+            const x = s(
+              groupX,
+              groupX + datumX + dWidth * 0.5 + currentAccWidth
+            );
+            const y = s(groupY, groupY + datumY + (y1bw - y0bw) * 0.5);
             const rotate = getRotate(_g?.rotate);
             const strokeWidth = s(0, value ? STROKE_WIDTH : 0);
             const labelWidth = svg.measureText(key, "datumLabel").width;
