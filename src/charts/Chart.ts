@@ -261,13 +261,13 @@ export const render = ({
   }
 
   const labelsSelection = groupsSelection
-    .selectAll<SVGTextElement, Resolved>(".label")
+    .selectAll<SVGTextElement, Resolved>(".group-label")
     .data(
       (d) => [d],
       (d) => d.key
     )
     .join("text")
-    .attr("class", "label")
+    .attr("class", "group-label")
     .attr("x", (d) => d.labelX)
     .attr("y", (d) => d.labelY)
     .style("fill", (d) => d.labelFill)
