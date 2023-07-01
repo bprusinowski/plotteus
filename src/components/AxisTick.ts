@@ -3,7 +3,12 @@ import { Selection } from "d3-selection";
 import { HALF_FONT_K } from "../charts/utils";
 import { ResolvedDimensions } from "../dims";
 import { AxisType } from "../types";
-import { FONT_SIZE, FONT_WEIGHT } from "../utils";
+import {
+  FONT_SIZE,
+  FONT_WEIGHT,
+  deriveSubtlerColor,
+  getTextColor,
+} from "../utils";
 import * as Axis from "./Axis";
 import * as Generic from "./Generic";
 
@@ -18,6 +23,9 @@ type G = {
   size: number;
   tickLabelHeight: number;
   fontSize: number;
+  color: string;
+  lightLineColor: string;
+  boldLineColor: string;
   opacity: number;
 };
 
@@ -29,6 +37,7 @@ export const getters = ({
   maxValue,
   _maxValue,
   dims: { width, height },
+  svgBackgroundColor,
   tickHeight,
   tickFormat,
 }: {
@@ -37,6 +46,7 @@ export const getters = ({
   maxValue: number;
   _maxValue: number | undefined;
   dims: ResolvedDimensions;
+  svgBackgroundColor: string;
   tickHeight: number;
   tickFormat: (d: number) => string;
 }): Getter[] => {
@@ -61,6 +71,9 @@ export const getters = ({
           (isVerticalAxis ? 1 - tick / maxValue : tick / maxValue) * size,
           scale(tick)
         );
+        const color = getTextColor(svgBackgroundColor);
+        const lightLineColor = deriveSubtlerColor(svgBackgroundColor);
+        const boldLineColor = deriveSubtlerColor(svgBackgroundColor, 3);
 
         return {
           x: isVerticalAxis ? x : y,
@@ -68,6 +81,9 @@ export const getters = ({
           size: isVerticalAxis ? width : height,
           tickLabelHeight: tickHeight,
           fontSize: FONT_SIZE.axisTick,
+          color,
+          lightLineColor,
+          boldLineColor,
           opacity: s(0, 1),
         };
       },
@@ -123,6 +139,7 @@ export const render = ({
         .style("font-size", (d) => `${d.fontSize}px`)
         .style("font-weight", FONT_WEIGHT.axisTick)
         .style("dominant-baseline", "hanging")
+        .style("fill", (d) => d.color)
         .text((d) => d.key)
     )
     .call((g) =>
@@ -133,7 +150,7 @@ export const render = ({
         .attr("class", "bold-line")
         .attr(isVerticalAxis ? "x1" : "y1", isVerticalAxis ? -SIZE : 0)
         .attr(isVerticalAxis ? "x2" : "y2", isVerticalAxis ? 0 : SIZE)
-        .style("stroke", "#696969")
+        .style("stroke", (d) => d.boldLineColor)
     )
     .call((g) =>
       g
@@ -145,6 +162,6 @@ export const render = ({
         .attr(isVerticalAxis ? "x2" : "y2", (d) =>
           isVerticalAxis ? d.size : -d.size
         )
-        .style("stroke", "#ededed")
+        .style("stroke", (d) => d.lightLineColor)
     );
 };

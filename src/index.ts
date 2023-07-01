@@ -1,17 +1,19 @@
 import { makeSvg, makeTooltip, Step } from "./components";
-import { InputStep } from "./types";
+import { InputStep, StoryOptions } from "./types";
 
 /**
  * Creates a new `Story` object.
  *
  * @param div - `div` element that will be used as Story's container.
  * @param steps - Array of step configs.
+ * @param options - Story options.
  *
  * @returns`Story` object.
  */
 const makeStory = (
   div: HTMLDivElement,
-  steps: InputStep[]
+  steps: InputStep[],
+  options: StoryOptions = {}
 ): {
   /**
    * Renders a given step.
@@ -26,7 +28,8 @@ const makeStory = (
     indicateProgress?: boolean
   ) => void;
 } => {
-  const svg = makeSvg(div);
+  const { svgBackgroundColor = "#FFFFFF" } = options;
+  const svg = makeSvg(div, svgBackgroundColor);
   const tooltip = makeTooltip(div);
 
   let loaded = false;
@@ -54,7 +57,13 @@ const makeStory = (
   }).observe(div);
 
   const prepareStepsIntsMap = (width: number, height: number): void => {
-    const getters = Step.getters({ steps, svg, width, height });
+    const getters = Step.getters({
+      options: { svgBackgroundColor },
+      steps,
+      svg,
+      width,
+      height,
+    });
     intsMap = Step.intsMap({ steps: getters, svg });
   };
 
@@ -83,4 +92,4 @@ const makeStory = (
   return { render };
 };
 
-export { makeStory, InputStep };
+export { InputStep, makeStory };

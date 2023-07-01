@@ -13,7 +13,13 @@ import {
   InputGroupValue,
   TextDims,
 } from "../types";
-import { FONT_SIZE, getTextColor, max, sum } from "../utils";
+import {
+  FONT_SIZE,
+  deriveSubtlerColor,
+  getTextColor,
+  max,
+  sum,
+} from "../utils";
 import * as Chart from "./Chart";
 import {
   STROKE_WIDTH,
@@ -33,7 +39,10 @@ export type Info = Chart.BaseInfo & {
   horizontalAxis: InputAxis | undefined;
 };
 
-export const info = (inputStep: BarInputStep): Info => {
+export const info = (
+  svgBackgroundColor: string,
+  inputStep: BarInputStep
+): Info => {
   const {
     chartSubtype = "grouped",
     layout = "vertical",
@@ -42,7 +51,7 @@ export const info = (inputStep: BarInputStep): Info => {
   } = inputStep;
 
   return {
-    ...Chart.baseInfo(inputStep, shareDomain),
+    ...Chart.baseInfo(svgBackgroundColor, inputStep, shareDomain),
     type: "bar",
     subtype: chartSubtype,
     layout,
@@ -115,6 +124,7 @@ export const getters = (
     shareDomain,
     showValues,
     maxValue,
+    svgBackgroundColor,
   } = info;
   const {
     showDatumLabels,
@@ -130,6 +140,10 @@ export const getters = (
   const labelYShift = textDims.datumLabel.yShift;
   const valueHeight = textDims.datumValue.height;
   const valueYShift = textDims.datumValue.yShift;
+  const groupFill = deriveSubtlerColor(svgBackgroundColor);
+  const groupLabelFill = getTextColor(svgBackgroundColor);
+  const groupLabelStroke = svgBackgroundColor;
+  const datumStroke = svgBackgroundColor;
 
   if (isVertical) {
     const { x0Scale, x0bw, x1Scale, x1bw, yScale } = getVerticalScales({
@@ -164,7 +178,10 @@ export const getters = (
             labelX,
             labelY,
             labelFontSize,
+            labelStroke: groupLabelStroke,
             labelStrokeWidth,
+            labelFill: groupLabelFill,
+            fill: groupFill,
             opacity,
           };
         },
@@ -225,8 +242,12 @@ export const getters = (
             const labelY = isGrouped
               ? s(0, dHeight * 0.5 - labelHeight - TEXT_MARGIN)
               : s(0, -(dHeight * 0.5 + labelYShift));
-            const labelFontSize = showDatumLabels ? FONT_SIZE.datumLabel : 0;
+            const labelFontSize = s(
+              0,
+              showDatumLabels ? FONT_SIZE.datumLabel : 0
+            );
             const labelFill = getTextColor(datumFill);
+            const labelStroke = datumFill;
             const valueWidth = svg.measureText(value, "datumValue").width;
             const valueX = isGrouped
               ? 0
@@ -248,7 +269,7 @@ export const getters = (
                     : -(dHeight * 0.5 + valueYShift)
                 );
             const valueFontSize = showValues ? s(0, FONT_SIZE.datumValue) : 0;
-            const valueFill = isGrouped ? "black" : labelFill;
+            const valueFill = isGrouped ? groupLabelFill : labelFill;
             const opacity = datum.opacity ?? 1;
 
             return {
@@ -258,10 +279,12 @@ export const getters = (
               y,
               rotate,
               fill: datumFill,
+              stroke: datumStroke,
               strokeWidth,
               labelX,
               labelY,
               labelFontSize,
+              labelStroke,
               labelFill,
               valueX,
               valueY,
@@ -317,7 +340,10 @@ export const getters = (
             labelX,
             labelY,
             labelFontSize,
+            labelStroke: groupLabelStroke,
             labelStrokeWidth,
+            labelFill: groupLabelFill,
+            fill: groupFill,
             opacity,
           };
         },
@@ -379,8 +405,12 @@ export const getters = (
               -dWidth * 0.5 + labelWidth * 0.5 + BASE_MARGIN * 0.5
             );
             const labelY = s(0, labelYShift);
-            const labelFontSize = showDatumLabels ? FONT_SIZE.datumLabel : 0;
+            const labelFontSize = s(
+              0,
+              showDatumLabels ? FONT_SIZE.datumLabel : 0
+            );
             const labelFill = getTextColor(datumFill);
+            const labelStroke = datumFill;
             const valueWidth = svg.measureText(value, "datumValue").width;
             const valueX = isGrouped
               ? labelX + labelWidth > (dWidth + valueWidth + BASE_MARGIN) * 0.5
@@ -391,7 +421,7 @@ export const getters = (
               : 0;
             const valueY = s(valueHeight * 0.5, valueYShift);
             const valueFontSize = showValues ? s(0, FONT_SIZE.datumValue) : 0;
-            const valueFill = isGrouped ? "black" : labelFill;
+            const valueFill = isGrouped ? groupLabelFill : labelFill;
             const opacity = datum.opacity ?? 1;
 
             return {
@@ -401,10 +431,12 @@ export const getters = (
               y,
               rotate,
               fill: datumFill,
+              stroke: datumStroke,
               strokeWidth,
               labelX,
               labelY,
               labelFontSize,
+              labelStroke,
               labelFill,
               valueX,
               valueY,

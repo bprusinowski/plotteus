@@ -1,7 +1,7 @@
 import { Selection } from "d3-selection";
 import { Dimensions, ResolvedDimensions } from "../dims";
 import { Anchor, TextType } from "../types";
-import { FONT_SIZE, FONT_WEIGHT } from "../utils";
+import { FONT_SIZE, FONT_WEIGHT, getTextColor } from "../utils";
 import * as Generic from "./Generic";
 import { Svg } from "./Svg";
 
@@ -10,6 +10,7 @@ type G = {
   y: number;
   fontSize: number;
   fontWeight: number;
+  color: string;
   opacity: number;
 };
 
@@ -20,12 +21,14 @@ export const getter = ({
   type,
   anchor,
   svg,
+  svgBackgroundColor,
   dims: { fullWidth, margin },
 }: {
   text: string;
   type: TextType;
   anchor: Anchor;
   svg: Svg;
+  svgBackgroundColor: string;
   dims: ResolvedDimensions;
 }): Getter => {
   const { width: textWidth } = svg.measureText(text, type);
@@ -51,6 +54,7 @@ export const getter = ({
         y: s(margin.top, null, _g?.y),
         fontSize: FONT_SIZE[type],
         fontWeight: FONT_WEIGHT[type],
+        color: getTextColor(svgBackgroundColor),
         opacity: s(0, 1),
       };
     },
@@ -85,6 +89,7 @@ export const render = ({
     .style("font-size", (d) => `${d.fontSize}px`)
     .style("font-weight", (d) => d.fontWeight)
     .style("dominant-baseline", "hanging")
+    .style("fill", (d) => d.color)
     .style("opacity", (d) => d.opacity)
     .text((d) => d.key);
 };
