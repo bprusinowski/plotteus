@@ -542,7 +542,7 @@ const getHorizontalScales = ({
   const singleGroup = groupsKeys.length === 1;
   const y0Scale = scaleBand()
     .domain(groupsKeys)
-    .range([height + labelMargin - AxisTick.SIZE * 2, 0])
+    .range([0, height + labelMargin - AxisTick.SIZE * 2])
     .paddingInner(singleGroup ? 0 : PADDING_Y0);
   const y0bw = y0Scale.bandwidth() - labelMargin;
   const xScale = scaleLinear()
