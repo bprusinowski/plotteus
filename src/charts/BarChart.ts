@@ -401,7 +401,7 @@ export const getters = (
             const strokeWidth = s(0, value ? STROKE_WIDTH : 0);
             const labelWidth = svg.measureText(key, "datumLabel").width;
             const labelX = s(
-              labelWidth * 0.5 + BASE_MARGIN * 0.5,
+              BASE_MARGIN * 0.5,
               -dWidth * 0.5 + labelWidth * 0.5 + BASE_MARGIN * 0.5
             );
             const labelY = s(0, labelYShift);
