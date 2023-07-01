@@ -24,7 +24,8 @@ export const makeTooltip = (div: HTMLDivElement) => {
     .data([null])
     .join("div")
     .attr("class", "content")
-    .style("overflow-wrap", "break-word");
+    .style("overflow-wrap", "break-word")
+    .style("color", "black");
   const datumLabel = content
     .selectAll(".datum-label")
     .data([null])
