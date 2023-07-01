@@ -180,13 +180,14 @@ export const getters = (
           const y = s(groupY, groupY + datumY);
           const strokeWidth = s(0, value ? STROKE_WIDTH : 0);
           const labelX = s(
-            x,
-            -x + group.r * 0.5 * Math.sin(rotate + Math.PI * 0.5)
+            x - groupX,
+            groupX + -x + group.r * 0.5 * Math.sin(rotate + Math.PI * 0.5)
           );
           const labelY =
             s(
-              y,
-              -y -
+              y - groupY,
+              groupY +
+                -y -
                 group.r * 0.5 * Math.cos(rotate + Math.PI * 0.5) +
                 textDims.datumValue.yShift
             ) +
@@ -198,7 +199,7 @@ export const getters = (
             showDatumLabels ? FONT_SIZE.datumLabel : 0
           );
           const labelFill = getTextColor(datumFill);
-          const labelStroke = labelFill === "white" ? "black" : "white";
+          const labelStroke = datumFill;
           const valueX = labelX;
           const valueY =
             labelY + (showDatumLabels ? textDims.datumLabel.height : 0);
