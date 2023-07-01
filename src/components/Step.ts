@@ -377,12 +377,14 @@ export const resolve = (ints: Int, t: number) => {
 export const render = ({
   resolved,
   svg,
+  progressBarColor,
   tooltip,
   finished,
   indicateProgress,
 }: {
   resolved: Resolved;
   svg: Svg;
+  progressBarColor: string;
   tooltip: Tooltip;
   finished: boolean;
   indicateProgress: boolean;
@@ -435,7 +437,7 @@ export const render = ({
     tooltip.hide();
 
     if (indicateProgress) {
-      svg.selection.style("border-left", "3px solid #e9e9e9");
+      svg.selection.style("border-left", `3px solid ${progressBarColor}`);
     }
   }
 };

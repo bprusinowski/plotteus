@@ -1,5 +1,6 @@
 import { makeSvg, makeTooltip, Step } from "./components";
 import { InputStep, StoryOptions } from "./types";
+import { deriveSubtlerColor } from "./utils";
 
 /**
  * Creates a new `Story` object.
@@ -31,6 +32,7 @@ const makeStory = (
   const { svgBackgroundColor = "#FFFFFF" } = options;
   const svg = makeSvg(div, svgBackgroundColor);
   const tooltip = makeTooltip(div);
+  const progressBarColor = deriveSubtlerColor(svgBackgroundColor);
 
   let loaded = false;
   // Previous key.
@@ -84,7 +86,14 @@ const makeStory = (
         const finished = t === 0 || t === 1;
         const resolved = Step.resolve(ints, t);
 
-        Step.render({ resolved, svg, tooltip, finished, indicateProgress });
+        Step.render({
+          resolved,
+          svg,
+          progressBarColor,
+          tooltip,
+          finished,
+          indicateProgress,
+        });
       }
     }
   };
