@@ -6,9 +6,9 @@ export type PaletteName =
   | "tableau";
 
 const defaultPalette = [
-  "#333333",
-  "#FD7F6F",
+  "#FFD270",
   "#A48CF2",
+  "#FD7F6F",
   "#6BA6FF",
   "#FA667E",
   "#68CA8E",
