@@ -11,6 +11,7 @@ describe("Text", () => {
     type: "title",
     anchor: "middle",
     dims: dims.resolve(),
+    svgBackgroundColor: "white",
   });
   const enterInts = Text.ints({
     getters: [enterGetter],
@@ -62,14 +63,17 @@ describe("Text", () => {
 
     describe("resolve", () => {
       test("0", () => {
-        const { key, ...r } = Text.resolve({ ints: enterInts, t: 0 })[0];
-        const g = enterGetter.g({ s: (enter) => enter });
+        const { key, color, ...r } = Text.resolve({ ints: enterInts, t: 0 })[0];
+        const { color: gColor, ...g } = enterGetter.g({ s: (enter) => enter });
 
         expect(r).toEqual(g);
       });
 
       test("0.5", () => {
-        const { key, ...r } = Text.resolve({ ints: enterInts, t: 0.5 })[0];
+        const { key, color, ...r } = Text.resolve({
+          ints: enterInts,
+          t: 0.5,
+        })[0];
 
         expect(r).toEqual({
           x: 400,
@@ -81,8 +85,10 @@ describe("Text", () => {
       });
 
       test("1", () => {
-        const { key, ...r } = Text.resolve({ ints: enterInts, t: 1 })[0];
-        const g = enterGetter.g({ s: (enter, update) => update ?? enter });
+        const { key, color, ...r } = Text.resolve({ ints: enterInts, t: 1 })[0];
+        const { color: gColor, ...g } = enterGetter.g({
+          s: (enter, update) => update ?? enter,
+        });
 
         expect(r).toEqual(g);
       });
@@ -95,6 +101,7 @@ describe("Text", () => {
     type: "datumLabel",
     anchor: "start",
     dims: dims.resolve(),
+    svgBackgroundColor: "white",
   });
   const updateInts = Text.ints({
     getters: [updateGetter],
@@ -146,14 +153,22 @@ describe("Text", () => {
 
     describe("resolve", () => {
       test("0", () => {
-        const { key, ...r } = Text.resolve({ ints: updateInts, t: 0 })[0];
-        const g = enterGetter.g({ s: (enter, update) => update ?? enter });
+        const { key, color, ...r } = Text.resolve({
+          ints: updateInts,
+          t: 0,
+        })[0];
+        const { color: gColor, ...g } = enterGetter.g({
+          s: (enter, update) => update ?? enter,
+        });
 
         expect(r).toEqual(g);
       });
 
       test("0.5", () => {
-        const { key, ...r } = Text.resolve({ ints: updateInts, t: 0.5 })[0];
+        const { key, color, ...r } = Text.resolve({
+          ints: updateInts,
+          t: 0.5,
+        })[0];
 
         expect(r).toEqual({
           x: 208,
@@ -168,8 +183,13 @@ describe("Text", () => {
       });
 
       test("1", () => {
-        const { key, ...r } = Text.resolve({ ints: updateInts, t: 1 })[0];
-        const g = updateGetter.g({ s: (enter, update) => update ?? enter });
+        const { key, color, ...r } = Text.resolve({
+          ints: updateInts,
+          t: 1,
+        })[0];
+        const { color: gColor, ...g } = updateGetter.g({
+          s: (enter, update) => update ?? enter,
+        });
 
         expect(r).toEqual(g);
       });
@@ -193,14 +213,19 @@ describe("Text", () => {
 
     describe("resolve", () => {
       test("0", () => {
-        const { key, ...r } = Text.resolve({ ints: exitInts, t: 0 })[0];
-        const g = updateGetter.g({ s: (enter, update) => update ?? enter });
+        const { key, color, ...r } = Text.resolve({ ints: exitInts, t: 0 })[0];
+        const { color: gColor, ...g } = updateGetter.g({
+          s: (enter, update) => update ?? enter,
+        });
 
         expect(r).toEqual(g);
       });
 
       test("0.5", () => {
-        const { key, ...r } = Text.resolve({ ints: exitInts, t: 0.5 })[0];
+        const { key, color, ...r } = Text.resolve({
+          ints: exitInts,
+          t: 0.5,
+        })[0];
 
         expect(r).toEqual({
           x: 16,
@@ -212,8 +237,10 @@ describe("Text", () => {
       });
 
       test("1", () => {
-        const { key, ...r } = Text.resolve({ ints: exitInts, t: 1 })[0];
-        const g = updateGetter.g({ s: (enter, _, exit) => exit ?? enter });
+        const { key, color, ...r } = Text.resolve({ ints: exitInts, t: 1 })[0];
+        const { color: gColor, ...g } = updateGetter.g({
+          s: (enter, _, exit) => exit ?? enter,
+        });
 
         expect(r).toEqual(g);
       });
