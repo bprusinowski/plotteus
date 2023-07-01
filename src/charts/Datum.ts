@@ -47,14 +47,17 @@ export type Int = Generic.Int<
   | {
       type: "value";
       teleportKey: string;
+      teleportFrom: string | undefined;
       value: number;
       _value: number;
     }
   | {
       type: "xy";
       teleportKey: string;
+      teleportFrom: string | undefined;
       xValue: number;
       yValue: number;
+      _value: number | undefined;
     }
 >;
 
@@ -75,6 +78,7 @@ export const ints = ({
             ...int,
             type: getter.type,
             teleportKey: getter.teleportKey,
+            teleportFrom: getter.teleportFrom,
             value: getter.value,
             _value:
               _updateInt?.type === "value"
@@ -87,8 +91,11 @@ export const ints = ({
             ...int,
             type: getter.type,
             teleportKey: getter.teleportKey,
+            teleportFrom: getter.teleportFrom,
             xValue: getter.xValue,
             yValue: getter.yValue,
+            _value:
+              _updateInt?.type === "value" ? _updateInt?.value : undefined,
           };
       }
     },
@@ -98,8 +105,18 @@ export const ints = ({
 
 export type Resolved = Generic.Resolved<
   G,
-  | { type: "value"; value: number }
-  | { type: "xy"; xValue: number; yValue: number }
+  | {
+      type: "value";
+      value: number;
+    }
+  | {
+      type: "xy";
+      xValue: number;
+      yValue: number;
+      // Potential preceding value if previous step was of value type.
+      // Needed to nicely animate out the value.
+      value: number | undefined;
+    }
 >;
 
 export const resolve = ({
@@ -119,6 +136,7 @@ export const resolve = ({
             ...resolved,
             type: int.type,
             value: interpolate(int._value, int.value)(Math.round(t)),
+            ...getMaybeModifiedResolvedAfterTeleportation(int, resolved, t),
           };
         case "xy":
           return {
@@ -126,10 +144,52 @@ export const resolve = ({
             type: int.type,
             xValue: int.xValue,
             yValue: int.yValue,
+            ...getMaybeModifiedResolvedAfterTeleportation(int, resolved, t),
+            ...getModifiedPrecedingValue(int, resolved, t),
           };
       }
     },
   });
+};
+
+const getMaybeModifiedResolvedAfterTeleportation = (
+  int: Int,
+  resolved: Generic.Resolved<G, {}>,
+  t: number
+) => {
+  if (int.state === "update" && int.teleportFrom) {
+    if (Math.round(t)) {
+      return {
+        key: int.key,
+        labelFontSize: (t - 0.5) * 2 * resolved.labelFontSize,
+      };
+    } else {
+      return {
+        key: int.teleportFrom.split(":")[1],
+        labelFontSize: (1 - t * 2) * resolved.labelFontSize,
+      };
+    }
+  }
+
+  return {};
+};
+
+const getModifiedPrecedingValue = (
+  int: Int,
+  resolved: Generic.Resolved<G, {}>,
+  t: number
+) => {
+  if (Math.round(t)) {
+    return {
+      value: undefined,
+      valueFontSize: 0,
+    };
+  } else {
+    return {
+      value: int._value,
+      valueFontSize: (1 - t * 2) * resolved.valueFontSize,
+    };
+  }
 };
 
 export const render = ({
@@ -227,5 +287,5 @@ export const render = ({
     .style("user-select", "none")
     .style("pointer-events", "none")
     .style("fill", (d) => d.valueFill)
-    .text((d) => (d.type === "value" ? d.value : ""));
+    .text((d) => d.value ?? "");
 };
