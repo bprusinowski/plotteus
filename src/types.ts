@@ -1,6 +1,10 @@
 import { PaletteName } from "./colors";
 
 // External.
+export type StoryOptions = {
+  svgBackgroundColor?: string;
+};
+
 type BaseInputStep = {
   key: string;
 

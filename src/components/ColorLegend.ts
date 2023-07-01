@@ -2,7 +2,7 @@ import * as Chart from "../charts/Chart";
 import { ColorMap } from "../colors";
 import { Dimensions, ResolvedDimensions } from "../dims";
 import { Anchor, InputDatum, InputStep } from "../types";
-import { FONT_SIZE, FONT_WEIGHT, max } from "../utils";
+import { FONT_SIZE, FONT_WEIGHT, getTextColor, max } from "../utils";
 import * as Generic from "./Generic";
 import { SVGSelection, Svg } from "./Svg";
 
@@ -52,6 +52,7 @@ type G = {
   labelY: number;
   labelFontSize: number;
   labelFontWeight: number;
+  labelColor: string;
   fill: string;
   opacity: number;
 };
@@ -64,6 +65,7 @@ export const getters = ({
   title,
   itemHeight,
   svg,
+  svgBackgroundColor,
   dims: { width, height, margin, BASE_MARGIN },
 }: {
   colorMap: ColorMap;
@@ -71,6 +73,7 @@ export const getters = ({
   title: string;
   itemHeight: number;
   svg: Svg;
+  svgBackgroundColor: string;
   dims: ResolvedDimensions;
 }): Getter[] => {
   const getters: Getter[] = [];
@@ -218,6 +221,7 @@ export const getters = ({
           labelFontWeight: isTitle
             ? FONT_WEIGHT.legendTitle
             : FONT_WEIGHT.legendItem,
+          labelColor: getTextColor(svgBackgroundColor),
           fill: color,
           opacity: s(0, 1),
         };
@@ -273,6 +277,7 @@ export const render = ({
         .style("font-size", (d) => `${d.labelFontSize}px`)
         .style("font-weight", (d) => d.labelFontWeight)
         .style("dominant-baseline", "hanging")
+        .style("fill", (d) => d.labelColor)
         .text((d) => d.key)
     );
 };

@@ -11,7 +11,12 @@ import {
   PieInputStep,
   TextDims,
 } from "../types";
-import { FONT_SIZE, getTextColor, radiansToDegrees } from "../utils";
+import {
+  FONT_SIZE,
+  deriveSubtlerColor,
+  getTextColor,
+  radiansToDegrees,
+} from "../utils";
 import * as Chart from "./Chart";
 import {
   STROKE_WIDTH,
@@ -28,11 +33,14 @@ export type Info = Chart.BaseInfo & {
   canUseHorizontalAxis: false;
 };
 
-export const info = (inputStep: PieInputStep): Info => {
+export const info = (
+  svgBackgroundColor: string,
+  inputStep: PieInputStep
+): Info => {
   const { groups, shareDomain = true } = inputStep;
 
   return {
-    ...Chart.baseInfo(inputStep, shareDomain),
+    ...Chart.baseInfo(svgBackgroundColor, inputStep, shareDomain),
     type: "pie",
     groups,
     maxValue: getMaxValue(inputStep),
@@ -57,7 +65,8 @@ export const getters = (
     cartoonize: boolean;
   }
 ) => {
-  const { groups, maxValue, shareDomain, showValues } = info;
+  const { groups, maxValue, shareDomain, showValues, svgBackgroundColor } =
+    info;
   const {
     showDatumLabels,
     dims: { width, height, size, margin },
@@ -69,6 +78,10 @@ export const getters = (
   const groupsGetters: Chart.Getter[] = [];
   const maxValueShift = maxValue.kc * size * 0.5;
   const showDatumLabelsAndValues = showDatumLabels && showValues;
+  const groupFill = deriveSubtlerColor(svgBackgroundColor);
+  const groupLabelFill = getTextColor(svgBackgroundColor);
+  const groupLabelStroke = svgBackgroundColor;
+  const datumStroke = svgBackgroundColor;
 
   for (const group of root.children || []) {
     const { key } = group.data;
@@ -101,7 +114,10 @@ export const getters = (
           labelX,
           labelY,
           labelFontSize,
+          labelStroke: groupLabelStroke,
           labelStrokeWidth,
+          labelFill: groupLabelFill,
+          fill: groupFill,
           opacity,
         };
       },
@@ -177,8 +193,12 @@ export const getters = (
             textDims.datumLabel.yShift -
             // TODO: move by cos / sin.
             (showDatumLabelsAndValues ? textDims.datumLabel.height * 0.5 : 0);
-          const labelFontSize = showDatumLabels ? FONT_SIZE.datumLabel : 0;
+          const labelFontSize = s(
+            0,
+            showDatumLabels ? FONT_SIZE.datumLabel : 0
+          );
           const labelFill = getTextColor(datumFill);
+          const labelStroke = labelFill === "white" ? "black" : "white";
           const valueX = labelX;
           const valueY =
             labelY + (showDatumLabels ? textDims.datumLabel.height : 0);
@@ -196,10 +216,12 @@ export const getters = (
                 ? rotateDegrees - 360
                 : rotateDegrees,
             fill: datumFill,
+            stroke: datumStroke,
             strokeWidth,
             labelX,
             labelY,
             labelFontSize,
+            labelStroke,
             labelFill,
             valueX,
             valueY,

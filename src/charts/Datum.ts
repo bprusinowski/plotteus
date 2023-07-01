@@ -11,10 +11,12 @@ export type G = {
   y: number;
   rotate: number;
   fill: string;
+  stroke: string;
   strokeWidth: number;
   labelX: number;
   labelY: number;
   labelFontSize: number;
+  labelStroke: string;
   labelFill: string;
   valueX: number;
   valueY: number;
@@ -144,7 +146,7 @@ export const render = ({
     .join("path")
     .attr("class", "shape")
     .attr("d", (d) => d.d)
-    .style("stroke", "white")
+    .style("stroke", (d) => d.stroke)
     .style("stroke-width", (d) => d.strokeWidth)
     .style("fill", (d) => d.fill);
 
@@ -200,12 +202,7 @@ export const render = ({
     .style("text-anchor", "middle")
     .style("dominant-baseline", "hanging")
     .style("paint-order", "stroke")
-    .style("stroke", (d) =>
-      // FIXME
-      d.labelFill === "white" || d.labelFill === "rgb(255, 255, 255)"
-        ? "black"
-        : "white"
-    )
+    .style("stroke", (d) => d.labelStroke)
     .style("stroke-width", 2)
     .style("user-select", "none")
     .style("pointer-events", "none")

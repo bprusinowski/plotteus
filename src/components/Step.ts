@@ -16,16 +16,19 @@ export type Getter = {
 };
 
 export const getters = ({
+  options,
   steps: inputSteps,
   svg,
   width,
   height,
 }: {
+  options: { svgBackgroundColor: string };
   steps: InputStep[];
   svg: Svg;
   width: number;
   height: number;
 }): Getter[] => {
+  const { svgBackgroundColor } = options;
   const steps: Getter[] = [];
   let _maxHorizontalAxisValue: number | undefined;
   let _maxVerticalAxisValue: number | undefined;
@@ -46,7 +49,7 @@ export const getters = ({
     } = step;
 
     const dims = new Dimensions(width, height);
-    const chartInfo = Chart.info(step);
+    const chartInfo = Chart.info(svgBackgroundColor, step);
     const colorLegendInfo = ColorLegend.info(step, chartInfo, colorMap);
     const verticalAxisInfo = Axis.info("vertical", chartInfo);
     const horizontalAxisInfo = Axis.info("horizontal", chartInfo);
@@ -55,6 +58,7 @@ export const getters = ({
     if (title !== undefined) {
       titleGetter = Text.getter({
         svg,
+        svgBackgroundColor,
         text: title,
         type: "title",
         anchor: titleAnchor,
@@ -72,6 +76,7 @@ export const getters = ({
     if (subtitle !== undefined) {
       subtitleGetter = Text.getter({
         svg,
+        svgBackgroundColor,
         text: subtitle,
         type: "subtitle",
         anchor: subtitleAnchor,
@@ -97,6 +102,7 @@ export const getters = ({
         title: legendTitle,
         itemHeight: textDims.legendItem.height,
         svg,
+        svgBackgroundColor,
         dims: dims.resolve(),
       });
       ColorLegend.updateDims({
@@ -163,6 +169,7 @@ export const getters = ({
           left: 0,
         },
         svg,
+        svgBackgroundColor,
         dims: resolvedDims,
         tickHeight: textDims.axisTick.height,
         ticksCount,
@@ -209,6 +216,7 @@ export const getters = ({
               left: 0,
             },
         svg,
+        svgBackgroundColor,
         dims: dims.resolve(),
         maxValue,
         _maxValue: _maxVerticalAxisValue,

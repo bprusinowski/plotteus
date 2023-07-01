@@ -20,7 +20,7 @@ import {
   TreemapInputStep,
   TreemapLayout,
 } from "../types";
-import { FONT_SIZE, getTextColor } from "../utils";
+import { FONT_SIZE, deriveSubtlerColor, getTextColor } from "../utils";
 import * as Chart from "./Chart";
 import { TreemapHierarchyRoot } from "./types";
 import {
@@ -39,11 +39,14 @@ export type Info = Chart.BaseInfo & {
   maxValue: BaseMax;
 };
 
-export const info = (inputStep: TreemapInputStep): Info => {
+export const info = (
+  svgBackgroundColor: string,
+  inputStep: TreemapInputStep
+): Info => {
   const { layout = "resquarify", groups, shareDomain = false } = inputStep;
 
   return {
-    ...Chart.baseInfo(inputStep, shareDomain),
+    ...Chart.baseInfo(svgBackgroundColor, inputStep, shareDomain),
     type: "treemap",
     layout,
     groups,
@@ -67,7 +70,14 @@ export const getters = (
     cartoonize: boolean;
   }
 ) => {
-  const { layout, groups, maxValue, shareDomain, showValues } = info;
+  const {
+    layout,
+    groups,
+    maxValue,
+    shareDomain,
+    showValues,
+    svgBackgroundColor,
+  } = info;
   const {
     showDatumLabels,
     svg,
@@ -83,6 +93,10 @@ export const getters = (
     layout,
   });
   const groupsGetters: Chart.Getter[] = [];
+  const groupFill = deriveSubtlerColor(svgBackgroundColor);
+  const groupLabelFill = getTextColor(svgBackgroundColor);
+  const groupLabelStroke = svgBackgroundColor;
+  const datumStroke = svgBackgroundColor;
 
   for (const group of root.children || []) {
     const { key } = group.data;
@@ -119,7 +133,10 @@ export const getters = (
           labelX,
           labelY,
           labelFontSize,
+          labelStroke: groupLabelStroke,
           labelStrokeWidth,
+          labelFill: groupLabelFill,
+          fill: groupFill,
           opacity,
         };
       },
@@ -162,8 +179,12 @@ export const getters = (
           const labelWidth = svg.measureText(key, "datumLabel").width;
           const labelX = s(0, (labelWidth - dWidth) * 0.5 + TEXT_MARGIN);
           const labelY = s(0, -(dHeight * 0.5 + textDims.datumLabel.yShift));
-          const labelFontSize = showDatumLabels ? FONT_SIZE.datumLabel : 0;
+          const labelFontSize = s(
+            0,
+            showDatumLabels ? FONT_SIZE.datumLabel : 0
+          );
           const labelFill = getTextColor(datumFill);
+          const labelStroke = datumFill;
           const valueWidth = svg.measureText(value, "datumValue").width;
           const valueX = s(0, (valueWidth - dWidth) * 0.5 + TEXT_MARGIN);
           const valueY =
@@ -179,10 +200,12 @@ export const getters = (
             y,
             rotate,
             fill: datumFill,
+            stroke: datumStroke,
             strokeWidth,
             labelX,
             labelY,
             labelFontSize,
+            labelStroke,
             labelFill,
             valueX,
             valueY,

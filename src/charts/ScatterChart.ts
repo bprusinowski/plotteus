@@ -12,7 +12,13 @@ import {
   ScatterInputStep,
   TextDims,
 } from "../types";
-import { FONT_SIZE, getTextColor, max, min } from "../utils";
+import {
+  FONT_SIZE,
+  deriveSubtlerColor,
+  getTextColor,
+  max,
+  min,
+} from "../utils";
 import * as Chart from "./Chart";
 import {
   STROKE_WIDTH,
@@ -29,11 +35,14 @@ export type Info = Chart.BaseInfo & {
   horizontalAxis: InputAxis | undefined;
 };
 
-export const info = (inputStep: ScatterInputStep): Info => {
+export const info = (
+  svgBackgroundColor: string,
+  inputStep: ScatterInputStep
+): Info => {
   const { groups, shareDomain = false } = inputStep;
 
   return {
-    ...Chart.baseInfo(inputStep, shareDomain),
+    ...Chart.baseInfo(svgBackgroundColor, inputStep, shareDomain),
     type: "scatter",
     groups,
     maxValue: getMaxValue(inputStep),
@@ -74,15 +83,21 @@ export const getters = (
     groups,
     maxValue: { x: xMaxValue, y: yMaxValue },
     shareDomain,
+    svgBackgroundColor,
   } = info;
   const {
     showDatumLabels,
     dims: { width, height, margin, BASE_MARGIN },
     colorMap,
     cartoonize,
+    textDims,
   } = props;
   const { xScale, yScale } = getScales({ xMaxValue, yMaxValue, width, height });
   const groupsGetters: Chart.Getter[] = [];
+  const groupFill = deriveSubtlerColor(svgBackgroundColor);
+  const groupLabelFill = getTextColor(svgBackgroundColor);
+  const groupLabelStroke = svgBackgroundColor;
+  const datumStroke = svgBackgroundColor;
 
   for (const group of groups) {
     const { key } = group;
@@ -113,7 +128,10 @@ export const getters = (
           labelX,
           labelY,
           labelFontSize,
+          labelStroke: groupLabelStroke,
           labelStrokeWidth,
+          labelFill: groupLabelFill,
+          fill: groupFill,
           opacity,
         };
       },
@@ -153,9 +171,13 @@ export const getters = (
           const rotate = getRotate(_g?.rotate);
           const strokeWidth = s(0, STROKE_WIDTH);
           const labelX = 0;
-          const labelY = 0;
-          const labelFontSize = showDatumLabels ? FONT_SIZE.datumLabel : 0;
-          const labelFill = getTextColor(datumFill);
+          const labelY = -textDims.datumLabel.yShift;
+          const labelFontSize = s(
+            0,
+            showDatumLabels ? FONT_SIZE.datumLabel : 0
+          );
+          const labelFill = groupLabelFill;
+          const labelStroke = svgBackgroundColor;
           const valueX = 0;
           const valueY = 0;
           const valueFontSize = 0;
@@ -169,10 +191,12 @@ export const getters = (
             y,
             rotate,
             fill: datumFill,
+            stroke: datumStroke,
             strokeWidth,
             labelX,
             labelY,
             labelFontSize,
+            labelStroke,
             labelFill,
             valueX,
             valueY,

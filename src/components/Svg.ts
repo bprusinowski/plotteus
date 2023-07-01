@@ -15,7 +15,10 @@ export type SVGSelection = Selection<
   undefined
 >;
 
-export const makeSvg = (div: HTMLDivElement): Svg => {
+export const makeSvg = (
+  div: HTMLDivElement,
+  background: string = "#FFFFFF"
+): Svg => {
   const selection = select(div)
     .selectAll("svg")
     .data([null])
@@ -24,6 +27,7 @@ export const makeSvg = (div: HTMLDivElement): Svg => {
     .style("height", "100%")
     .style("transform", "translate3d(0, 0, 0)")
     .style("border-left", "3px solid transparent")
+    .style("background", background)
     .style("transition", "border-left 0.3s ease") as SVGSelection;
 
   const measure = (): DOMRect => {

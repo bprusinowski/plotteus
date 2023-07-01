@@ -96,6 +96,7 @@ export const getters = ({
   title,
   titleMargin,
   svg,
+  svgBackgroundColor,
   dims,
   tickHeight,
   ticksCount,
@@ -107,6 +108,7 @@ export const getters = ({
   title: string;
   titleMargin: Margin;
   svg: Svg;
+  svgBackgroundColor: string;
   dims: ResolvedDimensions;
   tickHeight: number;
   ticksCount: number;
@@ -142,6 +144,7 @@ export const getters = ({
           type: "axisTitle",
           anchor: type === "vertical" ? "start" : "end",
           svg,
+          svgBackgroundColor,
           dims: { ...dims, margin: titleMargin },
         })
       : undefined,
@@ -153,6 +156,7 @@ export const getters = ({
       tickHeight,
       tickFormat,
       dims,
+      svgBackgroundColor,
     }),
   };
 };

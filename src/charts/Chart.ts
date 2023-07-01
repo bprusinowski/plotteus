@@ -13,9 +13,11 @@ export type BaseInfo = {
   dataKeys: string[];
   shareDomain: boolean;
   showValues: boolean;
+  svgBackgroundColor: string;
 };
 
 export const baseInfo = (
+  svgBackgroundColor: string,
   inputStep: InputStep,
   shareDomain: boolean
 ): BaseInfo => {
@@ -25,21 +27,21 @@ export const baseInfo = (
   );
   const showValues = inputStep.showValues ?? false;
 
-  return { groupsKeys, dataKeys, shareDomain, showValues };
+  return { groupsKeys, dataKeys, shareDomain, showValues, svgBackgroundColor };
 };
 
-export const info = (inputStep: InputStep) => {
+export const info = (svgBackgroundColor: string, inputStep: InputStep) => {
   switch (inputStep.chartType) {
     case "bar":
-      return BarChart.info(inputStep);
+      return BarChart.info(svgBackgroundColor, inputStep);
     case "bubble":
-      return BubbleChart.info(inputStep);
+      return BubbleChart.info(svgBackgroundColor, inputStep);
     case "pie":
-      return PieChart.info(inputStep);
+      return PieChart.info(svgBackgroundColor, inputStep);
     case "scatter":
-      return ScatterChart.info(inputStep);
+      return ScatterChart.info(svgBackgroundColor, inputStep);
     case "treemap":
-      return TreemapChart.info(inputStep);
+      return TreemapChart.info(svgBackgroundColor, inputStep);
     default:
       const _exhaustiveCheck: never = inputStep;
       return _exhaustiveCheck;
@@ -73,7 +75,10 @@ export type G = {
   labelX: number;
   labelY: number;
   labelFontSize: number;
+  labelStroke: string;
   labelStrokeWidth: number;
+  labelFill: string;
+  fill: string;
   opacity: number;
 };
 
@@ -205,7 +210,7 @@ export const render = ({
     .join("path")
     .attr("class", "background")
     .attr("transform", (d) => `translate(${d.x}, ${d.y})`)
-    .style("fill", "#f5f5f5")
+    .style("fill", (d) => d.fill)
     .attr("d", (d) => d.d);
 
   const dataSelection = groupsSelection
@@ -265,9 +270,9 @@ export const render = ({
     .attr("class", "label")
     .attr("x", (d) => d.labelX)
     .attr("y", (d) => d.labelY)
-    .style("fill", "#333333")
+    .style("fill", (d) => d.labelFill)
     .style("paint-order", "stroke")
-    .style("stroke", "white")
+    .style("stroke", (d) => d.labelStroke)
     .style("stroke-width", (d) => d.labelStrokeWidth)
     .style("stroke-linecap", "round")
     .style("stroke-linejoin", "round")
