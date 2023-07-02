@@ -315,7 +315,9 @@ export const getters = (
       maxValue,
       width,
       height,
-      labelMargin: textDims.groupLabel.height + BASE_MARGIN * 0.5,
+      labelMargin: shareDomain
+        ? textDims.groupLabel.height + BASE_MARGIN * 0.25
+        : 0,
     });
     const groupsGetters: Chart.Getter[] = [];
 
