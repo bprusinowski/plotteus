@@ -420,7 +420,7 @@ export const getters = (
             const valueX = isGrouped
               ? labelX + labelWidth > (dWidth + valueWidth + BASE_MARGIN) * 0.5
                 ? labelX + (labelWidth + valueWidth + BASE_MARGIN) * 0.5
-                : (dWidth + valueWidth + BASE_MARGIN) * 0.5
+                : s(0, (dWidth + valueWidth + BASE_MARGIN) * 0.5)
               : showDatumLabels
               ? labelX + labelWidth + valueWidth * 0.5 + BASE_MARGIN * 0.25
               : 0;
