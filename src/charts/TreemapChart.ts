@@ -98,7 +98,7 @@ export const getters = (
   const groupLabelStroke = svgBackgroundColor;
   const datumStroke = svgBackgroundColor;
 
-  for (const group of root.children || []) {
+  for (const group of root.children ?? []) {
     const { key } = group.data;
 
     // Skip groups with no data.

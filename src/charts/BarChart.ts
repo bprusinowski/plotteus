@@ -240,14 +240,19 @@ export const getters = (
               ? 0
               : s(0, (labelWidth - x1bw) * 0.5 + TEXT_MARGIN);
             const labelY = isGrouped
-              ? s(0, dHeight * 0.5 - labelHeight - TEXT_MARGIN)
+              ? s(
+                  0,
+                  shareDomain
+                    ? dHeight * 0.5 - labelHeight - TEXT_MARGIN
+                    : dHeight * 0.5 + TEXT_MARGIN
+                )
               : s(0, -(dHeight * 0.5 + labelYShift));
             const labelFontSize = s(
               0,
               showDatumLabels ? FONT_SIZE.datumLabel : 0
             );
             const labelFill = getTextColor(datumFill);
-            const labelStroke = datumFill;
+            const labelStroke = shareDomain ? datumFill : svgBackgroundColor;
             const valueWidth = svg.measureText(value, "datumValue").width;
             const valueX = isGrouped
               ? 0
@@ -310,7 +315,9 @@ export const getters = (
       maxValue,
       width,
       height,
-      labelMargin: textDims.groupLabel.height + BASE_MARGIN * 0.5,
+      labelMargin: shareDomain
+        ? textDims.groupLabel.height + BASE_MARGIN * 0.25
+        : 0,
     });
     const groupsGetters: Chart.Getter[] = [];
 
@@ -415,7 +422,7 @@ export const getters = (
             const valueX = isGrouped
               ? labelX + labelWidth > (dWidth + valueWidth + BASE_MARGIN) * 0.5
                 ? labelX + (labelWidth + valueWidth + BASE_MARGIN) * 0.5
-                : (dWidth + valueWidth + BASE_MARGIN) * 0.5
+                : s(0, (dWidth + valueWidth + BASE_MARGIN) * 0.5)
               : showDatumLabels
               ? labelX + labelWidth + valueWidth * 0.5 + BASE_MARGIN * 0.25
               : 0;
