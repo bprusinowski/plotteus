@@ -9,6 +9,7 @@ import {
   BarChartSubtype,
   BarInputStep,
   BaseMax,
+  ChartType,
   InputAxis,
   InputGroupValue,
   TextDims,
@@ -49,10 +50,11 @@ export const info = (
     groups,
     shareDomain = true,
   } = inputStep;
+  const type: ChartType = "bar";
 
   return {
     ...Chart.baseInfo(svgBackgroundColor, inputStep, shareDomain),
-    type: "bar",
+    type,
     subtype: chartSubtype,
     layout,
     groups,

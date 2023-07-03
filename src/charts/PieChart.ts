@@ -6,6 +6,7 @@ import { BUBBLE, getPathData } from "../coords";
 import { Dimensions, ResolvedDimensions } from "../dims";
 import {
   BaseMax,
+  ChartType,
   InputDatumValue,
   InputGroupValue,
   PieInputStep,
@@ -38,10 +39,11 @@ export const info = (
   inputStep: PieInputStep
 ): Info => {
   const { groups, shareDomain = true } = inputStep;
+  const type: ChartType = "pie";
 
   return {
     ...Chart.baseInfo(svgBackgroundColor, inputStep, shareDomain),
-    type: "pie",
+    type,
     groups,
     maxValue: getMaxValue(inputStep),
     canUseVerticalAxis: false,

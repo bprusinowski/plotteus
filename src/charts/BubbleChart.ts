@@ -3,7 +3,13 @@ import { ColorMap } from "../colors";
 import { Svg } from "../components";
 import { BUBBLE, getPathData } from "../coords";
 import { Dimensions, ResolvedDimensions } from "../dims";
-import { BaseMax, BubbleInputStep, InputGroupValue, TextDims } from "../types";
+import {
+  BaseMax,
+  BubbleInputStep,
+  ChartType,
+  InputGroupValue,
+  TextDims,
+} from "../types";
 import { FONT_SIZE, deriveSubtlerColor, getTextColor } from "../utils";
 import * as Chart from "./Chart";
 import {
@@ -27,10 +33,11 @@ export const info = (
   inputStep: BubbleInputStep
 ): Info => {
   const { groups, shareDomain = false } = inputStep;
+  const type: ChartType = "bubble";
 
   return {
     ...Chart.baseInfo(svgBackgroundColor, inputStep, shareDomain),
-    type: "bubble",
+    type,
     groups,
     maxValue: getMaxValue(inputStep),
     canUseVerticalAxis: false,
