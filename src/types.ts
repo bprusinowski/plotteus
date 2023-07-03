@@ -129,7 +129,7 @@ export type ChartType = "bar" | "bubble" | "pie" | "scatter" | "treemap";
 
 export type BarChartSubtype = "grouped" | "stacked";
 
-export type BarChartLayout = "vertical" | "horizontal";
+export type Layout = "vertical" | "horizontal";
 
 export type TreemapLayout =
   | "binary"

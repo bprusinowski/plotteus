@@ -24,8 +24,6 @@ export type Info = Chart.BaseInfo & {
   type: "bubble";
   groups: InputGroupValue[];
   maxValue: BaseMax;
-  canUseVerticalAxis: false;
-  canUseHorizontalAxis: false;
 };
 
 export const info = (
@@ -40,8 +38,6 @@ export const info = (
     type,
     groups,
     maxValue: getMaxValue(inputStep),
-    canUseVerticalAxis: false,
-    canUseHorizontalAxis: false,
   };
 };
 

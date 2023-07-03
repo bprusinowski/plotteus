@@ -5,13 +5,13 @@ import { AxisTick, Svg } from "../components";
 import { BAR, getPathData } from "../coords";
 import { Dimensions, ResolvedDimensions } from "../dims";
 import {
-  BarChartLayout,
   BarChartSubtype,
   BarInputStep,
   BaseMax,
   ChartType,
   InputAxis,
   InputGroupValue,
+  Layout,
   TextDims,
 } from "../types";
 import {
@@ -33,7 +33,7 @@ import {
 export type Info = Chart.BaseInfo & {
   type: "bar";
   subtype: BarChartSubtype;
-  layout: BarChartLayout;
+  layout: Layout;
   groups: InputGroupValue[];
   maxValue: BaseMax;
   verticalAxis: InputAxis | undefined;
