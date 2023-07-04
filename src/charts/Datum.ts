@@ -28,6 +28,12 @@ export type G = {
 export type Getter = Generic.Getter<
   G,
   | {
+      type: "position";
+      teleportKey: string;
+      teleportFrom: string | undefined;
+      positionValue: number;
+    }
+  | {
       type: "value";
       teleportKey: string;
       teleportFrom: string | undefined;
@@ -44,6 +50,13 @@ export type Getter = Generic.Getter<
 
 export type Int = Generic.Int<
   G,
+  | {
+      type: "position";
+      teleportKey: string;
+      teleportFrom: string | undefined;
+      positionValue: number;
+      _value: number;
+    }
   | {
       type: "value";
       teleportKey: string;
@@ -73,6 +86,19 @@ export const ints = ({
     _ints,
     modifyInt: ({ getter, int, _updateInt }) => {
       switch (getter.type) {
+        case "position":
+          return {
+            ...int,
+            type: getter.type,
+            teleportKey: getter.teleportKey,
+            teleportFrom: getter.teleportFrom,
+            positionValue: getter.positionValue,
+            _value:
+              _updateInt?.type === "value"
+                ? _updateInt?.value ?? getter.positionValue
+                : // Keep artificial value as bubble size?
+                  0,
+          };
         case "value":
           return {
             ...int,
@@ -97,6 +123,9 @@ export const ints = ({
             _value:
               _updateInt?.type === "value" ? _updateInt?.value : undefined,
           };
+        default:
+          const _exhaustiveCheck: never = getter;
+          return _exhaustiveCheck;
       }
     },
     getPreviousInt,
@@ -105,6 +134,11 @@ export const ints = ({
 
 export type Resolved = Generic.Resolved<
   G,
+  | {
+      type: "position";
+      value: number | undefined;
+      positionValue: number;
+    }
   | {
       type: "value";
       value: number;
@@ -131,6 +165,14 @@ export const resolve = ({
     t,
     modifyResolved: ({ int, resolved }) => {
       switch (int.type) {
+        case "position":
+          return {
+            ...resolved,
+            type: int.type,
+            positionValue: int.positionValue,
+            ...getMaybeModifiedResolvedAfterTeleportation(int, resolved, t),
+            ...getModifiedPrecedingValue(int, resolved, t),
+          };
         case "value":
           return {
             ...resolved,
@@ -147,6 +189,9 @@ export const resolve = ({
             ...getMaybeModifiedResolvedAfterTeleportation(int, resolved, t),
             ...getModifiedPrecedingValue(int, resolved, t),
           };
+        default:
+          const _exhaustiveCheck: never = int;
+          return _exhaustiveCheck;
       }
     },
   });

@@ -124,7 +124,7 @@ export const getters = (
       data: [],
     };
 
-    for (const datum of group.children || []) {
+    for (const datum of group.children ?? []) {
       const { key, value, fill } = datum.data;
       const datumFill = fill ?? colorMap.get(key, group.data.key, shareDomain);
       const datumGetters: Datum.Getter = {

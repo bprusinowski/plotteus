@@ -30,6 +30,8 @@ export const getters = ({
 }): Getter[] => {
   const { svgBackgroundColor } = options;
   const steps: Getter[] = [];
+  let _minHorizontalAxisValue: number | undefined;
+  let _minVerticalAxisValue: number | undefined;
   let _maxHorizontalAxisValue: number | undefined;
   let _maxVerticalAxisValue: number | undefined;
   const textDims = getTextDims(svg);
@@ -113,7 +115,7 @@ export const getters = ({
     }
 
     if (verticalAxisInfo.show) {
-      const { title, tickFormat, maxValue } = verticalAxisInfo;
+      const { title, tickFormat, minValue, maxValue } = verticalAxisInfo;
       const titleHeight = textDims.axisTitle.height;
       const ticksCount = Axis.getTicksCount(dims.resolve().height);
       Axis.updateDims({
@@ -121,6 +123,7 @@ export const getters = ({
         dims,
         svg,
         titleHeight: title ? titleHeight : 0,
+        minValue,
         maxValue,
         tickHeight: textDims.axisTick.height,
         ticksCount,
@@ -132,7 +135,7 @@ export const getters = ({
 
     let horizontalAxisGetters: Axis.Getter | undefined;
     if (horizontalAxisInfo.show) {
-      const { title, tickFormat, maxValue } = horizontalAxisInfo;
+      const { title, tickFormat, minValue, maxValue } = horizontalAxisInfo;
 
       const titleHeight = textDims.axisTitle.height;
       const ticksCount = Axis.getTicksCount(dims.resolve().width);
@@ -140,12 +143,14 @@ export const getters = ({
         svg,
         ticksCount,
         tickFormat,
+        minValue,
         maxValue,
       });
       Axis.updateDims({
         type: "horizontal",
         dims,
         svg,
+        minValue,
         maxValue,
         titleHeight: title ? titleHeight : 0,
         tickHeight: textDims.axisTick.height,
@@ -174,23 +179,29 @@ export const getters = ({
         tickHeight: textDims.axisTick.height,
         ticksCount,
         tickFormat,
+        minValue,
+        _minValue: _minHorizontalAxisValue,
         maxValue,
         _maxValue: _maxHorizontalAxisValue,
       });
 
+      _minHorizontalAxisValue = minValue;
       _maxHorizontalAxisValue = maxValue;
     } else {
+      _minHorizontalAxisValue = undefined;
       _maxHorizontalAxisValue = undefined;
     }
 
     let verticalAxisGetters: Axis.Getter | undefined;
     if (verticalAxisInfo.show) {
-      const { title, tickFormat, maxValue, addTopMargin } = verticalAxisInfo;
+      const { title, tickFormat, minValue, maxValue, addTopMargin } =
+        verticalAxisInfo;
       const ticksCount = Axis.getTicksCount(dims.resolve().height);
       const width = Axis.getWidth({
         svg,
         ticksCount,
         tickFormat,
+        minValue,
         maxValue,
       });
       const titleHeight = textDims.axisTitle.height;
@@ -218,6 +229,8 @@ export const getters = ({
         svg,
         svgBackgroundColor,
         dims: dims.resolve(),
+        minValue,
+        _minValue: _minVerticalAxisValue,
         maxValue,
         _maxValue: _maxVerticalAxisValue,
         ticksCount,
@@ -225,8 +238,10 @@ export const getters = ({
         tickFormat,
       });
 
+      _minVerticalAxisValue = minValue;
       _maxVerticalAxisValue = maxValue;
     } else {
+      _minVerticalAxisValue = undefined;
       _maxVerticalAxisValue = undefined;
     }
 

@@ -147,6 +147,8 @@ export const getters = (
   const groupLabelStroke = svgBackgroundColor;
   const datumStroke = svgBackgroundColor;
 
+  const groupsGetters: Chart.Getter[] = [];
+
   if (isVertical) {
     const { x0Scale, x0bw, x1Scale, x1bw, yScale } = getVerticalScales({
       isGrouped,
@@ -156,7 +158,6 @@ export const getters = (
       width,
       height,
     });
-    const groupsGetters: Chart.Getter[] = [];
 
     for (const group of groups) {
       const { key } = group;
@@ -321,7 +322,6 @@ export const getters = (
         ? textDims.groupLabel.height + BASE_MARGIN * 0.25
         : 0,
     });
-    const groupsGetters: Chart.Getter[] = [];
 
     for (const group of groups) {
       const { key } = group;

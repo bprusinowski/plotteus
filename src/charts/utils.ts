@@ -1,8 +1,17 @@
+import {
+  SimulationNodeDatum,
+  forceCollide,
+  forceSimulation,
+  forceX,
+  forceY,
+} from "d3-force";
 import { hierarchy, pack } from "d3-hierarchy";
 import {
   BaseMax,
   BubbleInputStep,
+  InputDatumPosition,
   InputGroupValue,
+  Layout,
   PieInputStep,
   TreemapInputStep,
 } from "../types";
@@ -75,4 +84,58 @@ export const getHierarchyRoot = ({
   pack().size([size, size]).padding(PADDING)(root as any);
 
   return root as any as HierarchyRoot;
+};
+
+type ForceAlignedPositions = Record<string, ForceAlignedPosition>;
+
+type ForceAlignedPosition = {
+  key: string;
+  x: number;
+  y: number;
+  r: number;
+};
+
+export const getForceAlignedPositions = (
+  data: InputDatumPosition[],
+  layout: Layout,
+  groupX: number,
+  groupY: number,
+  xScale: (d: number) => number,
+  yScale: (d: number) => number
+): ForceAlignedPositions => {
+  const positions: ForceAlignedPosition[] = [];
+  const [x, y, xForce, yForce] =
+    layout === "horizontal"
+      ? ["x", "y", forceX, forceY]
+      : ["y", "x", forceY, forceX];
+
+  for (const datum of data) {
+    const position = {
+      key: datum.key,
+      x: groupX + xScale(datum.position),
+      y: groupY + yScale(datum.position),
+      r: 4,
+    };
+    positions.push(position);
+  }
+
+  forceSimulation(positions)
+    // @ts-ignore
+    .force("x", xForce((d) => (d as any)[x]).strength(0.7))
+    // @ts-ignore
+    .force("y", yForce((d) => (d as any)[y]).strength(0.075))
+    .force(
+      "collide",
+      forceCollide<{ key: string; r: number } & SimulationNodeDatum>()
+        .radius((d) => d.r + 1)
+        .iterations(3)
+    )
+    .tick(30)
+    .stop();
+
+  return positions.reduce((acc, d) => {
+    acc[d.key] = d;
+
+    return acc;
+  }, {} as ForceAlignedPositions);
 };

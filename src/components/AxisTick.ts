@@ -34,6 +34,8 @@ export type Getter = Generic.Getter<G>;
 export const getters = ({
   axisType,
   ticks,
+  minValue,
+  _minValue,
   maxValue,
   _maxValue,
   dims: { width, height },
@@ -43,6 +45,8 @@ export const getters = ({
 }: {
   axisType: AxisType;
   ticks: number[];
+  minValue: number;
+  _minValue: number | undefined;
   maxValue: number;
   _maxValue: number | undefined;
   dims: ResolvedDimensions;
@@ -52,12 +56,16 @@ export const getters = ({
 }): Getter[] => {
   const isVerticalAxis = axisType === "vertical";
   const size = isVerticalAxis ? height : width;
-  const scaleDomain = isVerticalAxis ? [maxValue, 0] : [0, maxValue];
+  const scaleDomain = isVerticalAxis
+    ? [maxValue, minValue]
+    : [minValue, maxValue];
   const scale = scaleLinear().domain(scaleDomain).range([0, size]);
   let _scale: (tick: number) => number = () => (isVerticalAxis ? size : 0);
 
-  if (_maxValue !== undefined) {
-    const _scaleDomain = isVerticalAxis ? [_maxValue, 0] : [0, _maxValue];
+  if (_minValue !== undefined && _maxValue !== undefined) {
+    const _scaleDomain = isVerticalAxis
+      ? [_maxValue, _minValue]
+      : [_minValue, _maxValue];
     _scale = scaleLinear().domain(_scaleDomain).range([0, size]);
   }
 
@@ -68,7 +76,9 @@ export const getters = ({
         const x = 0;
         const y = s(
           _scale(tick),
-          (isVerticalAxis ? 1 - tick / maxValue : tick / maxValue) * size,
+          (isVerticalAxis
+            ? 1 - (tick - minValue) / (maxValue - minValue)
+            : (tick - minValue) / (maxValue - minValue)) * size,
           scale(tick)
         );
         const color = getTextColor(svgBackgroundColor);
