@@ -31,6 +31,7 @@
     "dist/**/*"
   ],
   "dependencies": {
+    "d3-force": "^3.0.0",
     "d3-hierarchy": "^3.1.2",
     "d3-interpolate": "^3.0.1",
     "d3-path": "^3.1.0",
@@ -42,6 +43,7 @@
     "@rollup/plugin-node-resolve": "^15.0.2",
     "@rollup/plugin-terser": "^0.4.3",
     "@rollup/plugin-typescript": "^11.1.1",
+    "@types/d3-force": "^3.0.4",
     "@types/d3-hierarchy": "^3.1.0",
     "@types/d3-interpolate": "^3.0.1",
     "@types/d3-path": "^3.0.0",

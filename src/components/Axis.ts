@@ -13,6 +13,7 @@ export type Info =
       show: true;
       title: string;
       tickFormat: (d: number) => string;
+      minValue: number;
       maxValue: number;
       addTopMargin: boolean;
     }
@@ -31,8 +32,23 @@ export const info = (type: AxisType, chartInfo: Chart.Info): Info => {
               title: chartInfo.verticalAxis?.title ?? "",
               tickFormat:
                 chartInfo.verticalAxis?.tickFormat ?? Tick.defaultFormat,
+              minValue: 0,
               maxValue: chartInfo.maxValue.actual,
               addTopMargin: chartInfo.showValues,
+            };
+          } else {
+            return { show: false };
+          }
+        case "beeswarm":
+          if (chartInfo.layout === "vertical") {
+            return {
+              show: chartInfo.verticalAxis?.show ?? chartInfo.groups.length > 0,
+              title: chartInfo.verticalAxis?.title ?? "",
+              tickFormat:
+                chartInfo.verticalAxis?.tickFormat ?? Tick.defaultFormat,
+              minValue: chartInfo.minValue,
+              maxValue: chartInfo.maxValue,
+              addTopMargin: true,
             };
           } else {
             return { show: false };
@@ -43,6 +59,7 @@ export const info = (type: AxisType, chartInfo: Chart.Info): Info => {
             title: chartInfo.verticalAxis?.title ?? "",
             tickFormat:
               chartInfo.verticalAxis?.tickFormat ?? Tick.defaultFormat,
+            minValue: 0,
             maxValue: chartInfo.maxValue.y.actual,
             addTopMargin: false,
           };
@@ -56,7 +73,22 @@ export const info = (type: AxisType, chartInfo: Chart.Info): Info => {
               title: chartInfo.horizontalAxis?.title ?? "",
               tickFormat:
                 chartInfo.horizontalAxis?.tickFormat ?? Tick.defaultFormat,
+              minValue: 0,
               maxValue: chartInfo.maxValue.actual,
+              addTopMargin: false,
+            };
+          } else {
+            return { show: false };
+          }
+        case "beeswarm":
+          if (chartInfo.layout === "horizontal") {
+            return {
+              show: chartInfo.horizontalAxis?.show ?? true,
+              title: chartInfo.horizontalAxis?.title ?? "",
+              tickFormat:
+                chartInfo.horizontalAxis?.tickFormat ?? Tick.defaultFormat,
+              minValue: chartInfo.minValue,
+              maxValue: chartInfo.maxValue,
               addTopMargin: false,
             };
           } else {
@@ -68,6 +100,7 @@ export const info = (type: AxisType, chartInfo: Chart.Info): Info => {
             title: chartInfo.horizontalAxis?.title ?? "",
             tickFormat:
               chartInfo.horizontalAxis?.tickFormat ?? Tick.defaultFormat,
+            minValue: 0,
             maxValue: chartInfo.maxValue.x.actual,
             addTopMargin: false,
           };
@@ -101,6 +134,8 @@ export const getters = ({
   tickHeight,
   ticksCount,
   tickFormat,
+  minValue,
+  _minValue,
   maxValue,
   _maxValue,
 }: {
@@ -113,10 +148,12 @@ export const getters = ({
   tickHeight: number;
   ticksCount: number;
   tickFormat: (d: number) => string;
+  minValue: number;
+  _minValue: number | undefined;
   maxValue: number;
   _maxValue: number | undefined;
 }): Getter => {
-  const ticks = scaleLinear().domain([0, maxValue]).ticks(ticksCount);
+  const ticks = scaleLinear().domain([minValue, maxValue]).ticks(ticksCount);
 
   return {
     key: `${type}-axis`,
@@ -151,6 +188,8 @@ export const getters = ({
     ticks: Tick.getters({
       axisType: type,
       ticks,
+      minValue,
+      _minValue,
       maxValue,
       _maxValue,
       tickHeight,
@@ -252,6 +291,7 @@ export const updateDims = ({
   dims,
   svg,
   maxValue,
+  minValue,
   titleHeight,
   tickHeight,
   ticksCount,
@@ -260,13 +300,14 @@ export const updateDims = ({
   type: AxisType;
   dims: Dimensions;
   svg: Svg;
+  minValue: number;
   maxValue: number;
   titleHeight: number;
   tickHeight: number;
   ticksCount: number;
   tickFormat: (d: number) => string;
 }): void => {
-  const width = getWidth({ svg, ticksCount, tickFormat, maxValue });
+  const width = getWidth({ svg, ticksCount, tickFormat, minValue, maxValue });
 
   switch (type) {
     case "horizontal":
@@ -289,14 +330,19 @@ export const getWidth = ({
   svg,
   ticksCount,
   tickFormat,
+  minValue,
   maxValue,
 }: {
   svg: Svg;
   ticksCount: number;
   tickFormat: (d: number) => string;
+  minValue: number;
   maxValue: number;
 }): number => {
-  const ticks = scaleLinear().domain([0, maxValue]).nice().ticks(ticksCount);
+  const ticks = scaleLinear()
+    .domain([minValue, maxValue])
+    .nice()
+    .ticks(ticksCount);
   const ticksWidths = ticks.map((d) => {
     return svg.measureText(tickFormat(d), "axisTick").width;
   });

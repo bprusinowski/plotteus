@@ -1,4 +1,11 @@
-import { BarChart, BubbleChart, PieChart, ScatterChart, TreemapChart } from ".";
+import {
+  BarChart,
+  BeeswarmChart,
+  BubbleChart,
+  PieChart,
+  ScatterChart,
+  TreemapChart,
+} from ".";
 import { ColorMap } from "../colors";
 import * as Generic from "../components/Generic";
 import { Svg } from "../components/Svg";
@@ -34,6 +41,8 @@ export const info = (svgBackgroundColor: string, inputStep: InputStep) => {
   switch (inputStep.chartType) {
     case "bar":
       return BarChart.info(svgBackgroundColor, inputStep);
+    case "beeswarm":
+      return BeeswarmChart.info(svgBackgroundColor, inputStep);
     case "bubble":
       return BubbleChart.info(svgBackgroundColor, inputStep);
     case "pie":
@@ -54,6 +63,8 @@ export const updateDims = (info: Info, dims: Dimensions, svg: Svg) => {
   switch (info.type) {
     case "bar":
       return BarChart.updateDims(info, dims, svg);
+    case "beeswarm":
+      return BeeswarmChart.updateDims(dims);
     case "bubble":
       return BubbleChart.updateDims(dims);
     case "pie":
@@ -97,6 +108,8 @@ export const getters = (info: Info, props: GetterProps): Getter[] => {
   switch (info.type) {
     case "bar":
       return BarChart.getters(info, props);
+    case "beeswarm":
+      return BeeswarmChart.getters(info, props);
     case "bubble":
       return BubbleChart.getters(info, props);
     case "pie":
@@ -237,6 +250,12 @@ export const render = ({
         tooltip.move(e.clientX, e.clientY);
 
         switch (d.type) {
+          case "position":
+            tooltip.setText({
+              label: d.key,
+              value: d.positionValue,
+            });
+            break;
           case "value":
             tooltip.setText({
               label: d.key,
@@ -249,6 +268,9 @@ export const render = ({
               value: `(${d.xValue}, ${d.yValue})`,
             });
             break;
+          default:
+            const _exhaustiveCheck: never = d;
+            return _exhaustiveCheck;
         }
 
         tooltip.show();

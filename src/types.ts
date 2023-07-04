@@ -45,6 +45,20 @@ export type BarInputStep = BaseInputStep & {
       }
   );
 
+export type BeeswarmInputStep = BaseInputStep & {
+  chartType: "beeswarm";
+  groups: InputGroupPosition[];
+} & (
+    | {
+        layout: "vertical";
+        verticalAxis?: InputAxis;
+      }
+    | {
+        layout?: "horizontal";
+        horizontalAxis?: InputAxis;
+      }
+  );
+
 export type BubbleInputStep = BaseInputStep & {
   chartType: "bubble";
   valueScale?: InputScale;
@@ -75,6 +89,7 @@ export type TreemapInputStep = BaseInputStep & {
 
 export type InputStep =
   | BarInputStep
+  | BeeswarmInputStep
   | BubbleInputStep
   | PieInputStep
   | ScatterInputStep
@@ -95,7 +110,13 @@ type BaseInputGroup = {
   opacity?: number;
 };
 
-export type InputGroupType = "value" | "xy";
+export type InputGroup = InputGroupPosition | InputGroupValue | InputGroupXY;
+
+export type InputGroupType = "position" | "value" | "xy";
+
+export type InputGroupPosition = BaseInputGroup & {
+  data: InputDatumPosition[];
+};
 
 export type InputGroupValue = BaseInputGroup & {
   data: InputDatumValue[];
@@ -111,7 +132,11 @@ type BaseInputDatum = BaseInputGroup & {
   fill?: string;
 };
 
-export type InputDatum = InputDatumValue | InputDatumXY;
+export type InputDatum = InputDatumPosition | InputDatumValue | InputDatumXY;
+
+export type InputDatumPosition = BaseInputDatum & {
+  position: number;
+};
 
 export type InputDatumValue = BaseInputDatum & {
   value: number;
@@ -125,11 +150,17 @@ export type InputDatumXY = BaseInputDatum & {
 export type Anchor = "start" | "middle" | "end";
 
 // Charts.
-export type ChartType = "bar" | "bubble" | "pie" | "scatter" | "treemap";
+export type ChartType =
+  | "bar"
+  | "beeswarm"
+  | "bubble"
+  | "pie"
+  | "scatter"
+  | "treemap";
 
 export type BarChartSubtype = "grouped" | "stacked";
 
-export type BarChartLayout = "vertical" | "horizontal";
+export type Layout = "vertical" | "horizontal";
 
 export type TreemapLayout =
   | "binary"

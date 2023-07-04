@@ -5,12 +5,13 @@ import { AxisTick, Svg } from "../components";
 import { BAR, getPathData } from "../coords";
 import { Dimensions, ResolvedDimensions } from "../dims";
 import {
-  BarChartLayout,
   BarChartSubtype,
   BarInputStep,
   BaseMax,
+  ChartType,
   InputAxis,
   InputGroupValue,
+  Layout,
   TextDims,
 } from "../types";
 import {
@@ -32,7 +33,7 @@ import {
 export type Info = Chart.BaseInfo & {
   type: "bar";
   subtype: BarChartSubtype;
-  layout: BarChartLayout;
+  layout: Layout;
   groups: InputGroupValue[];
   maxValue: BaseMax;
   verticalAxis: InputAxis | undefined;
@@ -49,10 +50,11 @@ export const info = (
     groups,
     shareDomain = true,
   } = inputStep;
+  const type: ChartType = "bar";
 
   return {
     ...Chart.baseInfo(svgBackgroundColor, inputStep, shareDomain),
-    type: "bar",
+    type,
     subtype: chartSubtype,
     layout,
     groups,
@@ -145,6 +147,8 @@ export const getters = (
   const groupLabelStroke = svgBackgroundColor;
   const datumStroke = svgBackgroundColor;
 
+  const groupsGetters: Chart.Getter[] = [];
+
   if (isVertical) {
     const { x0Scale, x0bw, x1Scale, x1bw, yScale } = getVerticalScales({
       isGrouped,
@@ -154,7 +158,6 @@ export const getters = (
       width,
       height,
     });
-    const groupsGetters: Chart.Getter[] = [];
 
     for (const group of groups) {
       const { key } = group;
@@ -319,7 +322,6 @@ export const getters = (
         ? textDims.groupLabel.height + BASE_MARGIN * 0.25
         : 0,
     });
-    const groupsGetters: Chart.Getter[] = [];
 
     for (const group of groups) {
       const { key } = group;

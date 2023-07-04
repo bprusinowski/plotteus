@@ -6,6 +6,7 @@ import { BAR, getPathData } from "../coords";
 import { Dimensions, ResolvedDimensions } from "../dims";
 import {
   BaseMax,
+  ChartType,
   InputAxis,
   InputGroupXY,
   MaxXY,
@@ -40,10 +41,11 @@ export const info = (
   inputStep: ScatterInputStep
 ): Info => {
   const { groups, shareDomain = false } = inputStep;
+  const type: ChartType = "scatter";
 
   return {
     ...Chart.baseInfo(svgBackgroundColor, inputStep, shareDomain),
-    type: "scatter",
+    type,
     groups,
     maxValue: getMaxValue(inputStep),
     verticalAxis: inputStep.verticalAxis,

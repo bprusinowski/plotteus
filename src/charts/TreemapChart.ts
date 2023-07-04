@@ -15,6 +15,7 @@ import { BAR, getPathData } from "../coords";
 import { Dimensions, ResolvedDimensions } from "../dims";
 import {
   BaseMax,
+  ChartType,
   InputGroupValue,
   TextDims,
   TreemapInputStep,
@@ -44,10 +45,11 @@ export const info = (
   inputStep: TreemapInputStep
 ): Info => {
   const { layout = "resquarify", groups, shareDomain = false } = inputStep;
+  const type: ChartType = "treemap";
 
   return {
     ...Chart.baseInfo(svgBackgroundColor, inputStep, shareDomain),
-    type: "treemap",
+    type,
     layout,
     groups,
     maxValue: getMaxValue(inputStep),
