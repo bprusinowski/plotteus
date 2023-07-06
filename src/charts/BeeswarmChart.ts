@@ -124,8 +124,13 @@ export const getters = (
 
     for (const group of groups) {
       const { key } = group;
-
-      const groupX = margin.left + width * 0.5;
+      const positions = group.data.map((d) => d.position);
+      const [minGroupX, maxGroupX] = [
+        xScale(min(positions) ?? 0),
+        xScale(max(positions) ?? 0),
+      ];
+      const groupXShift = (maxGroupX + minGroupX) * 0.5;
+      const groupX = margin.left + groupXShift;
       const groupY = margin.top + (yScale(key) as number) + ybw * 0.5;
       const groupGetters: Chart.Getter = {
         key,
@@ -183,7 +188,7 @@ export const getters = (
               })
             );
             const clipPath = d;
-            const x = s(groupX, datumPosition.x - width * 0.5, _g?.x);
+            const x = s(groupX, datumPosition.x - groupXShift, _g?.x);
             const y = s(margin.top + height * 0.5, datumPosition.y, _g?.y);
             const rotate = getRotate(_g?.rotate, cartoonize);
             const strokeWidth = STROKE_WIDTH;
@@ -239,9 +244,14 @@ export const getters = (
 
     for (const group of groups) {
       const { key } = group;
-
+      const positions = group.data.map((d) => d.position);
+      const [minGroupY, maxGroupY] = [
+        yScale(min(positions) ?? 0),
+        yScale(max(positions) ?? 0),
+      ];
+      const groupYShift = (minGroupY + maxGroupY) * 0.5;
       const groupX = margin.left + (xScale(key) as number) + xBw * 0.5;
-      const groupY = margin.top + height * 0.5;
+      const groupY = margin.top + groupYShift;
       const groupGetters: Chart.Getter = {
         key,
         g: ({ s, _g }) => {
@@ -301,7 +311,7 @@ export const getters = (
             const x = s(groupX, datumPosition.x, _g?.x);
             const y = s(
               margin.top + height * 0.5,
-              datumPosition.y - height * 0.5,
+              datumPosition.y - groupYShift,
               _g?.y
             );
             const rotate = getRotate(_g?.rotate, cartoonize);
