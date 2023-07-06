@@ -47,6 +47,7 @@ export type BarInputStep = BaseInputStep & {
 
 export type BeeswarmInputStep = BaseInputStep & {
   chartType: "beeswarm";
+  positionScale?: PositionScale;
   groups: InputGroupPosition[];
 } & (
     | {
@@ -96,6 +97,11 @@ export type InputStep =
   | TreemapInputStep;
 
 export type InputScale = {
+  maxValue?: number;
+};
+
+export type PositionScale = {
+  minValue?: number;
   maxValue?: number;
 };
 
