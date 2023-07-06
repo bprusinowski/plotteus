@@ -41,12 +41,20 @@ export const info = (
   svgBackgroundColor: string,
   inputStep: BeeswarmInputStep
 ): Info => {
-  const { layout = "horizontal", groups, shareDomain = false } = inputStep;
+  const {
+    layout = "horizontal",
+    groups,
+    shareDomain = false,
+    positionScale,
+  } = inputStep;
   const type: ChartType = "beeswarm";
-  const positions = inputStep.groups.flatMap((g) =>
-    g.data.map((d) => d.position)
-  );
-  const [minValue, maxValue] = [min(positions) ?? 0, max(positions) ?? 0];
+  const positions = inputStep.groups.flatMap((g) => {
+    return g.data.map((d) => d.position);
+  });
+  const [minValue, maxValue] = [
+    positionScale?.minValue ?? min(positions) ?? 0,
+    positionScale?.maxValue ?? max(positions) ?? 0,
+  ];
 
   return {
     ...Chart.baseInfo(svgBackgroundColor, inputStep, shareDomain),
