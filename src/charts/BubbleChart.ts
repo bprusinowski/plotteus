@@ -74,7 +74,7 @@ export const getters = (
   const groupFill = deriveSubtlerColor(svgBackgroundColor);
   const groupLabelFill = getTextColor(svgBackgroundColor);
   const groupLabelStroke = svgBackgroundColor;
-  const datumStroke = svgBackgroundColor;
+  const datumStroke = groupFill;
 
   for (const group of root.children ?? []) {
     const { key } = group.data;
