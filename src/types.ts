@@ -47,7 +47,7 @@ export type BarInputStep = BaseInputStep & {
 
 export type BeeswarmInputStep = BaseInputStep & {
   chartType: "beeswarm";
-  positionScale?: PositionScale;
+  positionScale?: MinMaxScale;
   groups: InputGroupPosition[];
 } & (
     | {
@@ -74,8 +74,8 @@ export type PieInputStep = BaseInputStep & {
 
 export type ScatterInputStep = BaseInputStep & {
   chartType: "scatter";
-  xScale?: InputScale;
-  yScale?: InputScale;
+  xScale?: MinMaxScale;
+  yScale?: MinMaxScale;
   horizontalAxis?: InputAxis;
   verticalAxis?: InputAxis;
   groups: InputGroupXY[];
@@ -100,7 +100,7 @@ export type InputScale = {
   maxValue?: number;
 };
 
-export type PositionScale = {
+export type MinMaxScale = {
   minValue?: number;
   maxValue?: number;
 };
@@ -207,7 +207,7 @@ export type DataMaxXY = {
   y: number;
 };
 
-export type BaseMax = {
+export type ExtremeValue = {
   data: number;
   scale: number | undefined;
   actual: number;
@@ -216,17 +216,6 @@ export type BaseMax = {
   // complement of k, 1 - k
   kc: number;
 };
-
-export type MaxValue = {
-  value: BaseMax;
-};
-
-export type MaxXY = {
-  x: BaseMax;
-  y: BaseMax;
-};
-
-export type Max = MaxValue | MaxXY;
 
 /**
  * Provides access to a stateful function and previous G.

@@ -32,7 +32,7 @@ export const info = (type: AxisType, chartInfo: Chart.Info): Info => {
               title: chartInfo.verticalAxis?.title ?? "",
               tickFormat:
                 chartInfo.verticalAxis?.tickFormat ?? Tick.defaultFormat,
-              minValue: 0,
+              minValue: chartInfo.minValue,
               maxValue: chartInfo.maxValue.actual,
               addTopMargin: chartInfo.showValues,
             };
@@ -59,7 +59,7 @@ export const info = (type: AxisType, chartInfo: Chart.Info): Info => {
             title: chartInfo.verticalAxis?.title ?? "",
             tickFormat:
               chartInfo.verticalAxis?.tickFormat ?? Tick.defaultFormat,
-            minValue: 0,
+            minValue: chartInfo.minValue.y.actual,
             maxValue: chartInfo.maxValue.y.actual,
             addTopMargin: false,
           };
@@ -100,7 +100,7 @@ export const info = (type: AxisType, chartInfo: Chart.Info): Info => {
             title: chartInfo.horizontalAxis?.title ?? "",
             tickFormat:
               chartInfo.horizontalAxis?.tickFormat ?? Tick.defaultFormat,
-            minValue: 0,
+            minValue: chartInfo.minValue.x.actual,
             maxValue: chartInfo.maxValue.x.actual,
             addTopMargin: false,
           };

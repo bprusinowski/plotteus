@@ -172,6 +172,7 @@ export const render = ({
         .attr(isVerticalAxis ? "x2" : "y2", (d) =>
           isVerticalAxis ? d.size : -d.size
         )
+        .style("stroke-width", (d) => (d.key === "0" ? 1.5 : 1))
         .style("stroke", (d) => d.lightLineColor)
     );
 };

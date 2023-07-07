@@ -14,8 +14,8 @@ import { Svg } from "../components";
 import { BAR, getPathData } from "../coords";
 import { Dimensions, ResolvedDimensions } from "../dims";
 import {
-  BaseMax,
   ChartType,
+  ExtremeValue,
   InputGroupValue,
   TextDims,
   TreemapInputStep,
@@ -37,7 +37,7 @@ export type Info = Chart.BaseInfo & {
   type: "treemap";
   layout: TreemapLayout;
   groups: InputGroupValue[];
-  maxValue: BaseMax;
+  maxValue: ExtremeValue;
 };
 
 export const info = (
