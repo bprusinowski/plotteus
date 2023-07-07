@@ -5,8 +5,8 @@ import { Svg } from "../components";
 import { BUBBLE, getPathData } from "../coords";
 import { Dimensions, ResolvedDimensions } from "../dims";
 import {
-  BaseMax,
   ChartType,
+  ExtremeValue,
   InputDatumValue,
   InputGroupValue,
   PieInputStep,
@@ -29,7 +29,7 @@ import {
 export type Info = Chart.BaseInfo & {
   type: "pie";
   groups: InputGroupValue[];
-  maxValue: BaseMax;
+  maxValue: ExtremeValue;
 };
 
 export const info = (

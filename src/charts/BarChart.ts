@@ -7,8 +7,8 @@ import { Dimensions, ResolvedDimensions } from "../dims";
 import {
   BarChartSubtype,
   BarInputStep,
-  BaseMax,
   ChartType,
+  ExtremeValue,
   InputAxis,
   InputGroupValue,
   Layout,
@@ -25,7 +25,7 @@ import * as Chart from "./Chart";
 import {
   STROKE_WIDTH,
   TEXT_MARGIN,
-  getBaseMax,
+  getExtremeValue,
   getGroupLabelStrokeWidth,
   getRotate,
 } from "./utils";
@@ -35,7 +35,8 @@ export type Info = Chart.BaseInfo & {
   subtype: BarChartSubtype;
   layout: Layout;
   groups: InputGroupValue[];
-  maxValue: BaseMax;
+  minValue: number;
+  maxValue: ExtremeValue;
   verticalAxis: InputAxis | undefined;
   horizontalAxis: InputAxis | undefined;
 };
@@ -58,6 +59,7 @@ export const info = (
     subtype: chartSubtype,
     layout,
     groups,
+    minValue: 0,
     maxValue: getMaxValue(inputStep),
     verticalAxis:
       inputStep.layout === "vertical" || inputStep.layout === undefined
@@ -68,7 +70,7 @@ export const info = (
   };
 };
 
-const getMaxValue = (step: BarInputStep): BaseMax => {
+const getMaxValue = (step: BarInputStep): ExtremeValue => {
   let valueMax = 0;
 
   switch (step.chartSubtype) {
@@ -87,7 +89,7 @@ const getMaxValue = (step: BarInputStep): BaseMax => {
       break;
   }
 
-  return getBaseMax(step.valueScale?.maxValue, valueMax);
+  return getExtremeValue(step.valueScale?.maxValue, valueMax);
 };
 
 export const updateDims = (info: Info, dims: Dimensions, svg: Svg) => {
@@ -477,7 +479,7 @@ const getVerticalScales = ({
   isGrouped: boolean;
   groupsKeys: string[];
   dataKeys: string[];
-  maxValue: BaseMax;
+  maxValue: ExtremeValue;
   width: number;
   height: number;
 }): {
@@ -532,7 +534,7 @@ const getHorizontalScales = ({
   isGrouped: boolean;
   groupsKeys: string[];
   dataKeys: string[];
-  maxValue: BaseMax;
+  maxValue: ExtremeValue;
   width: number;
   height: number;
   labelMargin: number;

@@ -5,11 +5,10 @@ import { Svg } from "../components";
 import { BAR, getPathData } from "../coords";
 import { Dimensions, ResolvedDimensions } from "../dims";
 import {
-  BaseMax,
   ChartType,
+  ExtremeValue,
   InputAxis,
   InputGroupXY,
-  MaxXY,
   ScatterInputStep,
   TextDims,
 } from "../types";
@@ -23,7 +22,7 @@ import {
 import * as Chart from "./Chart";
 import {
   STROKE_WIDTH,
-  getBaseMax,
+  getExtremeValue,
   getGroupLabelStrokeWidth,
   getRotate,
 } from "./utils";
@@ -31,7 +30,14 @@ import {
 export type Info = Chart.BaseInfo & {
   type: "scatter";
   groups: InputGroupXY[];
-  maxValue: MaxXY;
+  minValue: {
+    x: ExtremeValue;
+    y: ExtremeValue;
+  };
+  maxValue: {
+    x: ExtremeValue;
+    y: ExtremeValue;
+  };
   verticalAxis: InputAxis | undefined;
   horizontalAxis: InputAxis | undefined;
 };
@@ -47,21 +53,38 @@ export const info = (
     ...Chart.baseInfo(svgBackgroundColor, inputStep, shareDomain),
     type,
     groups,
+    minValue: getMinValue(inputStep),
     maxValue: getMaxValue(inputStep),
     verticalAxis: inputStep.verticalAxis,
     horizontalAxis: inputStep.horizontalAxis,
   };
 };
 
-const getMaxValue = (step: ScatterInputStep): MaxXY => {
+const getMinValue = (
+  step: ScatterInputStep
+): { x: ExtremeValue; y: ExtremeValue } => {
+  const xValues = step.groups.flatMap((d) => d.data.map((d) => d.x));
+  const xMin = min(xValues) ?? 0;
+  const yValues = step.groups.flatMap((d) => d.data.map((d) => d.y));
+  const yMin = min(yValues) ?? 0;
+
+  return {
+    x: getExtremeValue(step.xScale?.minValue, xMin),
+    y: getExtremeValue(step.yScale?.minValue, yMin),
+  };
+};
+
+const getMaxValue = (
+  step: ScatterInputStep
+): { x: ExtremeValue; y: ExtremeValue } => {
   const xValues = step.groups.flatMap((d) => d.data.map((d) => d.x));
   const xMax = max(xValues) ?? 0;
   const yValues = step.groups.flatMap((d) => d.data.map((d) => d.y));
   const yMax = max(yValues) ?? 0;
 
   return {
-    x: getBaseMax(step.xScale?.maxValue, xMax),
-    y: getBaseMax(step.yScale?.maxValue, yMax),
+    x: getExtremeValue(step.xScale?.maxValue, xMax),
+    y: getExtremeValue(step.yScale?.maxValue, yMax),
   };
 };
 
@@ -83,6 +106,7 @@ export const getters = (
 ) => {
   const {
     groups,
+    minValue: { x: xMinValue, y: yMinValue },
     maxValue: { x: xMaxValue, y: yMaxValue },
     shareDomain,
     svgBackgroundColor,
@@ -94,7 +118,14 @@ export const getters = (
     cartoonize,
     textDims,
   } = props;
-  const { xScale, yScale } = getScales({ xMaxValue, yMaxValue, width, height });
+  const { xScale, yScale } = getScales({
+    xMinValue,
+    xMaxValue,
+    yMinValue,
+    yMaxValue,
+    width,
+    height,
+  });
   const groupsGetters: Chart.Getter[] = [];
   const groupFill = deriveSubtlerColor(svgBackgroundColor);
   const groupLabelFill = getTextColor(svgBackgroundColor);
@@ -219,21 +250,29 @@ export const getters = (
 };
 
 const getScales = ({
+  xMinValue,
   xMaxValue,
+  yMinValue,
   yMaxValue,
   width,
   height,
 }: {
-  xMaxValue: BaseMax;
-  yMaxValue: BaseMax;
+  xMinValue: ExtremeValue;
+  xMaxValue: ExtremeValue;
+  yMinValue: ExtremeValue;
+  yMaxValue: ExtremeValue;
   width: number;
   height: number;
 }): {
   xScale: ScaleLinear<number, number>;
   yScale: ScaleLinear<number, number>;
 } => {
-  const xScale = scaleLinear().domain([0, xMaxValue.actual]).range([0, width]);
-  const yScale = scaleLinear().domain([0, yMaxValue.actual]).range([height, 0]);
+  const xScale = scaleLinear()
+    .domain([xMinValue.actual, xMaxValue.actual])
+    .range([0, width]);
+  const yScale = scaleLinear()
+    .domain([yMinValue.actual, yMaxValue.actual])
+    .range([height, 0]);
 
   return {
     xScale,

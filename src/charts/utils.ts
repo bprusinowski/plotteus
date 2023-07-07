@@ -7,8 +7,8 @@ import {
 } from "d3-force";
 import { hierarchy, pack } from "d3-hierarchy";
 import {
-  BaseMax,
   BubbleInputStep,
+  ExtremeValue,
   InputDatumPosition,
   InputGroupValue,
   Layout,
@@ -27,16 +27,16 @@ export const PADDING = 4;
 
 export const STROKE_WIDTH = 1;
 
-export const getBaseMax = (
-  scaleMax: number | undefined,
-  dataMax: number
-): BaseMax => {
-  const k = scaleMax ? dataMax / scaleMax : 1;
+export const getExtremeValue = (
+  scaleExtreme: number | undefined,
+  dataExtreme: number
+): ExtremeValue => {
+  const k = scaleExtreme ? dataExtreme / scaleExtreme : 1;
 
   return {
-    data: dataMax,
-    scale: scaleMax,
-    actual: scaleMax ?? dataMax,
+    data: dataExtreme,
+    scale: scaleExtreme,
+    actual: scaleExtreme ?? dataExtreme,
     k,
     kc: 1 - k,
   };
@@ -44,13 +44,13 @@ export const getBaseMax = (
 
 export const getMaxValue = (
   step: BubbleInputStep | PieInputStep | TreemapInputStep
-): BaseMax => {
+): ExtremeValue => {
   const values = step.groups.flatMap((d) =>
     d.data.reduce((acc, d) => acc + d.value, 0)
   );
   const valueMax = max(values) ?? 0;
 
-  return getBaseMax(step.valueScale?.maxValue, valueMax);
+  return getExtremeValue(step.valueScale?.maxValue, valueMax);
 };
 
 export const getRotate = (_rotate = 0, cartoonize?: boolean): number => {
