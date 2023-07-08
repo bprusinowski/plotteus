@@ -2,13 +2,18 @@ import { select, Selection } from "d3-selection";
 import { TextType } from "../types";
 import { FONT_SIZE, FONT_WEIGHT } from "../utils";
 
+export type MeasureTextOptions = {
+  paddingLeft?: number;
+  paddingRight?: number;
+};
+
 export type Svg = {
   selection: SVGSelection;
   measure: () => DOMRect;
   measureText: (
     text: string | number,
     textType: TextType,
-    options?: { paddingX?: number }
+    options?: MeasureTextOptions
   ) => DOMRect;
 };
 
@@ -37,16 +42,17 @@ export const makeSvg = (
   const measure = (): DOMRect => {
     return (selection.node() as SVGSVGElement).getBoundingClientRect();
   };
+
   const measureText = (
     text: string | number,
     textType: TextType,
-    options?: { paddingX?: number }
+    options?: MeasureTextOptions
   ): DOMRect => {
-    const { paddingX = 0 } = options ?? {};
+    const { paddingLeft = 0, paddingRight } = options ?? {};
     const root = select(div)
       .append("div")
-      .style("padding-left", `${paddingX}px`)
-      .style("padding-right", `${paddingX}px`);
+      .style("padding-left", `${paddingLeft}px`)
+      .style("padding-right", `${paddingRight}px`);
     const node = root
       .append("div")
       .style("width", "fit-content")

@@ -32,7 +32,10 @@ export const getter = ({
   svgBackgroundColor: string;
   dims: ResolvedDimensions;
 }): Getter => {
-  let dims: DOMRect;
+  const dims = svg.measureText(text, type, {
+    paddingLeft: margin.left,
+    paddingRight: margin.right,
+  });
 
   return {
     key: text,
@@ -40,15 +43,12 @@ export const getter = ({
       let x: number;
       switch (anchor) {
         case "start":
-          dims = svg.measureText(text, type, { paddingX: margin.left });
           x = margin.left;
           break;
         case "middle":
-          dims = svg.measureText(text, type, { paddingX: BASE_MARGIN * 0.5 });
-          x = (BASE_MARGIN + fullWidth - dims.width) * 0.5;
+          x = (fullWidth - dims.width) * 0.5;
           break;
         case "end":
-          dims = svg.measureText(text, type, { paddingX: margin.right });
           x = fullWidth - dims.width - margin.right;
           break;
       }
