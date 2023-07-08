@@ -1,7 +1,7 @@
 import { scaleLinear } from "d3-scale";
 import { Text } from ".";
 import * as Chart from "../charts/Chart";
-import { Dimensions, Margin, ResolvedDimensions } from "../dims";
+import { Dimensions, Margin } from "../dims";
 import { AxisType } from "../types";
 import { max } from "../utils";
 import * as Tick from "./AxisTick";
@@ -144,7 +144,7 @@ export const getters = ({
   titleMargin: Margin;
   svg: Svg;
   svgBackgroundColor: string;
-  dims: ResolvedDimensions;
+  dims: Dimensions;
   tickHeight: number;
   ticksCount: number;
   tickFormat: (d: number) => string;
@@ -153,7 +153,28 @@ export const getters = ({
   maxValue: number;
   _maxValue: number | undefined;
 }): Getter => {
+  let resolvedDims = dims.resolve();
   const ticks = scaleLinear().domain([minValue, maxValue]).ticks(ticksCount);
+  const titleGetter = title
+    ? Text.getter({
+        text: title,
+        type: "axisTitle",
+        anchor: type === "vertical" ? "start" : "end",
+        svg,
+        svgBackgroundColor,
+        dims: { ...resolvedDims, margin: titleMargin },
+      })
+    : undefined;
+
+  if (titleGetter) {
+    Text.updateDims({
+      dims,
+      svg,
+      textType: "axisTitle",
+      text: title,
+    });
+    resolvedDims = dims.resolve();
+  }
 
   return {
     key: `${type}-axis`,
@@ -175,16 +196,7 @@ export const getters = ({
         opacity: s(0, 1),
       };
     },
-    title: title
-      ? Text.getter({
-          text: title,
-          type: "axisTitle",
-          anchor: type === "vertical" ? "start" : "end",
-          svg,
-          svgBackgroundColor,
-          dims: { ...dims, margin: titleMargin },
-        })
-      : undefined,
+    title: titleGetter,
     ticks: Tick.getters({
       axisType: type,
       ticks,
@@ -194,7 +206,7 @@ export const getters = ({
       _maxValue,
       tickHeight,
       tickFormat,
-      dims,
+      dims: resolvedDims,
       svgBackgroundColor,
     }),
   };
