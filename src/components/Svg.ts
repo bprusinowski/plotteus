@@ -5,7 +5,11 @@ import { FONT_SIZE, FONT_WEIGHT } from "../utils";
 export type Svg = {
   selection: SVGSelection;
   measure: () => DOMRect;
-  measureText: (text: string | number, textType: TextType) => DOMRect;
+  measureText: (
+    text: string | number,
+    textType: TextType,
+    options?: { paddingX?: number }
+  ) => DOMRect;
 };
 
 export type SVGSelection = Selection<
@@ -33,17 +37,28 @@ export const makeSvg = (
   const measure = (): DOMRect => {
     return (selection.node() as SVGSVGElement).getBoundingClientRect();
   };
-
-  const measureText = (text: string | number, textType: TextType): DOMRect => {
-    const node = selection
-      .append("text")
+  const measureText = (
+    text: string | number,
+    textType: TextType,
+    options?: { paddingX?: number }
+  ): DOMRect => {
+    const { paddingX = 0 } = options ?? {};
+    const root = select(div)
+      .append("div")
+      .style("padding-left", `${paddingX}px`)
+      .style("padding-right", `${paddingX}px`);
+    const node = root
+      .append("div")
+      .style("width", "fit-content")
+      .style("height", "fit-content")
+      .style("line-height", 1.5)
       .style("font-size", `${FONT_SIZE[textType]}px`)
       .style("font-weight", FONT_WEIGHT[textType])
-      .text(text)
-      .node() as SVGTextElement;
-
+      .html(text.toString())
+      .node() as HTMLDivElement;
     const rect = node.getBoundingClientRect();
     node.remove();
+    root.remove();
 
     return rect;
   };

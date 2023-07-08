@@ -1,17 +1,18 @@
 import { Selection } from "d3-selection";
 import { Dimensions, ResolvedDimensions } from "../dims";
 import { Anchor, TextType } from "../types";
-import { FONT_SIZE, FONT_WEIGHT, getTextColor } from "../utils";
+import { FONT_SIZE, FONT_WEIGHT, getTextColor, hexToRgb } from "../utils";
 import * as Generic from "./Generic";
 import { Svg } from "./Svg";
 
 type G = {
   x: number;
   y: number;
+  width: number;
+  height: number;
   fontSize: number;
   fontWeight: number;
   color: string;
-  opacity: number;
 };
 
 export type Getter = Generic.Getter<G>;
@@ -22,7 +23,7 @@ export const getter = ({
   anchor,
   svg,
   svgBackgroundColor,
-  dims: { fullWidth, margin },
+  dims: { fullWidth, margin, BASE_MARGIN },
 }: {
   text: string;
   type: TextType;
@@ -31,7 +32,7 @@ export const getter = ({
   svgBackgroundColor: string;
   dims: ResolvedDimensions;
 }): Getter => {
-  const { width: textWidth } = svg.measureText(text, type);
+  let dims: DOMRect;
 
   return {
     key: text,
@@ -39,23 +40,30 @@ export const getter = ({
       let x: number;
       switch (anchor) {
         case "start":
+          dims = svg.measureText(text, type, { paddingX: margin.left });
           x = margin.left;
           break;
         case "middle":
-          x = (fullWidth - textWidth) * 0.5;
+          dims = svg.measureText(text, type, { paddingX: BASE_MARGIN * 0.5 });
+          x = (BASE_MARGIN + fullWidth - dims.width) * 0.5;
           break;
         case "end":
-          x = fullWidth - textWidth - margin.right;
+          dims = svg.measureText(text, type, { paddingX: margin.right });
+          x = fullWidth - dims.width - margin.right;
           break;
       }
 
       return {
         x: s(x, null, _g?.x),
         y: s(margin.top, null, _g?.y),
+        width: s(dims.width, null, _g?.width),
+        height: s(dims.height, null, _g?.height),
         fontSize: FONT_SIZE[type],
         fontWeight: FONT_WEIGHT[type],
-        color: getTextColor(svgBackgroundColor),
-        opacity: s(0, 1),
+        color: s(
+          `rgba(${hexToRgb(svgBackgroundColor)}, 0)`,
+          getTextColor(svgBackgroundColor)
+        ),
       };
     },
   };
@@ -81,16 +89,23 @@ export const render = ({
   const className = `text ${key}`;
 
   selection
-    .selectAll<SVGTextElement, Resolved>(`.text.${key}`)
+    .selectAll<SVGForeignObjectElement, Resolved>(`.text.${key}`)
     .data(resolved, (d) => d.key)
-    .join("text")
+    .join("foreignObject")
     .attr("class", className)
-    .attr("transform", (d) => `translate(${d.x}, ${d.y})`)
+    .attr("x", (d) => d.x)
+    .attr("y", (d) => d.y)
+    .attr("width", (d) => d.width)
+    .attr("height", (d) => d.height)
+    .selectAll("div")
+    .data((d) => [d])
+    .join("xhtml:div")
+    // TODO: consolidate this per TextType
+    .style("line-height", 1.5)
     .style("font-size", (d) => `${d.fontSize}px`)
     .style("font-weight", (d) => d.fontWeight)
     .style("dominant-baseline", "hanging")
-    .style("fill", (d) => d.color)
-    .style("opacity", (d) => d.opacity)
+    .style("color", (d) => d.color)
     .text((d) => d.key);
 };
 

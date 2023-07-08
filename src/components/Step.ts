@@ -137,7 +137,7 @@ export const getters = ({
     if (horizontalAxisInfo.show) {
       const { title, tickFormat, minValue, maxValue } = horizontalAxisInfo;
 
-      const titleHeight = textDims.axisTitle.height;
+      const titleHeight = svg.measureText(title, "axisTitle").height;
       const ticksCount = Axis.getTicksCount(dims.resolve().width);
       const width = Axis.getWidth({
         svg,
@@ -175,7 +175,7 @@ export const getters = ({
         },
         svg,
         svgBackgroundColor,
-        dims: resolvedDims,
+        dims,
         tickHeight: textDims.axisTick.height,
         ticksCount,
         tickFormat,
@@ -204,7 +204,7 @@ export const getters = ({
         minValue,
         maxValue,
       });
-      const titleHeight = textDims.axisTitle.height;
+      const titleHeight = svg.measureText(title, "axisTitle").height;
 
       verticalAxisGetters = Axis.getters({
         type: "vertical",
@@ -228,7 +228,7 @@ export const getters = ({
             },
         svg,
         svgBackgroundColor,
-        dims: dims.resolve(),
+        dims,
         minValue,
         _minValue: _minVerticalAxisValue,
         maxValue,
