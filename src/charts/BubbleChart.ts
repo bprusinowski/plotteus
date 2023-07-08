@@ -56,7 +56,7 @@ export const getters = (
     colorMap: ColorMap;
     cartoonize: boolean;
   }
-) => {
+): Chart.Getter[] => {
   const { groups, maxValue, shareDomain, showValues, svgBackgroundColor } =
     info;
   const {

@@ -103,7 +103,7 @@ export const getters = (
     colorMap: ColorMap;
     cartoonize: boolean;
   }
-) => {
+): Chart.Getter[] => {
   const {
     groups,
     minValue: { x: xMinValue, y: yMinValue },

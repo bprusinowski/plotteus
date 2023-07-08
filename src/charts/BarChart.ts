@@ -118,7 +118,7 @@ export const getters = (
     colorMap: ColorMap;
     cartoonize: boolean;
   }
-) => {
+): Chart.Getter[] => {
   const {
     subtype,
     layout,
