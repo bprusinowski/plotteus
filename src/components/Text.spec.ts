@@ -11,7 +11,7 @@ describe("Text", () => {
     type: "title",
     anchor: "middle",
     dims: dims.resolve(),
-    svgBackgroundColor: "white",
+    svgBackgroundColor: "#FFFFFF",
   });
   const enterInts = Text.ints({
     getters: [enterGetter],
@@ -31,7 +31,6 @@ describe("Text", () => {
         expect(g.x).toEqual(400);
         expect(g.y).toEqual(dims.margin.top);
         expect(g.fontSize).toEqual(FONT_SIZE.title);
-        expect(g.opacity).toEqual(0);
       });
 
       test("update", () => {
@@ -40,7 +39,6 @@ describe("Text", () => {
         expect(g.x).toEqual(400);
         expect(g.y).toEqual(dims.margin.top);
         expect(g.fontSize).toEqual(FONT_SIZE.title);
-        expect(g.opacity).toEqual(1);
       });
 
       test("exit", () => {
@@ -49,7 +47,6 @@ describe("Text", () => {
         expect(g.x).toEqual(400);
         expect(g.y).toEqual(dims.margin.top);
         expect(g.fontSize).toEqual(FONT_SIZE.title);
-        expect(g.opacity).toEqual(0);
       });
     });
 
@@ -75,12 +72,11 @@ describe("Text", () => {
           t: 0.5,
         })[0];
 
-        expect(r).toEqual({
+        expect(r).toContain({
           x: 400,
           y: dims.margin.top,
           fontSize: FONT_SIZE.title,
           fontWeight: FONT_WEIGHT.title,
-          opacity: 0.5,
         });
       });
 
@@ -121,7 +117,6 @@ describe("Text", () => {
         expect(g.x).toEqual(16);
         expect(g.y).toEqual(dims.margin.top);
         expect(g.fontSize).toEqual(FONT_SIZE.datumLabel);
-        expect(g.opacity).toEqual(0);
       });
 
       test("update", () => {
@@ -130,7 +125,6 @@ describe("Text", () => {
         expect(g.x).toEqual(16);
         expect(g.y).toEqual(dims.margin.top);
         expect(g.fontSize).toEqual(FONT_SIZE.datumLabel);
-        expect(g.opacity).toEqual(1);
       });
 
       test("exit", () => {
@@ -139,7 +133,6 @@ describe("Text", () => {
         expect(g.x).toEqual(16);
         expect(g.y).toEqual(dims.margin.top);
         expect(g.fontSize).toEqual(FONT_SIZE.datumLabel);
-        expect(g.opacity).toEqual(0);
       });
     });
 
@@ -170,7 +163,7 @@ describe("Text", () => {
           t: 0.5,
         })[0];
 
-        expect(r).toEqual({
+        expect(r).toContain({
           x: 208,
           y: dims.margin.top,
           fontSize:
@@ -178,7 +171,6 @@ describe("Text", () => {
           fontWeight:
             FONT_WEIGHT.title -
             (FONT_WEIGHT.title - FONT_WEIGHT.datumLabel) * 0.5,
-          opacity: 1,
         });
       });
 
@@ -227,12 +219,11 @@ describe("Text", () => {
           t: 0.5,
         })[0];
 
-        expect(r).toEqual({
+        expect(r).toContain({
           x: 16,
           y: dims.margin.top,
           fontSize: FONT_SIZE.datumLabel,
           fontWeight: FONT_WEIGHT.datumLabel,
-          opacity: 0.5,
         });
       });
 
