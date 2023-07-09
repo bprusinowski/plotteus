@@ -48,9 +48,12 @@ export const makeSvg = (
     textType: TextType,
     options?: MeasureTextOptions
   ): DOMRect => {
+    const { width } = measure();
     const { paddingLeft = 0, paddingRight } = options ?? {};
-    const root = select(div)
+    const root = select(document.body)
       .append("div")
+      .style("box-sizing", "border-box")
+      .style("max-width", `${width}px`)
       .style("padding-left", `${paddingLeft}px`)
       .style("padding-right", `${paddingRight}px`);
     const node = root
@@ -63,7 +66,6 @@ export const makeSvg = (
       .html(text.toString())
       .node() as HTMLDivElement;
     const rect = node.getBoundingClientRect();
-    node.remove();
     root.remove();
 
     return rect;
