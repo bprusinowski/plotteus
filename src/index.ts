@@ -1,6 +1,12 @@
 import { makeSvg, makeTooltip, Step, Svg } from "./components";
-import { InputStep, InputStoryOptions, TextTypeDims } from "./types";
 import {
+  InputStep,
+  InputStoryOptions,
+  StoryOptions,
+  TextTypeDims,
+} from "./types";
+import {
+  DEFAULT_FONT_FAMILY,
   deriveSubtlerColor,
   getDataValues,
   getTextDims,
@@ -49,8 +55,8 @@ export const info = (inputSteps: InputStep[], svg: Svg): Info => {
  */
 const makeStory = (
   div: HTMLDivElement,
-  steps: InputStep[],
-  options?: InputStoryOptions
+  inputSteps: InputStep[],
+  inputOptions?: InputStoryOptions
 ): {
   /**
    * Renders a given step.
@@ -65,11 +71,16 @@ const makeStory = (
     indicateProgress?: boolean
   ) => void;
 } => {
-  const { svgBackgroundColor = "#FFFFFF" } = options ?? {};
-  const svg = makeSvg(div, svgBackgroundColor);
-  const tooltip = makeTooltip(div);
+  const { svgBackgroundColor = "#FFFFFF", fontFamily = DEFAULT_FONT_FAMILY } =
+    inputOptions ?? {};
+  const options: StoryOptions = {
+    svgBackgroundColor,
+    fontFamily,
+  };
+  const svg = makeSvg(div, options);
+  const tooltip = makeTooltip(options);
   const progressBarColor = deriveSubtlerColor(svgBackgroundColor);
-  const storyInfo = info(steps, svg);
+  const storyInfo = info(inputSteps, svg);
 
   let loaded = false;
   // Previous key.
@@ -98,8 +109,8 @@ const makeStory = (
   const prepareStepsIntsMap = (width: number, height: number): void => {
     const getters = Step.getters({
       storyInfo,
-      storyOptions: { svgBackgroundColor },
-      steps,
+      storyOptions: options,
+      steps: inputSteps,
       svg,
       width,
       height,

@@ -1,8 +1,10 @@
 import { select } from "d3-selection";
+import { StoryOptions } from "../types";
 
 export type Tooltip = ReturnType<typeof makeTooltip>;
 
-export const makeTooltip = (div: HTMLDivElement) => {
+export const makeTooltip = (options: StoryOptions) => {
+  const { fontFamily } = options;
   const root = select(document.body)
     .selectAll(".plotteus-tooltip")
     .data([null])
@@ -16,6 +18,7 @@ export const makeTooltip = (div: HTMLDivElement) => {
     .style("padding", "8px")
     .style("background", "#fcfcfcea")
     .style("font-size", "12px")
+    .style("font-family", fontFamily)
     .style("transform", "translate(-50%, calc(-100% - 16px))")
     .style("pointer-events", "none")
     .style("box-shadow", "0px 0px 48px 0px rgba(0, 0, 0, 0.15)")

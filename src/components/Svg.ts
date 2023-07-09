@@ -1,5 +1,5 @@
 import { select, Selection } from "d3-selection";
-import { TextType } from "../types";
+import { StoryOptions, TextType } from "../types";
 import { FONT_SIZE, FONT_WEIGHT } from "../utils";
 
 export type MeasureTextOptions = {
@@ -24,7 +24,8 @@ export type SVGSelection = Selection<
   undefined
 >;
 
-export const makeSvg = (div: HTMLDivElement, background: string): Svg => {
+export const makeSvg = (div: HTMLDivElement, options: StoryOptions): Svg => {
+  const { svgBackgroundColor, fontFamily } = options;
   const selection = select(div)
     .selectAll("svg")
     .data([null])
@@ -33,7 +34,8 @@ export const makeSvg = (div: HTMLDivElement, background: string): Svg => {
     .style("height", "100%")
     .style("transform", "translate3d(0, 0, 0)")
     .style("border-left", "3px solid transparent")
-    .style("background", background)
+    .style("background", svgBackgroundColor)
+    .style("font-family", fontFamily)
     .style("transition", "border-left 0.3s ease") as SVGSelection;
 
   const measure = (): DOMRect => {
@@ -60,6 +62,7 @@ export const makeSvg = (div: HTMLDivElement, background: string): Svg => {
       .style("line-height", 1.5)
       .style("font-size", `${FONT_SIZE[textType]}px`)
       .style("font-weight", FONT_WEIGHT[textType])
+      .style("font-family", fontFamily)
       .text(text)
       .node() as HTMLDivElement;
     const rect = node.getBoundingClientRect();
