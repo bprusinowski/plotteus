@@ -51,12 +51,14 @@ export const getTextDims = (svg: Svg): TextDims => {
   ) as TextDims;
 };
 
+export type TextWidths = Record<string, number>;
+
 export const getTextWidths = (
   labels: string[],
   svg: Svg,
   textType: TextType
-): Record<string, number> => {
-  const widths: Record<string, number> = {};
+): TextWidths => {
+  const widths: TextWidths = {};
   labels.forEach((label) => {
     const { width } = svg.measureText(label, textType);
     widths[label] = width;

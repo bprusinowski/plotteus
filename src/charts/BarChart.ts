@@ -1,8 +1,8 @@
 import { ScaleBand, ScaleLinear, scaleBand, scaleLinear } from "d3-scale";
 import { Datum } from ".";
+import * as Story from "..";
 import { ColorMap } from "../colors";
 import { AxisTick, Svg } from "../components";
-import { Info as StepInfo } from "../components/Step";
 import { BAR, getPathData } from "../coords";
 import { Dimensions, ResolvedDimensions } from "../dims";
 import {
@@ -31,7 +31,7 @@ import {
   getRotate,
 } from "./utils";
 
-export type Info = StepInfo &
+export type Info = Story.Info &
   Chart.BaseInfo & {
     type: "bar";
     subtype: BarChartSubtype;
@@ -45,9 +45,9 @@ export type Info = StepInfo &
   };
 
 export const info = (
+  storyInfo: Story.Info,
   svgBackgroundColor: string,
   inputStep: BarInputStep,
-  stepInfo: StepInfo,
   dims: Dimensions
 ): Info => {
   const {
@@ -73,7 +73,7 @@ export const info = (
       : { x0bw: undefined };
 
   return {
-    ...stepInfo,
+    ...storyInfo,
     ...baseInfo,
     type,
     subtype: chartSubtype,
@@ -89,7 +89,7 @@ export const info = (
       inputStep.layout === "horizontal" ? inputStep.horizontalAxis : undefined,
     // Add some padding between the group labels.
     shouldRotateLabels:
-      x0bw !== undefined ? stepInfo.maxGroupLabelWidth + 4 > x0bw : false,
+      x0bw !== undefined ? storyInfo.maxGroupLabelWidth + 4 > x0bw : false,
   };
 };
 

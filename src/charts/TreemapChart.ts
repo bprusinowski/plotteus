@@ -9,9 +9,9 @@ import {
   treemapSquarify,
 } from "d3-hierarchy";
 import { Datum } from ".";
+import * as Story from "..";
 import { ColorMap } from "../colors";
 import { Svg } from "../components";
-import { Info as StepInfo } from "../components/Step";
 import { BAR, getPathData } from "../coords";
 import { Dimensions, ResolvedDimensions } from "../dims";
 import {
@@ -34,31 +34,29 @@ import {
   getRotate,
 } from "./utils";
 
-export type Info = StepInfo &
+export type Info = Story.Info &
   Chart.BaseInfo & {
     type: "treemap";
     layout: TreemapLayout;
     groups: InputGroupValue[];
     maxValue: ExtremeValue;
-    datumLabelWidths: Record<string, number>;
   };
 
 export const info = (
+  storyInfo: Story.Info,
   svgBackgroundColor: string,
-  inputStep: TreemapInputStep,
-  stepInfo: StepInfo
+  inputStep: TreemapInputStep
 ): Info => {
   const { layout = "resquarify", groups, shareDomain = false } = inputStep;
   const type: ChartType = "treemap";
 
   return {
-    ...stepInfo,
+    ...storyInfo,
     ...Chart.baseInfo(svgBackgroundColor, inputStep, shareDomain),
     type,
     layout,
     groups,
     maxValue: getMaxValue(inputStep),
-    datumLabelWidths: stepInfo.datumLabelWidths,
   };
 };
 

@@ -1,8 +1,8 @@
 import { ScaleBand, ScaleLinear, scaleBand, scaleLinear } from "d3-scale";
 import { Datum } from ".";
+import * as Story from "..";
 import { ColorMap } from "../colors";
 import { Svg } from "../components";
-import { Info as StepInfo } from "../components/Step";
 import { BUBBLE, getPathData } from "../coords";
 import { Dimensions, ResolvedDimensions } from "../dims";
 import {
@@ -28,7 +28,7 @@ import {
   getRotate,
 } from "./utils";
 
-export type Info = StepInfo &
+export type Info = Story.Info &
   Chart.BaseInfo & {
     type: "beeswarm";
     layout: Layout;
@@ -40,9 +40,9 @@ export type Info = StepInfo &
   };
 
 export const info = (
+  storyInfo: Story.Info,
   svgBackgroundColor: string,
-  inputStep: BeeswarmInputStep,
-  stepInfo: StepInfo
+  inputStep: BeeswarmInputStep
 ): Info => {
   const {
     layout = "horizontal",
@@ -60,7 +60,7 @@ export const info = (
   ];
 
   return {
-    ...stepInfo,
+    ...storyInfo,
     ...Chart.baseInfo(svgBackgroundColor, inputStep, shareDomain),
     type,
     layout,

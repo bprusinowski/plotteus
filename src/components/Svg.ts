@@ -24,10 +24,7 @@ export type SVGSelection = Selection<
   undefined
 >;
 
-export const makeSvg = (
-  div: HTMLDivElement,
-  background: string = "#FFFFFF"
-): Svg => {
+export const makeSvg = (div: HTMLDivElement, background: string): Svg => {
   const selection = select(div)
     .selectAll("svg")
     .data([null])

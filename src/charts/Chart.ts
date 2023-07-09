@@ -6,9 +6,9 @@ import {
   ScatterChart,
   TreemapChart,
 } from ".";
+import * as Story from "..";
 import { ColorMap } from "../colors";
 import * as Generic from "../components/Generic";
-import { Info as StepInfo } from "../components/Step";
 import { Svg } from "../components/Svg";
 import { Tooltip } from "../components/Tooltip";
 import { Dimensions, ResolvedDimensions } from "../dims";
@@ -39,24 +39,24 @@ export const baseInfo = (
 };
 
 export const info = (
+  storyInfo: Story.Info,
   svgBackgroundColor: string,
   inputStep: InputStep,
-  stepInfo: StepInfo,
   dims: Dimensions
 ) => {
   switch (inputStep.chartType) {
     case "bar":
-      return BarChart.info(svgBackgroundColor, inputStep, stepInfo, dims);
+      return BarChart.info(storyInfo, svgBackgroundColor, inputStep, dims);
     case "beeswarm":
-      return BeeswarmChart.info(svgBackgroundColor, inputStep, stepInfo);
+      return BeeswarmChart.info(storyInfo, svgBackgroundColor, inputStep);
     case "bubble":
-      return BubbleChart.info(svgBackgroundColor, inputStep, stepInfo);
+      return BubbleChart.info(storyInfo, svgBackgroundColor, inputStep);
     case "pie":
-      return PieChart.info(svgBackgroundColor, inputStep, stepInfo);
+      return PieChart.info(storyInfo, svgBackgroundColor, inputStep);
     case "scatter":
-      return ScatterChart.info(svgBackgroundColor, inputStep, stepInfo);
+      return ScatterChart.info(storyInfo, svgBackgroundColor, inputStep);
     case "treemap":
-      return TreemapChart.info(svgBackgroundColor, inputStep, stepInfo);
+      return TreemapChart.info(storyInfo, svgBackgroundColor, inputStep);
     default:
       const _exhaustiveCheck: never = inputStep;
       return _exhaustiveCheck;

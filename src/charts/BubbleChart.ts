@@ -1,7 +1,7 @@
 import { Datum } from ".";
+import * as Story from "..";
 import { ColorMap } from "../colors";
 import { Svg } from "../components";
-import { Info as StepInfo } from "../components/Step";
 import { BUBBLE, getPathData } from "../coords";
 import { Dimensions, ResolvedDimensions } from "../dims";
 import {
@@ -21,7 +21,7 @@ import {
   getRotate,
 } from "./utils";
 
-export type Info = StepInfo &
+export type Info = Story.Info &
   Chart.BaseInfo & {
     type: "bubble";
     groups: InputGroupValue[];
@@ -29,15 +29,15 @@ export type Info = StepInfo &
   };
 
 export const info = (
+  storyInfo: Story.Info,
   svgBackgroundColor: string,
-  inputStep: BubbleInputStep,
-  stepInfo: StepInfo
+  inputStep: BubbleInputStep
 ): Info => {
   const { groups, shareDomain = false } = inputStep;
   const type: ChartType = "bubble";
 
   return {
-    ...stepInfo,
+    ...storyInfo,
     ...Chart.baseInfo(svgBackgroundColor, inputStep, shareDomain),
     type,
     groups,

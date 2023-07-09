@@ -1,8 +1,8 @@
 import { PieArcDatum, pie } from "d3-shape";
 import { Datum } from ".";
+import * as Story from "..";
 import { ColorMap } from "../colors";
 import { Svg } from "../components";
-import { Info as StepInfo } from "../components/Step";
 import { BUBBLE, getPathData } from "../coords";
 import { Dimensions, ResolvedDimensions } from "../dims";
 import {
@@ -27,7 +27,7 @@ import {
   getMaxValue,
 } from "./utils";
 
-export type Info = StepInfo &
+export type Info = Story.Info &
   Chart.BaseInfo & {
     type: "pie";
     groups: InputGroupValue[];
@@ -35,15 +35,15 @@ export type Info = StepInfo &
   };
 
 export const info = (
+  storyInfo: Story.Info,
   svgBackgroundColor: string,
-  inputStep: PieInputStep,
-  stepInfo: StepInfo
+  inputStep: PieInputStep
 ): Info => {
   const { groups, shareDomain = true } = inputStep;
   const type: ChartType = "pie";
 
   return {
-    ...stepInfo,
+    ...storyInfo,
     ...Chart.baseInfo(svgBackgroundColor, inputStep, shareDomain),
     type,
     groups,

@@ -1,63 +1,10 @@
 import { Axis, AxisTick, ColorLegend, Svg, Text, Tooltip } from ".";
+import * as Story from "..";
 import * as Chart from "../charts/Chart";
 import { ColorMap } from "../colors";
 import { Dimensions } from "../dims";
-import { InputStep, TextDims } from "../types";
-import {
-  getTextDims,
-  getTextWidths,
-  max,
-  stateOrderComparator,
-  unique,
-} from "../utils";
-
-export type Info = {
-  textDims: TextDims;
-  groupLabelWidths: Record<string, number>;
-  maxGroupLabelWidth: number;
-  datumLabelWidths: Record<string, number>;
-  datumValueWidths: Record<string, number>;
-};
-
-export const info = (inputSteps: InputStep[], svg: Svg): Info => {
-  const textDims = getTextDims(svg);
-  const groupLabels = unique(
-    inputSteps.flatMap((d) => d.groups.map((d) => d.key))
-  );
-  const groupLabelWidths = getTextWidths(groupLabels, svg, "groupLabel");
-  const datumLabels = unique(
-    inputSteps.flatMap((d) => d.groups.flatMap((d) => d.data.map((d) => d.key)))
-  );
-  const datumLabelWidths = getTextWidths(datumLabels, svg, "datumLabel");
-  const datumValues = unique(
-    inputSteps.flatMap((d) => {
-      switch (d.chartType) {
-        case "bar":
-        case "bubble":
-        case "pie":
-        case "treemap":
-          return d.groups.flatMap((d) => d.data.map((d) => d.value.toString()));
-        case "beeswarm":
-          return d.groups.flatMap((d) =>
-            d.data.map((d) => d.position.toString())
-          );
-        case "scatter":
-          return d.groups.flatMap((d) =>
-            d.data.flatMap((d) => [d.x.toString(), d.y.toString()])
-          );
-      }
-    })
-  );
-  const datumValueWidths = getTextWidths(datumValues, svg, "datumValue");
-
-  return {
-    textDims,
-    groupLabelWidths,
-    maxGroupLabelWidth: max(Object.values(groupLabelWidths)) ?? 0,
-    datumLabelWidths,
-    datumValueWidths,
-  };
-};
+import { InputStep, StoryOptions } from "../types";
+import { stateOrderComparator } from "../utils";
 
 export type Getter = {
   key: string;
@@ -70,21 +17,21 @@ export type Getter = {
 };
 
 export const getters = ({
-  info: inputInfo,
+  storyInfo,
   options,
   steps: inputSteps,
   svg,
   width,
   height,
 }: {
-  info: Info;
-  options: { svgBackgroundColor: string };
+  storyInfo: Story.Info;
+  options: StoryOptions;
   steps: InputStep[];
   svg: Svg;
   width: number;
   height: number;
 }): Getter[] => {
-  const { textDims } = inputInfo;
+  const { textDims } = storyInfo;
   const { svgBackgroundColor } = options;
   const steps: Getter[] = [];
   let _minHorizontalAxisValue: number | undefined;
@@ -107,7 +54,7 @@ export const getters = ({
     } = step;
 
     const dims = new Dimensions(width, height);
-    const chartInfo = Chart.info(svgBackgroundColor, step, inputInfo, dims);
+    const chartInfo = Chart.info(storyInfo, svgBackgroundColor, step, dims);
     const colorLegendInfo = ColorLegend.info(step, chartInfo, colorMap);
     const verticalAxisInfo = Axis.info("vertical", chartInfo);
     const horizontalAxisInfo = Axis.info("horizontal", chartInfo);

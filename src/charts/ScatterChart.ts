@@ -1,8 +1,8 @@
 import { ScaleLinear, scaleLinear } from "d3-scale";
 import { Datum } from ".";
+import * as Story from "..";
 import { ColorMap } from "../colors";
 import { Svg } from "../components";
-import { Info as StepInfo } from "../components/Step";
 import { BAR, getPathData } from "../coords";
 import { Dimensions, ResolvedDimensions } from "../dims";
 import {
@@ -28,7 +28,7 @@ import {
   getRotate,
 } from "./utils";
 
-export type Info = StepInfo &
+export type Info = Story.Info &
   Chart.BaseInfo & {
     type: "scatter";
     groups: InputGroupXY[];
@@ -45,15 +45,15 @@ export type Info = StepInfo &
   };
 
 export const info = (
+  storyInfo: Story.Info,
   svgBackgroundColor: string,
-  inputStep: ScatterInputStep,
-  stepInfo: StepInfo
+  inputStep: ScatterInputStep
 ): Info => {
   const { groups, shareDomain = false } = inputStep;
   const type: ChartType = "scatter";
 
   return {
-    ...stepInfo,
+    ...storyInfo,
     ...Chart.baseInfo(svgBackgroundColor, inputStep, shareDomain),
     type,
     groups,
