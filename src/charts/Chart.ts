@@ -211,43 +211,43 @@ export const render = ({
   tooltip?: Tooltip;
 }): void => {
   const groupsSelection = svg.selection
-    .selectAll<SVGGElement, null>(".groups")
+    .selectAll<SVGGElement, null>(".plotteus-groups")
     .data([null])
     .join("g")
-    .attr("class", "groups")
-    .selectAll<SVGGElement, Resolved>(".group")
+    .attr("class", "plotteus-groups")
+    .selectAll<SVGGElement, Resolved>(".plotteus-group")
     .data(resolved, (d) => d.key)
     .join("g")
-    .attr("class", "group")
+    .attr("class", "plotteus-group")
     .style("opacity", (d) => d.opacity);
 
   const backgroundsSelection = groupsSelection
-    .selectAll<SVGPathElement, Resolved>(".background")
+    .selectAll<SVGPathElement, Resolved>(".plotteus-background")
     .data(
       (d) => [d],
       (d) => d.key
     )
     .join("path")
-    .attr("class", "background")
+    .attr("class", "plotteus-background")
     .attr("transform", (d) => `translate(${d.x}, ${d.y})`)
     .style("fill", (d) => d.fill)
     .attr("d", (d) => d.d);
 
   const dataSelection = groupsSelection
-    .selectAll<SVGGElement, Resolved>(".data")
+    .selectAll<SVGGElement, Resolved>(".plotteus-data")
     .data(
       (d) => [d],
       (d) => d.key
     )
     .join("g")
-    .attr("class", "data")
-    .selectAll<SVGGElement, Resolved>(".datum")
+    .attr("class", "plotteus-data")
+    .selectAll<SVGGElement, Resolved>(".plotteus-datum")
     .data(
       (d) => d.data,
       (d) => d.key
     )
     .join("g")
-    .attr("class", "datum")
+    .attr("class", "plotteus-datum")
     .attr("transform", (d) => `translate(${d.x}, ${d.y}) rotate(${d.rotate})`)
     .style("opacity", (d) => d.opacity);
 
@@ -290,13 +290,13 @@ export const render = ({
   }
 
   const labelsSelection = groupsSelection
-    .selectAll<SVGTextElement, Resolved>(".group-label")
+    .selectAll<SVGTextElement, Resolved>(".plotteus-group-label")
     .data(
       (d) => [d],
       (d) => d.key
     )
     .join("text")
-    .attr("class", "group-label")
+    .attr("class", "plotteus-group-label")
     .attr(
       "transform",
       (d) => `translate(${d.labelX}, ${d.labelY}) rotate(${d.labelRotate}) `

@@ -123,18 +123,18 @@ export const render = ({
   const isVerticalAxis = axisType === "vertical";
 
   selection
-    .selectAll<SVGGElement, Resolved>(".tick")
+    .selectAll<SVGGElement, Resolved>(".plotteus-tick")
     .data(resolved, (d) => d.key)
     .join("g")
-    .attr("class", "tick")
+    .attr("class", "plotteus-tick")
     .attr("transform", (d) => `translate(${d.x}, ${d.y})`)
     .style("opacity", (d) => d.opacity)
     .call((g) =>
       g
-        .selectAll(`.label`)
+        .selectAll(".plotteus-label")
         .data((d) => [d])
         .join("text")
-        .attr("class", "label")
+        .attr("class", "plotteus-label")
         .attr(
           "transform",
           isVerticalAxis
@@ -154,20 +154,20 @@ export const render = ({
     )
     .call((g) =>
       g
-        .selectAll(".bold-line")
+        .selectAll(".plotteus-bold-line")
         .data((d) => [d])
         .join("line")
-        .attr("class", "bold-line")
+        .attr("class", "plotteus-bold-line")
         .attr(isVerticalAxis ? "x1" : "y1", isVerticalAxis ? -SIZE : 0)
         .attr(isVerticalAxis ? "x2" : "y2", isVerticalAxis ? 0 : SIZE)
         .style("stroke", (d) => d.boldLineColor)
     )
     .call((g) =>
       g
-        .selectAll(".light-line")
+        .selectAll(".plotteus-light-line")
         .data((d) => [d])
         .join("line")
-        .attr("class", "light-line")
+        .attr("class", "plotteus-light-line")
         .attr(isVerticalAxis ? "x1" : "y1", 0)
         .attr(isVerticalAxis ? "x2" : "y2", (d) =>
           isVerticalAxis ? d.size : -d.size
