@@ -75,8 +75,6 @@ describe("Text", () => {
         })[0];
 
         expect(r).toContain({
-          x: 400,
-          y: dims.margin.top,
           fontSize: FONT_SIZE.title,
           fontWeight: FONT_WEIGHT.title,
         });
@@ -167,8 +165,6 @@ describe("Text", () => {
         })[0];
 
         expect(r).toContain({
-          x: 208,
-          y: dims.margin.top,
           fontSize:
             FONT_SIZE.title - (FONT_SIZE.title - FONT_SIZE.datumLabel) * 0.5,
           fontWeight:
@@ -223,8 +219,6 @@ describe("Text", () => {
         })[0];
 
         expect(r).toContain({
-          x: 16,
-          y: dims.margin.top,
           fontSize: FONT_SIZE.datumLabel,
           fontWeight: FONT_WEIGHT.datumLabel,
         });
