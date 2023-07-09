@@ -33,6 +33,7 @@ const makeStory = (
   const svg = makeSvg(div, svgBackgroundColor);
   const tooltip = makeTooltip(div);
   const progressBarColor = deriveSubtlerColor(svgBackgroundColor);
+  const info = Step.info(steps, svg);
 
   let loaded = false;
   // Previous key.
@@ -60,6 +61,7 @@ const makeStory = (
 
   const prepareStepsIntsMap = (width: number, height: number): void => {
     const getters = Step.getters({
+      info,
       options: { svgBackgroundColor },
       steps,
       svg,

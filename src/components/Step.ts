@@ -2,8 +2,62 @@ import { Axis, AxisTick, ColorLegend, Svg, Text, Tooltip } from ".";
 import * as Chart from "../charts/Chart";
 import { ColorMap } from "../colors";
 import { Dimensions } from "../dims";
-import { InputStep } from "../types";
-import { getTextDims, stateOrderComparator } from "../utils";
+import { InputStep, TextDims } from "../types";
+import {
+  getTextDims,
+  getTextWidths,
+  max,
+  stateOrderComparator,
+  unique,
+} from "../utils";
+
+export type Info = {
+  textDims: TextDims;
+  groupLabelWidths: Record<string, number>;
+  maxGroupLabelWidth: number;
+  datumLabelWidths: Record<string, number>;
+  datumValueWidths: Record<string, number>;
+};
+
+export const info = (inputSteps: InputStep[], svg: Svg): Info => {
+  const textDims = getTextDims(svg);
+  const groupLabels = unique(
+    inputSteps.flatMap((d) => d.groups.map((d) => d.key))
+  );
+  const groupLabelWidths = getTextWidths(groupLabels, svg, "groupLabel");
+  const datumLabels = unique(
+    inputSteps.flatMap((d) => d.groups.flatMap((d) => d.data.map((d) => d.key)))
+  );
+  const datumLabelWidths = getTextWidths(datumLabels, svg, "datumLabel");
+  const datumValues = unique(
+    inputSteps.flatMap((d) => {
+      switch (d.chartType) {
+        case "bar":
+        case "bubble":
+        case "pie":
+        case "treemap":
+          return d.groups.flatMap((d) => d.data.map((d) => d.value.toString()));
+        case "beeswarm":
+          return d.groups.flatMap((d) =>
+            d.data.map((d) => d.position.toString())
+          );
+        case "scatter":
+          return d.groups.flatMap((d) =>
+            d.data.flatMap((d) => [d.x.toString(), d.y.toString()])
+          );
+      }
+    })
+  );
+  const datumValueWidths = getTextWidths(datumValues, svg, "datumValue");
+
+  return {
+    textDims,
+    groupLabelWidths,
+    maxGroupLabelWidth: max(Object.values(groupLabelWidths)) ?? 0,
+    datumLabelWidths,
+    datumValueWidths,
+  };
+};
 
 export type Getter = {
   key: string;
@@ -16,25 +70,27 @@ export type Getter = {
 };
 
 export const getters = ({
+  info: inputInfo,
   options,
   steps: inputSteps,
   svg,
   width,
   height,
 }: {
+  info: Info;
   options: { svgBackgroundColor: string };
   steps: InputStep[];
   svg: Svg;
   width: number;
   height: number;
 }): Getter[] => {
+  const { textDims } = inputInfo;
   const { svgBackgroundColor } = options;
   const steps: Getter[] = [];
   let _minHorizontalAxisValue: number | undefined;
   let _minVerticalAxisValue: number | undefined;
   let _maxHorizontalAxisValue: number | undefined;
   let _maxVerticalAxisValue: number | undefined;
-  const textDims = getTextDims(svg);
   const colorMap = new ColorMap();
 
   for (const step of inputSteps) {
@@ -51,13 +107,18 @@ export const getters = ({
     } = step;
 
     const dims = new Dimensions(width, height);
-    const chartInfo = Chart.info(svgBackgroundColor, step);
+    const chartInfo = Chart.info(svgBackgroundColor, step, inputInfo, dims);
     const colorLegendInfo = ColorLegend.info(step, chartInfo, colorMap);
     const verticalAxisInfo = Axis.info("vertical", chartInfo);
     const horizontalAxisInfo = Axis.info("horizontal", chartInfo);
 
     let titleGetter: Text.Getter | undefined;
     if (title !== undefined) {
+      const resolvedDims = dims.resolve();
+      const titleDims = svg.measureText(title, "title", {
+        paddingLeft: resolvedDims.margin.left,
+        paddingRight: resolvedDims.margin.right,
+      });
       titleGetter = Text.getter({
         svg,
         svgBackgroundColor,
@@ -65,17 +126,24 @@ export const getters = ({
         type: "title",
         anchor: titleAnchor,
         dims: dims.resolve(),
+        textDims: titleDims,
       });
       Text.updateDims({
         dims,
         svg,
         textType: "title",
         text: title,
+        textDims: titleDims,
       });
     }
 
     let subtitleGetter: Text.Getter | undefined;
     if (subtitle !== undefined) {
+      const resolvedDims = dims.resolve();
+      const subtitleDims = svg.measureText(subtitle, "subtitle", {
+        paddingLeft: resolvedDims.margin.left,
+        paddingRight: resolvedDims.margin.right,
+      });
       subtitleGetter = Text.getter({
         svg,
         svgBackgroundColor,
@@ -83,12 +151,14 @@ export const getters = ({
         type: "subtitle",
         anchor: subtitleAnchor,
         dims: dims.resolve(),
+        textDims: subtitleDims,
       });
       Text.updateDims({
         dims,
         svg,
         textType: "subtitle",
         text: subtitle,
+        textDims: subtitleDims,
       });
     }
 

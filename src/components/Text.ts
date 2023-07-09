@@ -23,7 +23,8 @@ export const getter = ({
   anchor,
   svg,
   svgBackgroundColor,
-  dims: { fullWidth, margin, BASE_MARGIN },
+  dims: { fullWidth, margin },
+  textDims,
 }: {
   text: string;
   type: TextType;
@@ -31,12 +32,8 @@ export const getter = ({
   svg: Svg;
   svgBackgroundColor: string;
   dims: ResolvedDimensions;
+  textDims: DOMRect;
 }): Getter => {
-  const dims = svg.measureText(text, type, {
-    paddingLeft: margin.left,
-    paddingRight: margin.right,
-  });
-
   return {
     key: text,
     g: ({ s, _g }) => {
@@ -46,18 +43,18 @@ export const getter = ({
           x = margin.left;
           break;
         case "middle":
-          x = (fullWidth - dims.width) * 0.5;
+          x = (fullWidth - textDims.width) * 0.5;
           break;
         case "end":
-          x = fullWidth - dims.width - margin.right;
+          x = fullWidth - textDims.width - margin.right;
           break;
       }
 
       return {
         x: s(x, null, _g?.x),
         y: s(margin.top, null, _g?.y),
-        width: s(dims.width, null, _g?.width),
-        height: s(dims.height, null, _g?.height),
+        width: s(textDims.width, null, _g?.width),
+        height: s(textDims.height, null, _g?.height),
         fontSize: FONT_SIZE[type],
         fontWeight: FONT_WEIGHT[type],
         color: s(
@@ -114,12 +111,14 @@ export const updateDims = ({
   svg,
   textType,
   text,
+  textDims,
 }: {
   dims: Dimensions;
   svg: Svg;
   textType: TextType;
   text: string;
+  textDims: DOMRect;
 }): void => {
-  const { height } = svg.measureText(text, textType);
+  const { height } = textDims;
   dims.addTop(height);
 };
