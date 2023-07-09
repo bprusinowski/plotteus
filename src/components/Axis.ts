@@ -155,7 +155,10 @@ export const getters = ({
 }): Getter => {
   let resolvedDims = dims.resolve();
   const ticks = scaleLinear().domain([minValue, maxValue]).ticks(ticksCount);
-  const titleDims = svg.measureText(title, "axisTitle");
+  const titleDims = svg.measureText(title, "axisTitle", {
+    paddingLeft: resolvedDims.margin.left,
+    paddingRight: resolvedDims.margin.right,
+  });
   const titleGetter = title
     ? Text.getter({
         text: title,
