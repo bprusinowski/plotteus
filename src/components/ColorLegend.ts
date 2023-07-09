@@ -216,7 +216,7 @@ export const getters = ({
           x: s(margin.left + x, null, _g?.x),
           y: s(height + margin.top + y, null, _g?.y),
           labelX: isTitle ? 0 : R * 2,
-          labelY: (-itemHeight + R) * 0.5,
+          labelY: -itemHeight * 0.5 + R,
           labelFontSize: isTitle ? FONT_SIZE.legendTitle : FONT_SIZE.legendItem,
           labelFontWeight: isTitle
             ? FONT_WEIGHT.legendTitle
