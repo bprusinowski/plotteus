@@ -83,10 +83,12 @@ export const render = ({
   resolved: Resolved[];
   key: string;
 }): void => {
-  const className = `text ${key}`;
+  const className = `plotteus-text plotteus-${key}`;
 
   selection
-    .selectAll<SVGForeignObjectElement, Resolved>(`.text.${key}`)
+    .selectAll<SVGForeignObjectElement, Resolved>(
+      `.plotteus-text.plotteus-${key}`
+    )
     .data(resolved, (d) => d.key)
     .join("foreignObject")
     .attr("class", className)

@@ -24,22 +24,22 @@ export const makeTooltip = (options: StoryOptions) => {
     .style("box-shadow", "0px 0px 48px 0px rgba(0, 0, 0, 0.15)")
     .style("opacity", 0);
   const content = root
-    .selectAll(".content")
+    .selectAll(".plotteus-content")
     .data([null])
     .join("div")
-    .attr("class", "content")
+    .attr("class", "plotteus-content")
     .style("overflow-wrap", "break-word")
     .style("color", "black");
   const datumLabel = content
-    .selectAll(".datum-label")
+    .selectAll(".plotteus-datum-label")
     .data([null])
     .join("span")
-    .attr("class", "datum-label");
+    .attr("class", "plotteus-datum-label");
   const valueLabel = content
-    .selectAll(".value-label")
+    .selectAll(".plotteus-value-label")
     .data([null])
     .join("span")
-    .attr("class", "value-label")
+    .attr("class", "plotteus-value-label")
     .style("font-weight", "bold");
 
   const show = (): void => {

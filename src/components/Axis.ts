@@ -273,10 +273,10 @@ export const render = ({
   const ticks = resolved.flatMap((d) => d.ticks);
 
   const verticalAxisSelection = selection
-    .selectAll<SVGGElement, Resolved>(`.${type}-axis`)
+    .selectAll<SVGGElement, Resolved>(`.plotteus-${type}-axis`)
     .data(resolved)
     .join("g")
-    .attr("class", `${type}-axis`)
+    .attr("class", `plotteus-${type}-axis`)
     .attr("transform", (d) => `translate(${d.x}, ${d.y})`)
     .style("opacity", (d) => d.opacity)
     // Vertical axis needs to be the first element in SVG, so it doesn't overlap bars.

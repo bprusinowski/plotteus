@@ -243,20 +243,20 @@ export const render = ({
   dataSelection: Selection<SVGGElement, Resolved, SVGGElement, Chart.Resolved>;
 }): void => {
   const pathSelection = dataSelection
-    .selectAll<SVGPathElement, Resolved>(".shape")
+    .selectAll<SVGPathElement, Resolved>(".plotteus-shape")
     .data(
       (d) => [d],
       (d) => d.key
     )
     .join("path")
-    .attr("class", "shape")
+    .attr("class", "plotteus-shape")
     .attr("d", (d) => d.d)
     .style("stroke", (d) => d.stroke)
     .style("stroke-width", (d) => d.strokeWidth)
     .style("fill", (d) => d.fill);
 
   const clipPathSelection = dataSelection
-    .selectAll<SVGClipPathElement, Resolved>(".clip-path")
+    .selectAll<SVGClipPathElement, Resolved>(".plotteus-clip-path")
     .data(
       (d) => [d],
       (d) => d.key
@@ -267,7 +267,7 @@ export const render = ({
       const g = select(parentEl).datum() as Chart.Resolved;
       return `clip${g.key}${d.key}`.replace(/[^a-zA-Z0-9]/g, "");
     })
-    .attr("class", "clip-path")
+    .attr("class", "plotteus-clip-path")
     .selectAll<SVGPathElement, Resolved>("path")
     .data(
       (d) => [d],
@@ -277,13 +277,13 @@ export const render = ({
     .attr("d", (d) => d.clipPath);
 
   const labelsSelection = dataSelection
-    .selectAll<SVGGElement, Resolved>(".labels")
+    .selectAll<SVGGElement, Resolved>(".plotteus-labels")
     .data(
       (d) => [d],
       (d) => d.key
     )
     .join("g")
-    .attr("class", "labels")
+    .attr("class", "plotteus-labels")
     .style("clip-path", function (d) {
       const parentEl = this.parentNode?.parentNode as SVGGElement;
       const g = select(parentEl).datum() as Chart.Resolved;
@@ -292,13 +292,13 @@ export const render = ({
     });
 
   const labelSelection = labelsSelection
-    .selectAll<SVGTextElement, Resolved>(".label")
+    .selectAll<SVGTextElement, Resolved>(".plotteus-label")
     .data(
       (d) => [d],
       (d) => d.key
     )
     .join("text")
-    .attr("class", "label")
+    .attr("class", "plotteus-label")
     .attr("x", (d) => d.labelX)
     .attr("y", (d) => d.labelY)
     .attr("transform", (d) => `rotate(${360 - d.rotate})`)
@@ -315,13 +315,13 @@ export const render = ({
     .text((d) => d.key);
 
   const valueSelection = labelsSelection
-    .selectAll<SVGTextElement, Resolved>(".value")
+    .selectAll<SVGTextElement, Resolved>(".plotteus-value")
     .data(
       (d) => [d],
       (d) => d.key
     )
     .join("text")
-    .attr("class", "value")
+    .attr("class", "plotteus-value")
     .attr("x", (d) => d.valueX)
     .attr("y", (d) => d.valueY)
     .attr("transform", (d) => `rotate(${360 - d.rotate})`)

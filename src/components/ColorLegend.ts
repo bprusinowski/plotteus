@@ -248,14 +248,14 @@ export const render = ({
   selection: SVGSelection;
 }): void => {
   selection
-    .selectAll<SVGGElement, undefined>(".color-legend")
+    .selectAll<SVGGElement, undefined>(".plotteus-color-legend")
     .data([null])
     .join("g")
-    .attr("class", "color-legend")
-    .selectAll<SVGGElement, Resolved>(".item")
+    .attr("class", "plotteus-color-legend")
+    .selectAll<SVGGElement, Resolved>(".plotteus-item")
     .data(resolved, (d) => d.key)
     .join("g")
-    .attr("class", "item")
+    .attr("class", "plotteus-item")
     .attr("transform", (d) => `translate(${d.x}, ${d.y})`)
     .style("opacity", (d) => d.opacity)
     .call((g) =>
@@ -268,10 +268,10 @@ export const render = ({
     )
     .call((g) =>
       g
-        .selectAll(".label")
+        .selectAll(".plotteus-label")
         .data((d) => [d])
         .join("text")
-        .attr("class", "label")
+        .attr("class", "plotteus-label")
         .attr("x", (d) => d.labelX)
         .attr("y", (d) => d.labelY)
         .style("font-size", (d) => `${d.labelFontSize}px`)
