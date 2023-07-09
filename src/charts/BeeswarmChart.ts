@@ -2,6 +2,7 @@ import { ScaleBand, ScaleLinear, scaleBand, scaleLinear } from "d3-scale";
 import { Datum } from ".";
 import { ColorMap } from "../colors";
 import { Svg } from "../components";
+import { Info as StepInfo } from "../components/Step";
 import { BUBBLE, getPathData } from "../coords";
 import { Dimensions, ResolvedDimensions } from "../dims";
 import {
@@ -27,19 +28,21 @@ import {
   getRotate,
 } from "./utils";
 
-export type Info = Chart.BaseInfo & {
-  type: "beeswarm";
-  layout: Layout;
-  groups: InputGroupPosition[];
-  minValue: number;
-  maxValue: number;
-  verticalAxis: InputAxis | undefined;
-  horizontalAxis: InputAxis | undefined;
-};
+export type Info = StepInfo &
+  Chart.BaseInfo & {
+    type: "beeswarm";
+    layout: Layout;
+    groups: InputGroupPosition[];
+    minValue: number;
+    maxValue: number;
+    verticalAxis: InputAxis | undefined;
+    horizontalAxis: InputAxis | undefined;
+  };
 
 export const info = (
   svgBackgroundColor: string,
-  inputStep: BeeswarmInputStep
+  inputStep: BeeswarmInputStep,
+  stepInfo: StepInfo
 ): Info => {
   const {
     layout = "horizontal",
@@ -57,6 +60,7 @@ export const info = (
   ];
 
   return {
+    ...stepInfo,
     ...Chart.baseInfo(svgBackgroundColor, inputStep, shareDomain),
     type,
     layout,
@@ -152,6 +156,7 @@ export const getters = (
             labelStroke: groupLabelStroke,
             labelStrokeWidth,
             labelFill: groupLabelFill,
+            labelRotate: 0,
             fill: groupFill,
             opacity,
           };
@@ -272,6 +277,7 @@ export const getters = (
             labelStroke: groupLabelStroke,
             labelStrokeWidth,
             labelFill: groupLabelFill,
+            labelRotate: 0,
             fill: groupFill,
             opacity,
           };

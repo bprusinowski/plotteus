@@ -155,6 +155,7 @@ export const getters = ({
 }): Getter => {
   let resolvedDims = dims.resolve();
   const ticks = scaleLinear().domain([minValue, maxValue]).ticks(ticksCount);
+  const titleDims = svg.measureText(title, "axisTitle");
   const titleGetter = title
     ? Text.getter({
         text: title,
@@ -163,6 +164,7 @@ export const getters = ({
         svg,
         svgBackgroundColor,
         dims: { ...resolvedDims, margin: titleMargin },
+        textDims: titleDims,
       })
     : undefined;
 
@@ -172,6 +174,7 @@ export const getters = ({
       svg,
       textType: "axisTitle",
       text: title,
+      textDims: titleDims,
     });
     resolvedDims = dims.resolve();
   }

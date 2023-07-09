@@ -2,6 +2,7 @@ import { PieArcDatum, pie } from "d3-shape";
 import { Datum } from ".";
 import { ColorMap } from "../colors";
 import { Svg } from "../components";
+import { Info as StepInfo } from "../components/Step";
 import { BUBBLE, getPathData } from "../coords";
 import { Dimensions, ResolvedDimensions } from "../dims";
 import {
@@ -26,20 +27,23 @@ import {
   getMaxValue,
 } from "./utils";
 
-export type Info = Chart.BaseInfo & {
-  type: "pie";
-  groups: InputGroupValue[];
-  maxValue: ExtremeValue;
-};
+export type Info = StepInfo &
+  Chart.BaseInfo & {
+    type: "pie";
+    groups: InputGroupValue[];
+    maxValue: ExtremeValue;
+  };
 
 export const info = (
   svgBackgroundColor: string,
-  inputStep: PieInputStep
+  inputStep: PieInputStep,
+  stepInfo: StepInfo
 ): Info => {
   const { groups, shareDomain = true } = inputStep;
   const type: ChartType = "pie";
 
   return {
+    ...stepInfo,
     ...Chart.baseInfo(svgBackgroundColor, inputStep, shareDomain),
     type,
     groups,
@@ -115,6 +119,7 @@ export const getters = (
           labelStroke: groupLabelStroke,
           labelStrokeWidth,
           labelFill: groupLabelFill,
+          labelRotate: 0,
           fill: groupFill,
           opacity,
         };

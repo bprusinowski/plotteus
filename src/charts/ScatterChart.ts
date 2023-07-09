@@ -2,6 +2,7 @@ import { ScaleLinear, scaleLinear } from "d3-scale";
 import { Datum } from ".";
 import { ColorMap } from "../colors";
 import { Svg } from "../components";
+import { Info as StepInfo } from "../components/Step";
 import { BAR, getPathData } from "../coords";
 import { Dimensions, ResolvedDimensions } from "../dims";
 import {
@@ -27,29 +28,32 @@ import {
   getRotate,
 } from "./utils";
 
-export type Info = Chart.BaseInfo & {
-  type: "scatter";
-  groups: InputGroupXY[];
-  minValue: {
-    x: ExtremeValue;
-    y: ExtremeValue;
+export type Info = StepInfo &
+  Chart.BaseInfo & {
+    type: "scatter";
+    groups: InputGroupXY[];
+    minValue: {
+      x: ExtremeValue;
+      y: ExtremeValue;
+    };
+    maxValue: {
+      x: ExtremeValue;
+      y: ExtremeValue;
+    };
+    verticalAxis: InputAxis | undefined;
+    horizontalAxis: InputAxis | undefined;
   };
-  maxValue: {
-    x: ExtremeValue;
-    y: ExtremeValue;
-  };
-  verticalAxis: InputAxis | undefined;
-  horizontalAxis: InputAxis | undefined;
-};
 
 export const info = (
   svgBackgroundColor: string,
-  inputStep: ScatterInputStep
+  inputStep: ScatterInputStep,
+  stepInfo: StepInfo
 ): Info => {
   const { groups, shareDomain = false } = inputStep;
   const type: ChartType = "scatter";
 
   return {
+    ...stepInfo,
     ...Chart.baseInfo(svgBackgroundColor, inputStep, shareDomain),
     type,
     groups,
@@ -164,6 +168,7 @@ export const getters = (
           labelStroke: groupLabelStroke,
           labelStrokeWidth,
           labelFill: groupLabelFill,
+          labelRotate: 0,
           fill: groupFill,
           opacity,
         };
