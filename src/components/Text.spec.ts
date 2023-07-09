@@ -11,7 +11,7 @@ describe("Text", () => {
     text: "Hello, Plotteus!",
     type: "title",
     anchor: "middle",
-    dims: dims.resolve(),
+    resolvedDims: dims.resolve(),
     svgBackgroundColor: "#FFFFFF",
     textDims,
   });
@@ -98,7 +98,7 @@ describe("Text", () => {
     text: "Hello, Plotteus!",
     type: "datumLabel",
     anchor: "start",
-    dims: dims.resolve(),
+    resolvedDims: dims.resolve(),
     svgBackgroundColor: "white",
     textDims,
   });

@@ -166,7 +166,7 @@ export const getters = ({
         anchor: type === "vertical" ? "start" : "end",
         svg,
         svgBackgroundColor,
-        dims: { ...resolvedDims, margin: titleMargin },
+        resolvedDims: { ...resolvedDims, margin: titleMargin },
         textDims: titleDims,
       })
     : undefined;
