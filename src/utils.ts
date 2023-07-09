@@ -1,6 +1,6 @@
 import { HALF_FONT_K } from "./charts/utils";
 import { Svg } from "./components";
-import { State, TextDims, TextType } from "./types";
+import { InputStep, State, TextDims, TextType } from "./types";
 
 export const unique = <T>(array: T[]): T[] => {
   return Array.from(new Set(array));
@@ -65,6 +65,23 @@ export const getTextWidths = (
   });
 
   return widths;
+};
+
+export const getDataValues = (step: InputStep): number[] => {
+  switch (step.chartType) {
+    case "bar":
+    case "bubble":
+    case "pie":
+    case "treemap":
+      return step.groups.flatMap((d) => d.data.map((d) => d.value));
+    case "beeswarm":
+      return step.groups.flatMap((d) => d.data.map((d) => d.position));
+    case "scatter":
+      return step.groups.flatMap((d) => d.data.flatMap((d) => [d.x, d.y]));
+    default:
+      const _exhaustiveCheck: never = step;
+      return _exhaustiveCheck;
+  }
 };
 
 export const radiansToDegrees = (radians: number): number => {

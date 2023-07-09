@@ -2,6 +2,7 @@ import { makeSvg, makeTooltip, Step, Svg } from "./components";
 import { InputStep, InputStoryOptions, TextDims } from "./types";
 import {
   deriveSubtlerColor,
+  getDataValues,
   getTextDims,
   getTextWidths,
   max,
@@ -24,21 +25,7 @@ export const info = (inputSteps: InputStep[], svg: Svg): Info => {
   const groupLabelWidths = getTextWidths(groupLabels, svg, "groupLabel");
   const datumLabels = unique(groups.flatMap((d) => d.data.map((d) => d.key)));
   const datumLabelWidths = getTextWidths(datumLabels, svg, "datumLabel");
-  const datumValues = unique(
-    inputSteps.flatMap((d) => {
-      switch (d.chartType) {
-        case "bar":
-        case "bubble":
-        case "pie":
-        case "treemap":
-          return d.groups.flatMap((d) => d.data.map((d) => d.value));
-        case "beeswarm":
-          return d.groups.flatMap((d) => d.data.map((d) => d.position));
-        case "scatter":
-          return d.groups.flatMap((d) => d.data.flatMap((d) => [d.x, d.y]));
-      }
-    })
-  );
+  const datumValues = unique(inputSteps.flatMap(getDataValues));
   const datumValueWidths = getTextWidths(datumValues, svg, "datumValue");
 
   return {
