@@ -3,11 +3,12 @@ import { select } from "d3-selection";
 export type Tooltip = ReturnType<typeof makeTooltip>;
 
 export const makeTooltip = (div: HTMLDivElement) => {
-  const root = select(div)
-    .selectAll(".tooltip")
+  const root = select(document.body)
+    .selectAll(".plotteus-tooltip")
     .data([null])
     .join("div")
-    .attr("class", "tooltip")
+    .attr("class", "plotteus-tooltip")
+    .style("z-index", "999999")
     .style("position", "fixed")
     .style("top", 0)
     .style("left", 0)
