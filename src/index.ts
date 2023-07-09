@@ -82,7 +82,6 @@ const makeStory = (
   const progressBarColor = deriveSubtlerColor(svgBackgroundColor);
   const storyInfo = info(inputSteps, svg);
 
-  let loaded = false;
   // Previous key.
   let _key: string | null | undefined;
   // Previous progress.
@@ -90,20 +89,18 @@ const makeStory = (
 
   let intsMap: Step.IntsMap | undefined;
 
-  new ResizeObserver(() => {
-    const { width, height } = svg.measure();
-    const recompute = () => {
+  window.onload = () => {
+    requestAnimationFrame(() => {
+      const { width, height } = svg.measure();
       prepareStepsIntsMap(width, height);
       render();
-    };
+    });
+  };
 
-    if (loaded) {
-      recompute();
-    } else {
-      // Potentially wait for fonts to be loaded before the initial computation.
-      setTimeout(() => recompute(), 0);
-      loaded = true;
-    }
+  new ResizeObserver(() => {
+    const { width, height } = svg.measure();
+    prepareStepsIntsMap(width, height);
+    render();
   }).observe(div);
 
   const prepareStepsIntsMap = (width: number, height: number): void => {
