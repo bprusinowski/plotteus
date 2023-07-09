@@ -46,7 +46,7 @@ export const makeSvg = (div: HTMLDivElement, background: string): Svg => {
     options?: MeasureTextOptions
   ): DOMRect => {
     const { width } = measure();
-    const { paddingLeft = 0, paddingRight } = options ?? {};
+    const { paddingLeft = 0, paddingRight = 0 } = options ?? {};
     const root = select(document.body)
       .append("div")
       .style("box-sizing", "border-box")

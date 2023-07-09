@@ -23,7 +23,7 @@ export const getter = ({
   anchor,
   svg,
   svgBackgroundColor,
-  dims: { fullWidth, margin },
+  resolvedDims: { fullWidth, margin },
   textDims,
 }: {
   text: string;
@@ -31,7 +31,7 @@ export const getter = ({
   anchor: Anchor;
   svg: Svg;
   svgBackgroundColor: string;
-  dims: ResolvedDimensions;
+  resolvedDims: ResolvedDimensions;
   textDims: DOMRect;
 }): Getter => {
   return {

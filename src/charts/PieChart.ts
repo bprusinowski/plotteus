@@ -1,17 +1,14 @@
 import { PieArcDatum, pie } from "d3-shape";
 import { Datum } from ".";
 import * as Story from "..";
-import { ColorMap } from "../colors";
-import { Svg } from "../components";
 import { BUBBLE, getPathData } from "../coords";
-import { Dimensions, ResolvedDimensions } from "../dims";
+import { Dimensions } from "../dims";
 import {
   ChartType,
   ExtremeValue,
   InputDatumValue,
   InputGroupValue,
   PieInputStep,
-  TextDims,
 } from "../types";
 import {
   FONT_SIZE,
@@ -58,21 +55,14 @@ export const updateDims = (dims: Dimensions) => {
 
 export const getters = (
   info: Info,
-  props: {
-    showDatumLabels: boolean;
-    svg: Svg;
-    dims: ResolvedDimensions;
-    textDims: TextDims;
-    colorMap: ColorMap;
-    cartoonize: boolean;
-  }
+  props: Chart.GetterProps
 ): Chart.Getter[] => {
   const { groups, maxValue, shareDomain, showValues, svgBackgroundColor } =
     info;
   const {
     showDatumLabels,
     dims: { width, height, size, margin },
-    textDims,
+    textTypeDims,
     colorMap,
     cartoonize,
   } = props;
@@ -103,7 +93,7 @@ export const getters = (
       g: ({ s, _g }) => {
         const d = BUBBLE;
         const labelX = groupX;
-        const labelY = groupY + textDims.groupLabel.yShift;
+        const labelY = groupY + textTypeDims.groupLabel.yShift;
         const labelFontSize =
           groups.length > 1 ? s(0, shareDomain ? FONT_SIZE.groupLabel : 0) : 0;
         const labelStrokeWidth = getGroupLabelStrokeWidth(labelFontSize);
@@ -192,11 +182,13 @@ export const getters = (
               groupY +
                 -y -
                 group.r * 0.5 * Math.cos(rotate + Math.PI * 0.5) +
-                textDims.datumValue.yShift
+                textTypeDims.datumValue.yShift
             ) +
-            textDims.datumLabel.yShift -
+            textTypeDims.datumLabel.yShift -
             // TODO: move by cos / sin.
-            (showDatumLabelsAndValues ? textDims.datumLabel.height * 0.5 : 0);
+            (showDatumLabelsAndValues
+              ? textTypeDims.datumLabel.height * 0.5
+              : 0);
           const labelFontSize = s(
             0,
             showDatumLabels ? FONT_SIZE.datumLabel : 0
@@ -205,7 +197,7 @@ export const getters = (
           const labelStroke = datumFill;
           const valueX = labelX;
           const valueY =
-            labelY + (showDatumLabels ? textDims.datumLabel.height : 0);
+            labelY + (showDatumLabels ? textTypeDims.datumLabel.height : 0);
           const valueFontSize = showValues ? s(0, FONT_SIZE.datumValue) : 0;
           const valueFill = labelFill;
           const opacity = datum.data.data.opacity ?? 1;

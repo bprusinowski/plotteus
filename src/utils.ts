@@ -1,6 +1,6 @@
 import { HALF_FONT_K } from "./charts/utils";
 import { Svg } from "./components";
-import { InputStep, State, TextDims, TextType } from "./types";
+import { InputStep, State, TextType, TextTypeDims } from "./types";
 
 export const unique = <T>(array: T[]): T[] => {
   return Array.from(new Set(array));
@@ -42,29 +42,28 @@ export const FONT_WEIGHT: Record<TextType, number> = {
   datumValue: 400,
 };
 
-export const getTextDims = (svg: Svg): TextDims => {
+export const getTextTypeDims = (svg: Svg): TextTypeDims => {
   return Object.fromEntries(
     Object.entries(FONT_SIZE).map(([textType]) => {
       const { height } = svg.measureText("Ag", textType as TextType);
       return [textType, { height, yShift: -height * HALF_FONT_K }];
     })
-  ) as TextDims;
+  ) as TextTypeDims;
 };
 
-export type TextWidths = Record<string, number>;
+export type TextDims = Record<string, DOMRect>;
 
-export const getTextWidths = (
+export const getTextDims = (
   labels: (string | number)[],
   svg: Svg,
   textType: TextType
-): TextWidths => {
-  const widths: TextWidths = {};
+): TextDims => {
+  const dims: TextDims = {};
   labels.forEach((label) => {
-    const { width } = svg.measureText(label, textType);
-    widths[label] = width;
+    dims[label] = svg.measureText(label, textType);
   });
 
-  return widths;
+  return dims;
 };
 
 export const getDataValues = (step: InputStep): number[] => {

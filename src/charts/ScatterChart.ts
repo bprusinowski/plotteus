@@ -1,17 +1,14 @@
 import { ScaleLinear, scaleLinear } from "d3-scale";
 import { Datum } from ".";
 import * as Story from "..";
-import { ColorMap } from "../colors";
-import { Svg } from "../components";
 import { BAR, getPathData } from "../coords";
-import { Dimensions, ResolvedDimensions } from "../dims";
+import { Dimensions } from "../dims";
 import {
   ChartType,
   ExtremeValue,
   InputAxis,
   InputGroupXY,
   ScatterInputStep,
-  TextDims,
 } from "../types";
 import {
   FONT_SIZE,
@@ -99,14 +96,7 @@ export const updateDims = (dims: Dimensions) => {
 
 export const getters = (
   info: Info,
-  props: {
-    showDatumLabels: boolean;
-    svg: Svg;
-    dims: ResolvedDimensions;
-    textDims: TextDims;
-    colorMap: ColorMap;
-    cartoonize: boolean;
-  }
+  props: Chart.GetterProps
 ): Chart.Getter[] => {
   const {
     groups,
@@ -120,7 +110,7 @@ export const getters = (
     dims: { width, height, margin, BASE_MARGIN },
     colorMap,
     cartoonize,
-    textDims,
+    textTypeDims,
   } = props;
   const { xScale, yScale } = getScales({
     xMinValue,
@@ -209,7 +199,7 @@ export const getters = (
           const rotate = getRotate(_g?.rotate);
           const strokeWidth = s(0, STROKE_WIDTH);
           const labelX = 0;
-          const labelY = -textDims.datumLabel.yShift;
+          const labelY = -textTypeDims.datumLabel.yShift;
           const labelFontSize = s(
             0,
             showDatumLabels ? FONT_SIZE.datumLabel : 0

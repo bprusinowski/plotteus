@@ -193,7 +193,7 @@ export type TextType =
   | "datumLabel"
   | "datumValue";
 
-export type TextDims = {
+export type TextTypeDims = {
   [type in TextType]: {
     height: number;
     yShift: number;

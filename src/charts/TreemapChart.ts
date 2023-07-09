@@ -10,15 +10,12 @@ import {
 } from "d3-hierarchy";
 import { Datum } from ".";
 import * as Story from "..";
-import { ColorMap } from "../colors";
-import { Svg } from "../components";
 import { BAR, getPathData } from "../coords";
-import { Dimensions, ResolvedDimensions } from "../dims";
+import { Dimensions } from "../dims";
 import {
   ChartType,
   ExtremeValue,
   InputGroupValue,
-  TextDims,
   TreemapInputStep,
   TreemapLayout,
 } from "../types";
@@ -67,14 +64,7 @@ export const updateDims = (dims: Dimensions) => {
 
 export const getters = (
   info: Info,
-  props: {
-    showDatumLabels: boolean;
-    svg: Svg;
-    dims: ResolvedDimensions;
-    textDims: TextDims;
-    colorMap: ColorMap;
-    cartoonize: boolean;
-  }
+  props: Chart.GetterProps
 ): Chart.Getter[] => {
   const {
     layout,
@@ -83,13 +73,13 @@ export const getters = (
     shareDomain,
     showValues,
     svgBackgroundColor,
-    datumLabelWidths,
-    datumValueWidths,
+    datumLabelDims,
+    datumValueDims,
   } = info;
   const {
     showDatumLabels,
     dims: { width, height, margin },
-    textDims,
+    textTypeDims,
     colorMap,
     cartoonize,
   } = props;
@@ -128,7 +118,7 @@ export const getters = (
       g: ({ s, _g }) => {
         const d = BAR;
         const labelX = groupX;
-        const labelY = groupY + textDims.groupLabel.yShift;
+        const labelY = groupY + textTypeDims.groupLabel.yShift;
         const labelFontSize = s(0, shareDomain ? FONT_SIZE.groupLabel : 0);
         const labelStrokeWidth = getGroupLabelStrokeWidth(labelFontSize);
         const opacity = group.data.opacity ?? 1;
@@ -184,19 +174,22 @@ export const getters = (
           );
           const rotate = getRotate(_g?.rotate);
           const strokeWidth = s(0, value ? STROKE_WIDTH : 0);
-          const labelWidth = datumLabelWidths[key];
+          const labelWidth = datumLabelDims[key].width;
           const labelX = s(0, (labelWidth - dWidth) * 0.5 + TEXT_MARGIN);
-          const labelY = s(0, -(dHeight * 0.5 + textDims.datumLabel.yShift));
+          const labelY = s(
+            0,
+            -(dHeight * 0.5 + textTypeDims.datumLabel.yShift)
+          );
           const labelFontSize = s(
             0,
             showDatumLabels ? FONT_SIZE.datumLabel : 0
           );
           const labelFill = getTextColor(datumFill);
           const labelStroke = datumFill;
-          const valueWidth = datumValueWidths[value];
+          const valueWidth = datumValueDims[value].width;
           const valueX = s(0, (valueWidth - dWidth) * 0.5 + TEXT_MARGIN);
           const valueY =
-            labelY + (showDatumLabels ? textDims.datumValue.height : 0);
+            labelY + (showDatumLabels ? textTypeDims.datumValue.height : 0);
           const valueFontSize = showValues ? s(0, FONT_SIZE.datumValue) : 0;
           const valueFill = labelFill;
           const opacity = datum.data.opacity ?? 1;

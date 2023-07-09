@@ -1,39 +1,40 @@
 import { makeSvg, makeTooltip, Step, Svg } from "./components";
-import { InputStep, InputStoryOptions, TextDims } from "./types";
+import { InputStep, InputStoryOptions, TextTypeDims } from "./types";
 import {
   deriveSubtlerColor,
   getDataValues,
   getTextDims,
-  getTextWidths,
+  getTextTypeDims,
   max,
-  TextWidths,
+  TextDims,
   unique,
 } from "./utils";
 
 export type Info = {
-  textDims: TextDims;
-  groupLabelWidths: TextWidths;
+  textTypeDims: TextTypeDims;
+  groupLabelDims: TextDims;
   maxGroupLabelWidth: number;
-  datumLabelWidths: TextWidths;
-  datumValueWidths: TextWidths;
+  datumLabelDims: TextDims;
+  datumValueDims: TextDims;
 };
 
 export const info = (inputSteps: InputStep[], svg: Svg): Info => {
-  const textDims = getTextDims(svg);
+  const textTypeDims = getTextTypeDims(svg);
   const groups = inputSteps.map((d) => d.groups).flat();
   const groupLabels = unique(groups.map((d) => d.key));
-  const groupLabelWidths = getTextWidths(groupLabels, svg, "groupLabel");
+  const groupLabelDims = getTextDims(groupLabels, svg, "groupLabel");
   const datumLabels = unique(groups.flatMap((d) => d.data.map((d) => d.key)));
-  const datumLabelWidths = getTextWidths(datumLabels, svg, "datumLabel");
+  const datumLabelDims = getTextDims(datumLabels, svg, "datumLabel");
   const datumValues = unique(inputSteps.flatMap(getDataValues));
-  const datumValueWidths = getTextWidths(datumValues, svg, "datumValue");
+  const datumValueDims = getTextDims(datumValues, svg, "datumValue");
 
   return {
-    textDims,
-    groupLabelWidths,
-    maxGroupLabelWidth: max(Object.values(groupLabelWidths)) ?? 0,
-    datumLabelWidths,
-    datumValueWidths,
+    textTypeDims,
+    groupLabelDims,
+    maxGroupLabelWidth:
+      max(Object.values(groupLabelDims).map((d) => d.width)) ?? 0,
+    datumLabelDims,
+    datumValueDims,
   };
 };
 
@@ -97,7 +98,7 @@ const makeStory = (
   const prepareStepsIntsMap = (width: number, height: number): void => {
     const getters = Step.getters({
       storyInfo,
-      options: { svgBackgroundColor },
+      storyOptions: { svgBackgroundColor },
       steps,
       svg,
       width,
@@ -135,7 +136,9 @@ const makeStory = (
     }
   };
 
-  return { render };
+  return {
+    render,
+  };
 };
 
 export { InputStep, makeStory };

@@ -12,7 +12,7 @@ import * as Generic from "../components/Generic";
 import { Svg } from "../components/Svg";
 import { Tooltip } from "../components/Tooltip";
 import { Dimensions, ResolvedDimensions } from "../dims";
-import { InputStep, TextDims } from "../types";
+import { InputStep, TextTypeDims } from "../types";
 import { FONT_WEIGHT, stateOrderComparator, unique } from "../utils";
 import * as Datum from "./Datum";
 
@@ -106,7 +106,7 @@ export type GetterProps = {
   showDatumLabels: boolean;
   svg: Svg;
   dims: ResolvedDimensions;
-  textDims: TextDims;
+  textTypeDims: TextTypeDims;
   colorMap: ColorMap;
   cartoonize: boolean;
 };
