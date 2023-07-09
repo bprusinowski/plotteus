@@ -295,7 +295,7 @@ export const getters = (
             );
             const labelFill = getTextColor(datumFill);
             const labelStroke = shareDomain ? datumFill : svgBackgroundColor;
-            const valueWidth = datumValueWidths[value.toString()];
+            const valueWidth = datumValueWidths[value];
             const valueX = isGrouped
               ? 0
               : s(0, (valueWidth - x1bw) * 0.5 + TEXT_MARGIN);
@@ -460,7 +460,7 @@ export const getters = (
             );
             const labelFill = getTextColor(datumFill);
             const labelStroke = datumFill;
-            const valueWidth = datumValueWidths[value.toString()];
+            const valueWidth = datumValueWidths[value];
             const valueX = isGrouped
               ? labelX + labelWidth > (dWidth + valueWidth + BASE_MARGIN) * 0.5
                 ? labelX + (labelWidth + valueWidth + BASE_MARGIN) * 0.5

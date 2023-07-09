@@ -193,7 +193,7 @@ export const getters = (
           );
           const labelFill = getTextColor(datumFill);
           const labelStroke = datumFill;
-          const valueWidth = datumValueWidths[value.toString()];
+          const valueWidth = datumValueWidths[value];
           const valueX = s(0, (valueWidth - dWidth) * 0.5 + TEXT_MARGIN);
           const valueY =
             labelY + (showDatumLabels ? textDims.datumValue.height : 0);

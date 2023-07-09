@@ -19,13 +19,10 @@ export type Info = {
 
 export const info = (inputSteps: InputStep[], svg: Svg): Info => {
   const textDims = getTextDims(svg);
-  const groupLabels = unique(
-    inputSteps.flatMap((d) => d.groups.map((d) => d.key))
-  );
+  const groups = inputSteps.map((d) => d.groups).flat();
+  const groupLabels = unique(groups.map((d) => d.key));
   const groupLabelWidths = getTextWidths(groupLabels, svg, "groupLabel");
-  const datumLabels = unique(
-    inputSteps.flatMap((d) => d.groups.flatMap((d) => d.data.map((d) => d.key)))
-  );
+  const datumLabels = unique(groups.flatMap((d) => d.data.map((d) => d.key)));
   const datumLabelWidths = getTextWidths(datumLabels, svg, "datumLabel");
   const datumValues = unique(
     inputSteps.flatMap((d) => {
@@ -34,15 +31,11 @@ export const info = (inputSteps: InputStep[], svg: Svg): Info => {
         case "bubble":
         case "pie":
         case "treemap":
-          return d.groups.flatMap((d) => d.data.map((d) => d.value.toString()));
+          return d.groups.flatMap((d) => d.data.map((d) => d.value));
         case "beeswarm":
-          return d.groups.flatMap((d) =>
-            d.data.map((d) => d.position.toString())
-          );
+          return d.groups.flatMap((d) => d.data.map((d) => d.position));
         case "scatter":
-          return d.groups.flatMap((d) =>
-            d.data.flatMap((d) => [d.x.toString(), d.y.toString()])
-          );
+          return d.groups.flatMap((d) => d.data.flatMap((d) => [d.x, d.y]));
       }
     })
   );
@@ -69,7 +62,7 @@ export const info = (inputSteps: InputStep[], svg: Svg): Info => {
 const makeStory = (
   div: HTMLDivElement,
   steps: InputStep[],
-  options: InputStoryOptions
+  options?: InputStoryOptions
 ): {
   /**
    * Renders a given step.
@@ -84,7 +77,7 @@ const makeStory = (
     indicateProgress?: boolean
   ) => void;
 } => {
-  const { svgBackgroundColor = "#FFFFFF" } = options;
+  const { svgBackgroundColor = "#FFFFFF" } = options ?? {};
   const svg = makeSvg(div, svgBackgroundColor);
   const tooltip = makeTooltip(div);
   const progressBarColor = deriveSubtlerColor(svgBackgroundColor);

@@ -54,7 +54,7 @@ export const getTextDims = (svg: Svg): TextDims => {
 export type TextWidths = Record<string, number>;
 
 export const getTextWidths = (
-  labels: string[],
+  labels: (string | number)[],
   svg: Svg,
   textType: TextType
 ): TextWidths => {

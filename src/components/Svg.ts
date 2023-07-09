@@ -60,7 +60,7 @@ export const makeSvg = (div: HTMLDivElement, background: string): Svg => {
       .style("line-height", 1.5)
       .style("font-size", `${FONT_SIZE[textType]}px`)
       .style("font-weight", FONT_WEIGHT[textType])
-      .html(text.toString())
+      .text(text)
       .node() as HTMLDivElement;
     const rect = node.getBoundingClientRect();
     root.remove();
