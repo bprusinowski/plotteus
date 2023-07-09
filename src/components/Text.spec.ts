@@ -5,13 +5,15 @@ import { FONT_SIZE, FONT_WEIGHT } from "../utils";
 
 describe("Text", () => {
   const { svg, dims } = setup();
+  const textDims = svg.measureText("Hello, Plotteus!", "title");
   const enterGetter = Text.getter({
     svg,
     text: "Hello, Plotteus!",
     type: "title",
     anchor: "middle",
-    dims: dims.resolve(),
+    resolvedDims: dims.resolve(),
     svgBackgroundColor: "#FFFFFF",
+    textDims,
   });
   const enterInts = Text.ints({
     getters: [enterGetter],
@@ -96,8 +98,9 @@ describe("Text", () => {
     text: "Hello, Plotteus!",
     type: "datumLabel",
     anchor: "start",
-    dims: dims.resolve(),
+    resolvedDims: dims.resolve(),
     svgBackgroundColor: "white",
+    textDims,
   });
   const updateInts = Text.ints({
     getters: [updateGetter],

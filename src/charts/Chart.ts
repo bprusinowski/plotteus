@@ -6,12 +6,13 @@ import {
   ScatterChart,
   TreemapChart,
 } from ".";
+import * as Story from "..";
 import { ColorMap } from "../colors";
 import * as Generic from "../components/Generic";
 import { Svg } from "../components/Svg";
 import { Tooltip } from "../components/Tooltip";
 import { Dimensions, ResolvedDimensions } from "../dims";
-import { InputStep, TextDims } from "../types";
+import { InputStep, TextTypeDims } from "../types";
 import { FONT_WEIGHT, stateOrderComparator, unique } from "../utils";
 import * as Datum from "./Datum";
 
@@ -37,20 +38,25 @@ export const baseInfo = (
   return { groupsKeys, dataKeys, shareDomain, showValues, svgBackgroundColor };
 };
 
-export const info = (svgBackgroundColor: string, inputStep: InputStep) => {
+export const info = (
+  storyInfo: Story.Info,
+  svgBackgroundColor: string,
+  inputStep: InputStep,
+  dims: Dimensions
+) => {
   switch (inputStep.chartType) {
     case "bar":
-      return BarChart.info(svgBackgroundColor, inputStep);
+      return BarChart.info(storyInfo, svgBackgroundColor, inputStep, dims);
     case "beeswarm":
-      return BeeswarmChart.info(svgBackgroundColor, inputStep);
+      return BeeswarmChart.info(storyInfo, svgBackgroundColor, inputStep);
     case "bubble":
-      return BubbleChart.info(svgBackgroundColor, inputStep);
+      return BubbleChart.info(storyInfo, svgBackgroundColor, inputStep);
     case "pie":
-      return PieChart.info(svgBackgroundColor, inputStep);
+      return PieChart.info(storyInfo, svgBackgroundColor, inputStep);
     case "scatter":
-      return ScatterChart.info(svgBackgroundColor, inputStep);
+      return ScatterChart.info(storyInfo, svgBackgroundColor, inputStep);
     case "treemap":
-      return TreemapChart.info(svgBackgroundColor, inputStep);
+      return TreemapChart.info(storyInfo, svgBackgroundColor, inputStep);
     default:
       const _exhaustiveCheck: never = inputStep;
       return _exhaustiveCheck;
@@ -89,6 +95,7 @@ export type G = {
   labelStroke: string;
   labelStrokeWidth: number;
   labelFill: string;
+  labelRotate: number;
   fill: string;
   opacity: number;
 };
@@ -99,7 +106,7 @@ export type GetterProps = {
   showDatumLabels: boolean;
   svg: Svg;
   dims: ResolvedDimensions;
-  textDims: TextDims;
+  textTypeDims: TextTypeDims;
   colorMap: ColorMap;
   cartoonize: boolean;
 };
@@ -290,8 +297,10 @@ export const render = ({
     )
     .join("text")
     .attr("class", "group-label")
-    .attr("x", (d) => d.labelX)
-    .attr("y", (d) => d.labelY)
+    .attr(
+      "transform",
+      (d) => `translate(${d.labelX}, ${d.labelY}) rotate(${d.labelRotate}) `
+    )
     .style("fill", (d) => d.labelFill)
     .style("paint-order", "stroke")
     .style("stroke", (d) => d.labelStroke)

@@ -1,8 +1,12 @@
 import { PaletteName } from "./colors";
 
 // External.
-export type StoryOptions = {
+export type InputStoryOptions = {
   svgBackgroundColor?: string;
+};
+
+export type StoryOptions = {
+  svgBackgroundColor: string;
 };
 
 type BaseInputStep = {
@@ -189,7 +193,7 @@ export type TextType =
   | "datumLabel"
   | "datumValue";
 
-export type TextDims = {
+export type TextTypeDims = {
   [type in TextType]: {
     height: number;
     yShift: number;

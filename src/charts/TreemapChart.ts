@@ -9,15 +9,13 @@ import {
   treemapSquarify,
 } from "d3-hierarchy";
 import { Datum } from ".";
-import { ColorMap } from "../colors";
-import { Svg } from "../components";
+import * as Story from "..";
 import { BAR, getPathData } from "../coords";
-import { Dimensions, ResolvedDimensions } from "../dims";
+import { Dimensions } from "../dims";
 import {
   ChartType,
   ExtremeValue,
   InputGroupValue,
-  TextDims,
   TreemapInputStep,
   TreemapLayout,
 } from "../types";
@@ -33,14 +31,16 @@ import {
   getRotate,
 } from "./utils";
 
-export type Info = Chart.BaseInfo & {
-  type: "treemap";
-  layout: TreemapLayout;
-  groups: InputGroupValue[];
-  maxValue: ExtremeValue;
-};
+export type Info = Story.Info &
+  Chart.BaseInfo & {
+    type: "treemap";
+    layout: TreemapLayout;
+    groups: InputGroupValue[];
+    maxValue: ExtremeValue;
+  };
 
 export const info = (
+  storyInfo: Story.Info,
   svgBackgroundColor: string,
   inputStep: TreemapInputStep
 ): Info => {
@@ -48,6 +48,7 @@ export const info = (
   const type: ChartType = "treemap";
 
   return {
+    ...storyInfo,
     ...Chart.baseInfo(svgBackgroundColor, inputStep, shareDomain),
     type,
     layout,
@@ -63,15 +64,8 @@ export const updateDims = (dims: Dimensions) => {
 
 export const getters = (
   info: Info,
-  props: {
-    showDatumLabels: boolean;
-    svg: Svg;
-    dims: ResolvedDimensions;
-    textDims: TextDims;
-    colorMap: ColorMap;
-    cartoonize: boolean;
-  }
-) => {
+  props: Chart.GetterProps
+): Chart.Getter[] => {
   const {
     layout,
     groups,
@@ -79,12 +73,13 @@ export const getters = (
     shareDomain,
     showValues,
     svgBackgroundColor,
+    datumLabelDims,
+    datumValueDims,
   } = info;
   const {
     showDatumLabels,
-    svg,
     dims: { width, height, margin },
-    textDims,
+    textTypeDims,
     colorMap,
     cartoonize,
   } = props;
@@ -123,7 +118,7 @@ export const getters = (
       g: ({ s, _g }) => {
         const d = BAR;
         const labelX = groupX;
-        const labelY = groupY + textDims.groupLabel.yShift;
+        const labelY = groupY + textTypeDims.groupLabel.yShift;
         const labelFontSize = s(0, shareDomain ? FONT_SIZE.groupLabel : 0);
         const labelStrokeWidth = getGroupLabelStrokeWidth(labelFontSize);
         const opacity = group.data.opacity ?? 1;
@@ -138,6 +133,7 @@ export const getters = (
           labelStroke: groupLabelStroke,
           labelStrokeWidth,
           labelFill: groupLabelFill,
+          labelRotate: 0,
           fill: groupFill,
           opacity,
         };
@@ -178,19 +174,22 @@ export const getters = (
           );
           const rotate = getRotate(_g?.rotate);
           const strokeWidth = s(0, value ? STROKE_WIDTH : 0);
-          const labelWidth = svg.measureText(key, "datumLabel").width;
+          const labelWidth = datumLabelDims[key].width;
           const labelX = s(0, (labelWidth - dWidth) * 0.5 + TEXT_MARGIN);
-          const labelY = s(0, -(dHeight * 0.5 + textDims.datumLabel.yShift));
+          const labelY = s(
+            0,
+            -(dHeight * 0.5 + textTypeDims.datumLabel.yShift)
+          );
           const labelFontSize = s(
             0,
             showDatumLabels ? FONT_SIZE.datumLabel : 0
           );
           const labelFill = getTextColor(datumFill);
           const labelStroke = datumFill;
-          const valueWidth = svg.measureText(value, "datumValue").width;
+          const valueWidth = datumValueDims[value].width;
           const valueX = s(0, (valueWidth - dWidth) * 0.5 + TEXT_MARGIN);
           const valueY =
-            labelY + (showDatumLabels ? textDims.datumValue.height : 0);
+            labelY + (showDatumLabels ? textTypeDims.datumValue.height : 0);
           const valueFontSize = showValues ? s(0, FONT_SIZE.datumValue) : 0;
           const valueFill = labelFill;
           const opacity = datum.data.opacity ?? 1;

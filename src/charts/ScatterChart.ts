@@ -1,16 +1,14 @@
 import { ScaleLinear, scaleLinear } from "d3-scale";
 import { Datum } from ".";
-import { ColorMap } from "../colors";
-import { Svg } from "../components";
+import * as Story from "..";
 import { BAR, getPathData } from "../coords";
-import { Dimensions, ResolvedDimensions } from "../dims";
+import { Dimensions } from "../dims";
 import {
   ChartType,
   ExtremeValue,
   InputAxis,
   InputGroupXY,
   ScatterInputStep,
-  TextDims,
 } from "../types";
 import {
   FONT_SIZE,
@@ -27,22 +25,24 @@ import {
   getRotate,
 } from "./utils";
 
-export type Info = Chart.BaseInfo & {
-  type: "scatter";
-  groups: InputGroupXY[];
-  minValue: {
-    x: ExtremeValue;
-    y: ExtremeValue;
+export type Info = Story.Info &
+  Chart.BaseInfo & {
+    type: "scatter";
+    groups: InputGroupXY[];
+    minValue: {
+      x: ExtremeValue;
+      y: ExtremeValue;
+    };
+    maxValue: {
+      x: ExtremeValue;
+      y: ExtremeValue;
+    };
+    verticalAxis: InputAxis | undefined;
+    horizontalAxis: InputAxis | undefined;
   };
-  maxValue: {
-    x: ExtremeValue;
-    y: ExtremeValue;
-  };
-  verticalAxis: InputAxis | undefined;
-  horizontalAxis: InputAxis | undefined;
-};
 
 export const info = (
+  storyInfo: Story.Info,
   svgBackgroundColor: string,
   inputStep: ScatterInputStep
 ): Info => {
@@ -50,6 +50,7 @@ export const info = (
   const type: ChartType = "scatter";
 
   return {
+    ...storyInfo,
     ...Chart.baseInfo(svgBackgroundColor, inputStep, shareDomain),
     type,
     groups,
@@ -95,15 +96,8 @@ export const updateDims = (dims: Dimensions) => {
 
 export const getters = (
   info: Info,
-  props: {
-    showDatumLabels: boolean;
-    svg: Svg;
-    dims: ResolvedDimensions;
-    textDims: TextDims;
-    colorMap: ColorMap;
-    cartoonize: boolean;
-  }
-) => {
+  props: Chart.GetterProps
+): Chart.Getter[] => {
   const {
     groups,
     minValue: { x: xMinValue, y: yMinValue },
@@ -116,7 +110,7 @@ export const getters = (
     dims: { width, height, margin, BASE_MARGIN },
     colorMap,
     cartoonize,
-    textDims,
+    textTypeDims,
   } = props;
   const { xScale, yScale } = getScales({
     xMinValue,
@@ -164,6 +158,7 @@ export const getters = (
           labelStroke: groupLabelStroke,
           labelStrokeWidth,
           labelFill: groupLabelFill,
+          labelRotate: 0,
           fill: groupFill,
           opacity,
         };
@@ -204,7 +199,7 @@ export const getters = (
           const rotate = getRotate(_g?.rotate);
           const strokeWidth = s(0, STROKE_WIDTH);
           const labelX = 0;
-          const labelY = -textDims.datumLabel.yShift;
+          const labelY = -textTypeDims.datumLabel.yShift;
           const labelFontSize = s(
             0,
             showDatumLabels ? FONT_SIZE.datumLabel : 0

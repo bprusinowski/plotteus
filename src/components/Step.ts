@@ -1,9 +1,10 @@
 import { Axis, AxisTick, ColorLegend, Svg, Text, Tooltip } from ".";
+import * as Story from "..";
 import * as Chart from "../charts/Chart";
 import { ColorMap } from "../colors";
 import { Dimensions } from "../dims";
-import { InputStep } from "../types";
-import { getTextDims, stateOrderComparator } from "../utils";
+import { InputStep, StoryOptions } from "../types";
+import { stateOrderComparator } from "../utils";
 
 export type Getter = {
   key: string;
@@ -16,28 +17,30 @@ export type Getter = {
 };
 
 export const getters = ({
-  options,
-  steps: inputSteps,
+  storyInfo,
+  storyOptions,
+  steps,
   svg,
   width,
   height,
 }: {
-  options: { svgBackgroundColor: string };
+  storyInfo: Story.Info;
+  storyOptions: StoryOptions;
   steps: InputStep[];
   svg: Svg;
   width: number;
   height: number;
 }): Getter[] => {
-  const { svgBackgroundColor } = options;
-  const steps: Getter[] = [];
+  const { textTypeDims } = storyInfo;
+  const { svgBackgroundColor } = storyOptions;
+  const getters: Getter[] = [];
   let _minHorizontalAxisValue: number | undefined;
   let _minVerticalAxisValue: number | undefined;
   let _maxHorizontalAxisValue: number | undefined;
   let _maxVerticalAxisValue: number | undefined;
-  const textDims = getTextDims(svg);
   const colorMap = new ColorMap();
 
-  for (const step of inputSteps) {
+  for (const step of steps) {
     const {
       key,
       title,
@@ -51,44 +54,59 @@ export const getters = ({
     } = step;
 
     const dims = new Dimensions(width, height);
-    const chartInfo = Chart.info(svgBackgroundColor, step);
+    const chartInfo = Chart.info(storyInfo, svgBackgroundColor, step, dims);
     const colorLegendInfo = ColorLegend.info(step, chartInfo, colorMap);
     const verticalAxisInfo = Axis.info("vertical", chartInfo);
     const horizontalAxisInfo = Axis.info("horizontal", chartInfo);
 
     let titleGetter: Text.Getter | undefined;
     if (title !== undefined) {
+      const resolvedDims = dims.resolve();
+      const titleDims = svg.measureText(title, "title", {
+        paddingLeft: resolvedDims.margin.left,
+        paddingRight: resolvedDims.margin.right,
+      });
       titleGetter = Text.getter({
         svg,
         svgBackgroundColor,
         text: title,
         type: "title",
         anchor: titleAnchor,
-        dims: dims.resolve(),
+        resolvedDims,
+        textDims: titleDims,
       });
       Text.updateDims({
         dims,
         svg,
         textType: "title",
         text: title,
+        textDims: titleDims,
       });
+      dims.addTop(dims.BASE_MARGIN * 0.2);
     }
 
     let subtitleGetter: Text.Getter | undefined;
     if (subtitle !== undefined) {
+      const resolvedDims = dims.resolve();
+      const subtitleDims = svg.measureText(subtitle, "subtitle", {
+        paddingLeft: resolvedDims.margin.left,
+        paddingRight: resolvedDims.margin.right,
+      });
       subtitleGetter = Text.getter({
         svg,
         svgBackgroundColor,
         text: subtitle,
         type: "subtitle",
         anchor: subtitleAnchor,
-        dims: dims.resolve(),
+        resolvedDims,
+        textDims: subtitleDims,
       });
       Text.updateDims({
         dims,
         svg,
         textType: "subtitle",
         text: subtitle,
+        textDims: subtitleDims,
       });
     }
 
@@ -102,7 +120,7 @@ export const getters = ({
         colorMap,
         anchor: legendAnchor,
         title: legendTitle,
-        itemHeight: textDims.legendItem.height,
+        itemHeight: textTypeDims.legendItem.height,
         svg,
         svgBackgroundColor,
         dims: dims.resolve(),
@@ -110,13 +128,13 @@ export const getters = ({
       ColorLegend.updateDims({
         dims,
         getters: colorLegendsGetters,
-        itemHeight: textDims.legendItem.height,
+        itemHeight: textTypeDims.legendItem.height,
       });
     }
 
     if (verticalAxisInfo.show) {
       const { title, tickFormat, minValue, maxValue } = verticalAxisInfo;
-      const titleHeight = textDims.axisTitle.height;
+      const titleHeight = textTypeDims.axisTitle.height;
       const ticksCount = Axis.getTicksCount(dims.resolve().height);
       Axis.updateDims({
         type: "vertical",
@@ -125,7 +143,7 @@ export const getters = ({
         titleHeight: title ? titleHeight : 0,
         minValue,
         maxValue,
-        tickHeight: textDims.axisTick.height,
+        tickHeight: textTypeDims.axisTick.height,
         ticksCount,
         tickFormat,
       });
@@ -153,7 +171,7 @@ export const getters = ({
         minValue,
         maxValue,
         titleHeight: title ? titleHeight : 0,
-        tickHeight: textDims.axisTick.height,
+        tickHeight: textTypeDims.axisTick.height,
         ticksCount,
         tickFormat,
       });
@@ -176,7 +194,7 @@ export const getters = ({
         svg,
         svgBackgroundColor,
         dims,
-        tickHeight: textDims.axisTick.height,
+        tickHeight: textTypeDims.axisTick.height,
         ticksCount,
         tickFormat,
         minValue,
@@ -214,7 +232,7 @@ export const getters = ({
               top: -(
                 titleHeight +
                 dims.BASE_MARGIN +
-                (addTopMargin ? textDims.datumValue.height : 0)
+                (addTopMargin ? textTypeDims.datumValue.height : 0)
               ),
               right: 0,
               bottom: 0,
@@ -234,7 +252,7 @@ export const getters = ({
         maxValue,
         _maxValue: _maxVerticalAxisValue,
         ticksCount,
-        tickHeight: textDims.axisTick.height,
+        tickHeight: textTypeDims.axisTick.height,
         tickFormat,
       });
 
@@ -249,12 +267,12 @@ export const getters = ({
       showDatumLabels,
       svg,
       dims: dims.resolve(),
-      textDims,
+      textTypeDims,
       colorMap,
       cartoonize,
     });
 
-    steps.push({
+    getters.push({
       key,
       title: titleGetter,
       subtitle: subtitleGetter,
@@ -265,7 +283,7 @@ export const getters = ({
     });
   }
 
-  return steps;
+  return getters;
 };
 
 export type Int = {

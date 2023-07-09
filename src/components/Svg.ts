@@ -24,10 +24,7 @@ export type SVGSelection = Selection<
   undefined
 >;
 
-export const makeSvg = (
-  div: HTMLDivElement,
-  background: string = "#FFFFFF"
-): Svg => {
+export const makeSvg = (div: HTMLDivElement, background: string): Svg => {
   const selection = select(div)
     .selectAll("svg")
     .data([null])
@@ -48,9 +45,12 @@ export const makeSvg = (
     textType: TextType,
     options?: MeasureTextOptions
   ): DOMRect => {
-    const { paddingLeft = 0, paddingRight } = options ?? {};
-    const root = select(div)
+    const { width } = measure();
+    const { paddingLeft = 0, paddingRight = 0 } = options ?? {};
+    const root = select(document.body)
       .append("div")
+      .style("box-sizing", "border-box")
+      .style("max-width", `${width}px`)
       .style("padding-left", `${paddingLeft}px`)
       .style("padding-right", `${paddingRight}px`);
     const node = root
@@ -60,10 +60,9 @@ export const makeSvg = (
       .style("line-height", 1.5)
       .style("font-size", `${FONT_SIZE[textType]}px`)
       .style("font-weight", FONT_WEIGHT[textType])
-      .html(text.toString())
+      .text(text)
       .node() as HTMLDivElement;
     const rect = node.getBoundingClientRect();
-    node.remove();
     root.remove();
 
     return rect;

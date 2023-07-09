@@ -1,16 +1,14 @@
 import { ScaleBand, ScaleLinear, scaleBand, scaleLinear } from "d3-scale";
 import { Datum } from ".";
-import { ColorMap } from "../colors";
-import { Svg } from "../components";
+import * as Story from "..";
 import { BUBBLE, getPathData } from "../coords";
-import { Dimensions, ResolvedDimensions } from "../dims";
+import { Dimensions } from "../dims";
 import {
   BeeswarmInputStep,
   ChartType,
   InputAxis,
   InputGroupPosition,
   Layout,
-  TextDims,
 } from "../types";
 import {
   FONT_SIZE,
@@ -27,17 +25,19 @@ import {
   getRotate,
 } from "./utils";
 
-export type Info = Chart.BaseInfo & {
-  type: "beeswarm";
-  layout: Layout;
-  groups: InputGroupPosition[];
-  minValue: number;
-  maxValue: number;
-  verticalAxis: InputAxis | undefined;
-  horizontalAxis: InputAxis | undefined;
-};
+export type Info = Story.Info &
+  Chart.BaseInfo & {
+    type: "beeswarm";
+    layout: Layout;
+    groups: InputGroupPosition[];
+    minValue: number;
+    maxValue: number;
+    verticalAxis: InputAxis | undefined;
+    horizontalAxis: InputAxis | undefined;
+  };
 
 export const info = (
+  storyInfo: Story.Info,
   svgBackgroundColor: string,
   inputStep: BeeswarmInputStep
 ): Info => {
@@ -57,6 +57,7 @@ export const info = (
   ];
 
   return {
+    ...storyInfo,
     ...Chart.baseInfo(svgBackgroundColor, inputStep, shareDomain),
     type,
     layout,
@@ -79,15 +80,8 @@ export const updateDims = (dims: Dimensions) => {
 
 export const getters = (
   info: Info,
-  props: {
-    showDatumLabels: boolean;
-    svg: Svg;
-    dims: ResolvedDimensions;
-    textDims: TextDims;
-    colorMap: ColorMap;
-    cartoonize: boolean;
-  }
-) => {
+  props: Chart.GetterProps
+): Chart.Getter[] => {
   const {
     layout,
     groups,
@@ -101,7 +95,7 @@ export const getters = (
   const {
     showDatumLabels,
     dims: { width, height, margin },
-    textDims,
+    textTypeDims,
     colorMap,
     cartoonize,
   } = props;
@@ -137,7 +131,7 @@ export const getters = (
         g: ({ s, _g }) => {
           const d = BUBBLE;
           const labelX = groupX;
-          const labelY = groupY + textDims.groupLabel.yShift;
+          const labelY = groupY + textTypeDims.groupLabel.yShift;
           const labelFontSize = s(0, shareDomain ? FONT_SIZE.groupLabel : 0);
           const labelStrokeWidth = getGroupLabelStrokeWidth(labelFontSize);
           const opacity = group.opacity ?? 1;
@@ -152,6 +146,7 @@ export const getters = (
             labelStroke: groupLabelStroke,
             labelStrokeWidth,
             labelFill: groupLabelFill,
+            labelRotate: 0,
             fill: groupFill,
             opacity,
           };
@@ -194,8 +189,10 @@ export const getters = (
             const strokeWidth = STROKE_WIDTH;
             const labelX = 0;
             const labelY =
-              textDims.datumLabel.yShift -
-              (showDatumLabelsAndValues ? textDims.datumLabel.height * 0.5 : 0);
+              textTypeDims.datumLabel.yShift -
+              (showDatumLabelsAndValues
+                ? textTypeDims.datumLabel.height * 0.5
+                : 0);
             const labelFontSize = 0;
             const labelFill = getTextColor(datumFill);
             const labelStroke = datumFill;
@@ -257,7 +254,7 @@ export const getters = (
         g: ({ s, _g }) => {
           const d = BUBBLE;
           const labelX = groupX;
-          const labelY = groupY + textDims.groupLabel.yShift;
+          const labelY = groupY + textTypeDims.groupLabel.yShift;
           const labelFontSize = s(0, shareDomain ? FONT_SIZE.groupLabel : 0);
           const labelStrokeWidth = getGroupLabelStrokeWidth(labelFontSize);
           const opacity = group.opacity ?? 1;
@@ -272,6 +269,7 @@ export const getters = (
             labelStroke: groupLabelStroke,
             labelStrokeWidth,
             labelFill: groupLabelFill,
+            labelRotate: 0,
             fill: groupFill,
             opacity,
           };
@@ -318,8 +316,10 @@ export const getters = (
             const strokeWidth = STROKE_WIDTH;
             const labelX = 0;
             const labelY =
-              textDims.datumLabel.yShift -
-              (showDatumLabelsAndValues ? textDims.datumLabel.height * 0.5 : 0);
+              textTypeDims.datumLabel.yShift -
+              (showDatumLabelsAndValues
+                ? textTypeDims.datumLabel.height * 0.5
+                : 0);
             const labelFontSize = 0;
             const labelFill = getTextColor(datumFill);
             const labelStroke = datumFill;

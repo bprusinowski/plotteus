@@ -1,14 +1,12 @@
 import { Datum } from ".";
-import { ColorMap } from "../colors";
-import { Svg } from "../components";
+import * as Story from "..";
 import { BUBBLE, getPathData } from "../coords";
-import { Dimensions, ResolvedDimensions } from "../dims";
+import { Dimensions } from "../dims";
 import {
   BubbleInputStep,
   ChartType,
   ExtremeValue,
   InputGroupValue,
-  TextDims,
 } from "../types";
 import { FONT_SIZE, deriveSubtlerColor, getTextColor } from "../utils";
 import * as Chart from "./Chart";
@@ -20,13 +18,15 @@ import {
   getRotate,
 } from "./utils";
 
-export type Info = Chart.BaseInfo & {
-  type: "bubble";
-  groups: InputGroupValue[];
-  maxValue: ExtremeValue;
-};
+export type Info = Story.Info &
+  Chart.BaseInfo & {
+    type: "bubble";
+    groups: InputGroupValue[];
+    maxValue: ExtremeValue;
+  };
 
 export const info = (
+  storyInfo: Story.Info,
   svgBackgroundColor: string,
   inputStep: BubbleInputStep
 ): Info => {
@@ -34,6 +34,7 @@ export const info = (
   const type: ChartType = "bubble";
 
   return {
+    ...storyInfo,
     ...Chart.baseInfo(svgBackgroundColor, inputStep, shareDomain),
     type,
     groups,
@@ -48,21 +49,14 @@ export const updateDims = (dims: Dimensions) => {
 
 export const getters = (
   info: Info,
-  props: {
-    showDatumLabels: boolean;
-    svg: Svg;
-    dims: ResolvedDimensions;
-    textDims: TextDims;
-    colorMap: ColorMap;
-    cartoonize: boolean;
-  }
-) => {
+  props: Chart.GetterProps
+): Chart.Getter[] => {
   const { groups, maxValue, shareDomain, showValues, svgBackgroundColor } =
     info;
   const {
     showDatumLabels,
     dims: { width, height, size, margin },
-    textDims,
+    textTypeDims,
     colorMap,
     cartoonize,
   } = props;
@@ -102,7 +96,7 @@ export const getters = (
           })
         );
         const labelX = groupX;
-        const labelY = groupY + textDims.groupLabel.yShift;
+        const labelY = groupY + textTypeDims.groupLabel.yShift;
         const labelFontSize = s(0, shareDomain ? FONT_SIZE.groupLabel : 0);
         const labelStrokeWidth = getGroupLabelStrokeWidth(labelFontSize);
         const opacity = group.data.opacity ?? 1;
@@ -117,6 +111,7 @@ export const getters = (
           labelStroke: groupLabelStroke,
           labelStrokeWidth,
           labelFill: groupLabelFill,
+          labelRotate: 0,
           fill: groupFill,
           opacity,
         };
@@ -149,8 +144,10 @@ export const getters = (
           const strokeWidth = s(0, value ? STROKE_WIDTH : 0);
           const labelX = 0;
           const labelY =
-            textDims.datumLabel.yShift -
-            (showDatumLabelsAndValues ? textDims.datumLabel.height * 0.5 : 0);
+            textTypeDims.datumLabel.yShift -
+            (showDatumLabelsAndValues
+              ? textTypeDims.datumLabel.height * 0.5
+              : 0);
           const labelFontSize = s(
             0,
             showDatumLabels ? FONT_SIZE.datumLabel : 0
@@ -161,10 +158,12 @@ export const getters = (
           const valueY = s(
             0,
             (singleDatum && key
-              ? datum.r * 0.5 + textDims.datumValue.yShift
-              : textDims.datumValue.yShift) +
-              (showDatumLabels ? textDims.datumLabel.height : 0) -
-              (showDatumLabelsAndValues ? textDims.datumLabel.height * 0.5 : 0)
+              ? datum.r * 0.5 + textTypeDims.datumValue.yShift
+              : textTypeDims.datumValue.yShift) +
+              (showDatumLabels ? textTypeDims.datumLabel.height : 0) -
+              (showDatumLabelsAndValues
+                ? textTypeDims.datumLabel.height * 0.5
+                : 0)
           );
           const valueFontSize = showValues ? s(0, FONT_SIZE.datumValue) : 0;
           const valueFill = labelFill;

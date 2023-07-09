@@ -1,9 +1,9 @@
 import { ScaleBand, ScaleLinear, scaleBand, scaleLinear } from "d3-scale";
 import { Datum } from ".";
-import { ColorMap } from "../colors";
+import * as Story from "..";
 import { AxisTick, Svg } from "../components";
 import { BAR, getPathData } from "../coords";
-import { Dimensions, ResolvedDimensions } from "../dims";
+import { Dimensions } from "../dims";
 import {
   BarChartSubtype,
   BarInputStep,
@@ -12,7 +12,6 @@ import {
   InputAxis,
   InputGroupValue,
   Layout,
-  TextDims,
 } from "../types";
 import {
   FONT_SIZE,
@@ -30,20 +29,24 @@ import {
   getRotate,
 } from "./utils";
 
-export type Info = Chart.BaseInfo & {
-  type: "bar";
-  subtype: BarChartSubtype;
-  layout: Layout;
-  groups: InputGroupValue[];
-  minValue: number;
-  maxValue: ExtremeValue;
-  verticalAxis: InputAxis | undefined;
-  horizontalAxis: InputAxis | undefined;
-};
+export type Info = Story.Info &
+  Chart.BaseInfo & {
+    type: "bar";
+    subtype: BarChartSubtype;
+    layout: Layout;
+    groups: InputGroupValue[];
+    minValue: number;
+    maxValue: ExtremeValue;
+    verticalAxis: InputAxis | undefined;
+    horizontalAxis: InputAxis | undefined;
+    shouldRotateLabels: boolean;
+  };
 
 export const info = (
+  storyInfo: Story.Info,
   svgBackgroundColor: string,
-  inputStep: BarInputStep
+  inputStep: BarInputStep,
+  dims: Dimensions
 ): Info => {
   const {
     chartSubtype = "grouped",
@@ -51,10 +54,25 @@ export const info = (
     groups,
     shareDomain = true,
   } = inputStep;
+  const { width, height } = dims;
+  const baseInfo = Chart.baseInfo(svgBackgroundColor, inputStep, shareDomain);
   const type: ChartType = "bar";
+  const maxValue = getMaxValue(inputStep);
+  const { x0bw } =
+    inputStep.layout === "vertical" || inputStep.layout === undefined
+      ? getVerticalScales({
+          isGrouped: chartSubtype === "grouped",
+          groupsKeys: baseInfo.groupsKeys,
+          dataKeys: baseInfo.dataKeys,
+          maxValue,
+          width,
+          height,
+        })
+      : { x0bw: undefined };
 
   return {
-    ...Chart.baseInfo(svgBackgroundColor, inputStep, shareDomain),
+    ...storyInfo,
+    ...baseInfo,
     type,
     subtype: chartSubtype,
     layout,
@@ -67,6 +85,9 @@ export const info = (
         : undefined,
     horizontalAxis:
       inputStep.layout === "horizontal" ? inputStep.horizontalAxis : undefined,
+    // Add some padding between the group labels.
+    shouldRotateLabels:
+      x0bw !== undefined ? storyInfo.maxGroupLabelWidth + 4 > x0bw : false,
   };
 };
 
@@ -93,7 +114,8 @@ const getMaxValue = (step: BarInputStep): ExtremeValue => {
 };
 
 export const updateDims = (info: Info, dims: Dimensions, svg: Svg) => {
-  const { subtype, layout, maxValue } = info;
+  const { subtype, layout, maxValue, shouldRotateLabels, maxGroupLabelWidth } =
+    info;
   const { BASE_MARGIN } = dims;
 
   if (layout === "vertical") {
@@ -106,19 +128,16 @@ export const updateDims = (info: Info, dims: Dimensions, svg: Svg) => {
   }
 
   dims.addTop(BASE_MARGIN).addBottom(BASE_MARGIN);
+
+  if (shouldRotateLabels) {
+    dims.addBottom(maxGroupLabelWidth);
+  }
 };
 
 export const getters = (
   info: Info,
-  props: {
-    showDatumLabels: boolean;
-    svg: Svg;
-    dims: ResolvedDimensions;
-    textDims: TextDims;
-    colorMap: ColorMap;
-    cartoonize: boolean;
-  }
-) => {
+  props: Chart.GetterProps
+): Chart.Getter[] => {
   const {
     subtype,
     layout,
@@ -129,21 +148,25 @@ export const getters = (
     showValues,
     maxValue,
     svgBackgroundColor,
+    shouldRotateLabels,
+    groupLabelDims,
+    datumLabelDims,
+    datumValueDims,
   } = info;
   const {
     showDatumLabels,
     svg,
     dims: { width, fullWidth, height, fullHeight, margin, BASE_MARGIN },
-    textDims,
+    textTypeDims,
     colorMap,
     cartoonize,
   } = props;
   const isGrouped = subtype === "grouped";
   const isVertical = layout === "vertical";
-  const labelHeight = textDims.datumLabel.height;
-  const labelYShift = textDims.datumLabel.yShift;
-  const valueHeight = textDims.datumValue.height;
-  const valueYShift = textDims.datumValue.yShift;
+  const labelHeight = textTypeDims.datumLabel.height;
+  const labelYShift = textTypeDims.datumLabel.yShift;
+  const valueHeight = textTypeDims.datumValue.height;
+  const valueYShift = textTypeDims.datumValue.yShift;
   const groupFill = deriveSubtlerColor(svgBackgroundColor);
   const groupLabelFill = getTextColor(svgBackgroundColor);
   const groupLabelStroke = svgBackgroundColor;
@@ -170,22 +193,27 @@ export const getters = (
         key,
         g: ({ s, _g }) => {
           const d = BAR;
-          const labelX = groupX;
-          const labelY = groupY + BASE_MARGIN;
+          const labelWidth = groupLabelDims[key].width;
+          const labelX =
+            groupX + (shouldRotateLabels ? -textTypeDims.groupLabel.yShift : 0);
+          const labelY =
+            groupY + BASE_MARGIN + (shouldRotateLabels ? labelWidth * 0.5 : 0);
           const labelFontSize = s(0, shareDomain ? FONT_SIZE.groupLabel : 0);
           const labelStrokeWidth = getGroupLabelStrokeWidth(labelFontSize);
+          const labelRotate = shouldRotateLabels ? 90 : 0;
           const opacity = group.opacity ?? 1;
 
           return {
             d,
             x: s(groupX, null, _g?.x),
             y: s(groupY, null, _g?.y),
-            labelX,
-            labelY,
+            labelX: s(groupX, labelX),
+            labelY: s(groupY + BASE_MARGIN, labelY),
             labelFontSize,
             labelStroke: groupLabelStroke,
             labelStrokeWidth,
             labelFill: groupLabelFill,
+            labelRotate,
             fill: groupFill,
             opacity,
           };
@@ -240,7 +268,7 @@ export const getters = (
             );
             const rotate = getRotate(_g?.rotate);
             const strokeWidth = s(0, value ? STROKE_WIDTH : 0);
-            const labelWidth = svg.measureText(key, "datumLabel").width;
+            const labelWidth = datumLabelDims[key].width;
             const labelX = isGrouped
               ? 0
               : s(0, (labelWidth - x1bw) * 0.5 + TEXT_MARGIN);
@@ -258,7 +286,7 @@ export const getters = (
             );
             const labelFill = getTextColor(datumFill);
             const labelStroke = shareDomain ? datumFill : svgBackgroundColor;
-            const valueWidth = svg.measureText(value, "datumValue").width;
+            const valueWidth = datumValueDims[value].width;
             const valueX = isGrouped
               ? 0
               : s(0, (valueWidth - x1bw) * 0.5 + TEXT_MARGIN);
@@ -269,7 +297,7 @@ export const getters = (
                   showDatumLabels
                     ? baseGroupedValueY + valueHeight < labelY
                       ? baseGroupedValueY
-                      : labelY - textDims.datumLabel.height
+                      : labelY - textTypeDims.datumLabel.height
                     : baseGroupedValueY
                 )
               : s(
@@ -321,7 +349,7 @@ export const getters = (
       width,
       height,
       labelMargin: shareDomain
-        ? textDims.groupLabel.height + BASE_MARGIN * 0.25
+        ? textTypeDims.groupLabel.height + BASE_MARGIN * 0.25
         : 0,
     });
 
@@ -334,12 +362,12 @@ export const getters = (
         key,
         g: ({ s, _g }) => {
           const d = BAR;
-          const labelWidth = svg.measureText(key, "groupLabel").width;
+          const labelWidth = groupLabelDims[key].width;
           const labelX = groupX + labelWidth * 0.5;
           const labelY =
             groupY -
             y1bw * (isGrouped ? dataKeys.length : 1) * 0.5 -
-            textDims.groupLabel.height * 0.5;
+            textTypeDims.groupLabel.height * 0.5;
           const labelFontSize = s(0, shareDomain ? FONT_SIZE.groupLabel : 0);
           const labelStrokeWidth = getGroupLabelStrokeWidth(labelFontSize);
           const opacity = group.opacity ?? 1;
@@ -354,6 +382,7 @@ export const getters = (
             labelStroke: groupLabelStroke,
             labelStrokeWidth,
             labelFill: groupLabelFill,
+            labelRotate: 0,
             fill: groupFill,
             opacity,
           };
@@ -372,7 +401,7 @@ export const getters = (
 
         const datumX = 0;
         const datumY =
-          (y1Scale(key) as number) + textDims.groupLabel.height * 0.5;
+          (y1Scale(key) as number) + textTypeDims.groupLabel.height * 0.5;
         const dWidth = xScale(value);
 
         const currentAccWidth = accWidth;
@@ -410,7 +439,7 @@ export const getters = (
             const y = s(groupY, groupY + datumY + (y1bw - y0bw) * 0.5);
             const rotate = getRotate(_g?.rotate);
             const strokeWidth = s(0, value ? STROKE_WIDTH : 0);
-            const labelWidth = svg.measureText(key, "datumLabel").width;
+            const labelWidth = datumLabelDims[key].width;
             const labelX = s(
               BASE_MARGIN * 0.5,
               -dWidth * 0.5 + labelWidth * 0.5 + BASE_MARGIN * 0.5
@@ -422,7 +451,7 @@ export const getters = (
             );
             const labelFill = getTextColor(datumFill);
             const labelStroke = datumFill;
-            const valueWidth = svg.measureText(value, "datumValue").width;
+            const valueWidth = datumValueDims[value].width;
             const valueX = isGrouped
               ? labelX + labelWidth > (dWidth + valueWidth + BASE_MARGIN) * 0.5
                 ? labelX + (labelWidth + valueWidth + BASE_MARGIN) * 0.5
