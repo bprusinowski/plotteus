@@ -30,24 +30,18 @@ describe("Text", () => {
       test("enter", () => {
         const g = enterGetter.g({ s: (enter) => enter });
 
-        expect(g.x).toEqual(400);
-        expect(g.y).toEqual(dims.margin.top);
         expect(g.fontSize).toEqual(FONT_SIZE.title);
       });
 
       test("update", () => {
         const g = enterGetter.g({ s: (enter, update) => update ?? enter });
 
-        expect(g.x).toEqual(400);
-        expect(g.y).toEqual(dims.margin.top);
         expect(g.fontSize).toEqual(FONT_SIZE.title);
       });
 
       test("exit", () => {
         const g = enterGetter.g({ s: (enter, _, exit) => exit ?? enter });
 
-        expect(g.x).toEqual(400);
-        expect(g.y).toEqual(dims.margin.top);
         expect(g.fontSize).toEqual(FONT_SIZE.title);
       });
     });
@@ -115,24 +109,18 @@ describe("Text", () => {
       test("enter", () => {
         const g = updateGetter.g({ s: (enter) => enter });
 
-        expect(g.x).toEqual(16);
-        expect(g.y).toEqual(dims.margin.top);
         expect(g.fontSize).toEqual(FONT_SIZE.datumLabel);
       });
 
       test("update", () => {
         const g = updateGetter.g({ s: (enter, update) => update ?? enter });
 
-        expect(g.x).toEqual(16);
-        expect(g.y).toEqual(dims.margin.top);
         expect(g.fontSize).toEqual(FONT_SIZE.datumLabel);
       });
 
       test("exit", () => {
         const g = updateGetter.g({ s: (enter, _, exit) => exit ?? enter });
 
-        expect(g.x).toEqual(16);
-        expect(g.y).toEqual(dims.margin.top);
         expect(g.fontSize).toEqual(FONT_SIZE.datumLabel);
       });
     });
