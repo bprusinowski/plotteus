@@ -82,7 +82,10 @@ export const getters = ({
         text: title,
         textDims: titleDims,
       });
-      dims.addTop(dims.BASE_MARGIN * 0.2);
+
+      if (subtitle !== undefined) {
+        dims.addTop(dims.BASE_MARGIN * 0.2);
+      }
     }
 
     let subtitleGetter: Text.Getter | undefined;
