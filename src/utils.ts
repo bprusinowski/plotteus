@@ -2,6 +2,9 @@ import { HALF_FONT_K } from "./charts/utils";
 import { Svg } from "./components";
 import { InputStep, State, TextType, TextTypeDims } from "./types";
 
+export const DEFAULT_FONT_FAMILY =
+  '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif';
+
 export const unique = <T>(array: T[]): T[] => {
   return Array.from(new Set(array));
 };
