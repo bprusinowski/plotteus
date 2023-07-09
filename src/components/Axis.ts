@@ -34,7 +34,8 @@ export const info = (type: AxisType, chartInfo: Chart.Info): Info => {
                 chartInfo.verticalAxis?.tickFormat ?? Tick.defaultFormat,
               minValue: chartInfo.minValue,
               maxValue: chartInfo.maxValue.actual,
-              addTopMargin: chartInfo.showValues,
+              addTopMargin:
+                chartInfo.subtype === "grouped" && chartInfo.showValues,
             };
           } else {
             return { show: false };
@@ -153,11 +154,11 @@ export const getters = ({
   maxValue: number;
   _maxValue: number | undefined;
 }): Getter => {
-  let resolvedDims = dims.resolve();
+  const resolvedDims = dims.resolve();
   const ticks = scaleLinear().domain([minValue, maxValue]).ticks(ticksCount);
   const titleDims = svg.measureText(title, "axisTitle", {
-    paddingLeft: resolvedDims.margin.left,
-    paddingRight: resolvedDims.margin.right,
+    paddingLeft: dims.BASE_MARGIN,
+    paddingRight: dims.BASE_MARGIN,
   });
   const titleGetter = title
     ? Text.getter({
@@ -170,17 +171,6 @@ export const getters = ({
         textDims: titleDims,
       })
     : undefined;
-
-  if (titleGetter) {
-    Text.updateDims({
-      dims,
-      svg,
-      textType: "axisTitle",
-      text: title,
-      textDims: titleDims,
-    });
-    resolvedDims = dims.resolve();
-  }
 
   return {
     key: `${type}-axis`,
@@ -314,6 +304,7 @@ export const updateDims = ({
   tickHeight,
   ticksCount,
   tickFormat,
+  addTopMargin,
 }: {
   type: AxisType;
   dims: Dimensions;
@@ -324,6 +315,7 @@ export const updateDims = ({
   tickHeight: number;
   ticksCount: number;
   tickFormat: (d: number) => string;
+  addTopMargin: boolean;
 }): void => {
   const width = getWidth({ svg, ticksCount, tickFormat, minValue, maxValue });
 
@@ -335,7 +327,10 @@ export const updateDims = ({
         .addBottom(tickHeight + Tick.SIZE + Tick.LABEL_MARGIN);
       break;
     case "vertical":
-      dims.addLeft(width + Tick.SIZE + Tick.LABEL_MARGIN).addTop(titleHeight);
+      dims
+        .addLeft(width + Tick.SIZE + Tick.LABEL_MARGIN)
+        .addTop(titleHeight)
+        .addTop(addTopMargin ? dims.BASE_MARGIN : 0);
       break;
   }
 };

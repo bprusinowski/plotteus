@@ -136,8 +136,12 @@ export const getters = ({
     }
 
     if (verticalAxisInfo.show) {
-      const { title, tickFormat, minValue, maxValue } = verticalAxisInfo;
-      const titleHeight = textTypeDims.axisTitle.height;
+      const { title, tickFormat, minValue, maxValue, addTopMargin } =
+        verticalAxisInfo;
+      const { height: titleHeight } = svg.measureText(title, "axisTitle", {
+        paddingLeft: dims.BASE_MARGIN,
+        paddingRight: dims.BASE_MARGIN,
+      });
       const ticksCount = Axis.getTicksCount(dims.resolve().height);
       Axis.updateDims({
         type: "vertical",
@@ -149,6 +153,7 @@ export const getters = ({
         tickHeight: textTypeDims.axisTick.height,
         ticksCount,
         tickFormat,
+        addTopMargin,
       });
     }
 
@@ -156,9 +161,12 @@ export const getters = ({
 
     let horizontalAxisGetters: Axis.Getter | undefined;
     if (horizontalAxisInfo.show) {
-      const { title, tickFormat, minValue, maxValue } = horizontalAxisInfo;
-
-      const titleHeight = svg.measureText(title, "axisTitle").height;
+      const { title, tickFormat, minValue, maxValue, addTopMargin } =
+        horizontalAxisInfo;
+      const { height: titleHeight } = svg.measureText(title, "axisTitle", {
+        paddingLeft: dims.BASE_MARGIN,
+        paddingRight: dims.BASE_MARGIN,
+      });
       const ticksCount = Axis.getTicksCount(dims.resolve().width);
       const width = Axis.getWidth({
         svg,
@@ -177,6 +185,7 @@ export const getters = ({
         tickHeight: textTypeDims.axisTick.height,
         ticksCount,
         tickFormat,
+        addTopMargin,
       });
       const resolvedDims = dims.resolve();
 
@@ -184,11 +193,7 @@ export const getters = ({
         type: "horizontal",
         title,
         titleMargin: {
-          top:
-            titleHeight +
-            dims.BASE_MARGIN +
-            AxisTick.SIZE +
-            AxisTick.LABEL_MARGIN,
+          top: dims.BASE_MARGIN * 1.5 + AxisTick.SIZE + AxisTick.LABEL_MARGIN,
           right:
             resolvedDims.margin.right + resolvedDims.margin.left - width * 0.5,
           bottom: 0,
@@ -225,7 +230,10 @@ export const getters = ({
         minValue,
         maxValue,
       });
-      const titleHeight = svg.measureText(title, "axisTitle").height;
+      const { height: titleHeight } = svg.measureText(title, "axisTitle", {
+        paddingLeft: dims.BASE_MARGIN,
+        paddingRight: dims.BASE_MARGIN,
+      });
 
       verticalAxisGetters = Axis.getters({
         type: "vertical",
