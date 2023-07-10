@@ -24,8 +24,8 @@ export type SVGSelection = Selection<
   undefined
 >;
 
-export const makeSvg = (div: HTMLDivElement, options: StoryOptions): Svg => {
-  const { svgBackgroundColor, fontFamily } = options;
+export const createSvg = (div: HTMLDivElement, options: StoryOptions): Svg => {
+  const { svgBackgroundColor } = options;
   const selection = select(div)
     .selectAll("svg")
     .data([null])
@@ -35,7 +35,6 @@ export const makeSvg = (div: HTMLDivElement, options: StoryOptions): Svg => {
     .style("transform", "translate3d(0, 0, 0)")
     .style("border-left", "3px solid transparent")
     .style("background", svgBackgroundColor)
-    .style("font-family", fontFamily)
     .style("transition", "border-left 0.3s ease") as SVGSelection;
 
   const measure = (): DOMRect => {
@@ -49,8 +48,15 @@ export const makeSvg = (div: HTMLDivElement, options: StoryOptions): Svg => {
   ): DOMRect => {
     const { width } = measure();
     const { paddingLeft = 0, paddingRight = 0 } = options ?? {};
-    const root = select(document.body)
+    const root = select(div)
       .append("div")
+      .attr("aria-hidden", "true")
+      .style("z-index", -1)
+      .style("position", "absolute")
+      .style("top", 0)
+      .style("left", 0)
+      .style("opacity", 0)
+      .style("pointer-events", "none")
       .style("box-sizing", "border-box")
       .style("max-width", `${width}px`)
       .style("padding-left", `${paddingLeft}px`)
@@ -62,7 +68,6 @@ export const makeSvg = (div: HTMLDivElement, options: StoryOptions): Svg => {
       .style("line-height", 1.5)
       .style("font-size", `${FONT_SIZE[textType]}px`)
       .style("font-weight", FONT_WEIGHT[textType])
-      .style("font-family", fontFamily)
       .text(text)
       .node() as HTMLDivElement;
     const rect = node.getBoundingClientRect();

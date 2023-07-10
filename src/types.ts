@@ -3,12 +3,10 @@ import { PaletteName } from "./colors";
 // External.
 export type InputStoryOptions = {
   svgBackgroundColor?: string;
-  fontFamily?: string;
 };
 
 export type StoryOptions = {
   svgBackgroundColor: string;
-  fontFamily: string;
 };
 
 type BaseInputStep = {
