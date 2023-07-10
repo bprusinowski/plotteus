@@ -199,7 +199,7 @@ export const getters = (
           const rotate = getRotate(_g?.rotate);
           const strokeWidth = s(0, STROKE_WIDTH);
           const labelX = 0;
-          const labelY = -textTypeDims.datumLabel.yShift;
+          const labelY = -textTypeDims.datumLabel.yShift * 2;
           const labelFontSize = s(
             0,
             showDatumLabels ? FONT_SIZE.datumLabel : 0

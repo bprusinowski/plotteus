@@ -1,4 +1,5 @@
 import * as Chart from "../charts/Chart";
+import { HALF_FONT_K } from "../charts/utils";
 import { ColorMap } from "../colors";
 import { Dimensions, ResolvedDimensions } from "../dims";
 import { Anchor, InputDatum, InputStep } from "../types";
@@ -54,7 +55,7 @@ type G = {
   labelFontWeight: number;
   labelColor: string;
   fill: string;
-  opacity: number;
+  fillOpacity: number;
 };
 
 export type Getter = Generic.Getter<G, { rowIndex: number }>;
@@ -103,7 +104,7 @@ export const getters = ({
       break;
   }
 
-  let y = -itemHeight * 0.5;
+  let y = -itemHeight * HALF_FONT_K + R;
 
   const entries = Array.from(colorMap).map(([key, color]) => ({
     key,
@@ -216,14 +217,14 @@ export const getters = ({
           x: s(margin.left + x, null, _g?.x),
           y: s(height + margin.top + y, null, _g?.y),
           labelX: isTitle ? 0 : R * 2,
-          labelY: -itemHeight * 0.5 + R,
+          labelY: itemHeight * HALF_FONT_K - R,
           labelFontSize: isTitle ? FONT_SIZE.legendTitle : FONT_SIZE.legendItem,
           labelFontWeight: isTitle
             ? FONT_WEIGHT.legendTitle
             : FONT_WEIGHT.legendItem,
           labelColor: getTextColor(svgBackgroundColor),
           fill: color,
-          opacity: s(0, 1),
+          fillOpacity: s(0, 1),
         };
       },
     });
@@ -257,7 +258,7 @@ export const render = ({
     .join("g")
     .attr("class", "plotteus-item")
     .attr("transform", (d) => `translate(${d.x}, ${d.y})`)
-    .style("opacity", (d) => d.opacity)
+    .style("fill-opacity", (d) => d.fillOpacity)
     .call((g) =>
       g
         .selectAll("circle")
@@ -276,7 +277,6 @@ export const render = ({
         .attr("y", (d) => d.labelY)
         .style("font-size", (d) => `${d.labelFontSize}px`)
         .style("font-weight", (d) => d.labelFontWeight)
-        .style("dominant-baseline", "hanging")
         .style("fill", (d) => d.labelColor)
         .text((d) => d.key)
     );
