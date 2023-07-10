@@ -19,7 +19,7 @@ import { max } from "../utils";
 import { HierarchyRoot } from "./types";
 
 // 0.5 seems too much.
-export const HALF_FONT_K = 0.42;
+export const HALF_FONT_K = 0.425;
 
 export const TEXT_MARGIN = 8;
 
