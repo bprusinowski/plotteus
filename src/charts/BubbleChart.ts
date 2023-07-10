@@ -11,6 +11,7 @@ import {
 import { FONT_SIZE, deriveSubtlerColor, getTextColor } from "../utils";
 import * as Chart from "./Chart";
 import {
+  HALF_FONT_K,
   STROKE_WIDTH,
   getGroupLabelStrokeWidth,
   getHierarchyRoot,
@@ -96,7 +97,7 @@ export const getters = (
           })
         );
         const labelX = groupX;
-        const labelY = groupY + textTypeDims.groupLabel.yShift;
+        const labelY = groupY - textTypeDims.groupLabel.yShift * HALF_FONT_K;
         const labelFontSize = s(0, shareDomain ? FONT_SIZE.groupLabel : 0);
         const labelStrokeWidth = getGroupLabelStrokeWidth(labelFontSize);
         const opacity = group.data.opacity ?? 1;
@@ -144,10 +145,8 @@ export const getters = (
           const strokeWidth = s(0, value ? STROKE_WIDTH : 0);
           const labelX = 0;
           const labelY =
-            textTypeDims.datumLabel.yShift -
-            (showDatumLabelsAndValues
-              ? textTypeDims.datumLabel.height * 0.5
-              : 0);
+            -textTypeDims.datumLabel.yShift * 0.5 -
+            (showDatumLabelsAndValues ? -textTypeDims.datumLabel.yShift : 0);
           const labelFontSize = s(
             0,
             showDatumLabels ? FONT_SIZE.datumLabel : 0
@@ -158,11 +157,11 @@ export const getters = (
           const valueY = s(
             0,
             (singleDatum && key
-              ? datum.r * 0.5 + textTypeDims.datumValue.yShift
-              : textTypeDims.datumValue.yShift) +
+              ? datum.r * 0.5 - textTypeDims.datumValue.yShift * 0.5
+              : -textTypeDims.datumValue.yShift * 0.5) +
               (showDatumLabels ? textTypeDims.datumLabel.height : 0) -
               (showDatumLabelsAndValues
-                ? textTypeDims.datumLabel.height * 0.5
+                ? -textTypeDims.datumLabel.yShift * 1.25
                 : 0)
           );
           const valueFontSize = showValues ? s(0, FONT_SIZE.datumValue) : 0;

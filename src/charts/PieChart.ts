@@ -18,6 +18,7 @@ import {
 } from "../utils";
 import * as Chart from "./Chart";
 import {
+  HALF_FONT_K,
   STROKE_WIDTH,
   getGroupLabelStrokeWidth,
   getHierarchyRoot,
@@ -93,7 +94,7 @@ export const getters = (
       g: ({ s, _g }) => {
         const d = BUBBLE;
         const labelX = groupX;
-        const labelY = groupY + textTypeDims.groupLabel.yShift;
+        const labelY = groupY - textTypeDims.groupLabel.yShift * HALF_FONT_K;
         const labelFontSize =
           groups.length > 1 ? s(0, shareDomain ? FONT_SIZE.groupLabel : 0) : 0;
         const labelStrokeWidth = getGroupLabelStrokeWidth(labelFontSize);
@@ -181,8 +182,8 @@ export const getters = (
               y - groupY,
               groupY +
                 -y -
-                group.r * 0.5 * Math.cos(rotate + Math.PI * 0.5) +
-                textTypeDims.datumValue.yShift
+                group.r * 0.5 * Math.cos(rotate + Math.PI * 0.5) -
+                textTypeDims.datumValue.yShift * 0.5
             ) +
             textTypeDims.datumLabel.yShift -
             // TODO: move by cos / sin.

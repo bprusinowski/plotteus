@@ -310,7 +310,6 @@ export const render = ({
     .style("font-size", (d) => `${d.labelFontSize}px`)
     .style("font-weight", FONT_WEIGHT.groupLabel)
     .style("text-anchor", "middle")
-    .style("dominant-baseline", "hanging")
     .style("user-select", "none")
     .style("pointer-events", "none")
     .text((d) => d.key);

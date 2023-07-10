@@ -87,7 +87,9 @@ export const info = (
       inputStep.layout === "horizontal" ? inputStep.horizontalAxis : undefined,
     // Add some padding between the group labels.
     shouldRotateLabels:
-      x0bw !== undefined ? storyInfo.maxGroupLabelWidth + 4 > x0bw : false,
+      shareDomain && x0bw !== undefined
+        ? storyInfo.maxGroupLabelWidth + 4 > x0bw
+        : false,
   };
 };
 
@@ -155,7 +157,6 @@ export const getters = (
   } = info;
   const {
     showDatumLabels,
-    svg,
     dims: { width, fullWidth, height, fullHeight, margin, BASE_MARGIN },
     textTypeDims,
     colorMap,
@@ -195,9 +196,13 @@ export const getters = (
           const d = BAR;
           const labelWidth = groupLabelDims[key].width;
           const labelX =
-            groupX + (shouldRotateLabels ? -textTypeDims.groupLabel.yShift : 0);
+            groupX +
+            (shouldRotateLabels ? textTypeDims.groupLabel.yShift * 0.5 : 0);
           const labelY =
-            groupY + BASE_MARGIN + (shouldRotateLabels ? labelWidth * 0.5 : 0);
+            groupY +
+            BASE_MARGIN +
+            (shouldRotateLabels ? labelWidth * 0.5 : 0) -
+            textTypeDims.groupLabel.yShift;
           const labelFontSize = s(0, shareDomain ? FONT_SIZE.groupLabel : 0);
           const labelStrokeWidth = getGroupLabelStrokeWidth(labelFontSize);
           const labelRotate = shouldRotateLabels ? 90 : 0;
@@ -274,12 +279,12 @@ export const getters = (
               : s(0, (labelWidth - x1bw) * 0.5 + TEXT_MARGIN);
             const labelY = isGrouped
               ? s(
-                  0,
+                  -labelYShift,
                   shareDomain
-                    ? dHeight * 0.5 - labelHeight - TEXT_MARGIN
-                    : dHeight * 0.5 + TEXT_MARGIN
+                    ? dHeight * 0.5 - TEXT_MARGIN + labelYShift * 0.5
+                    : dHeight * 0.5 + TEXT_MARGIN - labelYShift * 1.5
                 )
-              : s(0, -(dHeight * 0.5 + labelYShift));
+              : s(0, -(dHeight * 0.5 + labelYShift * 2));
             const labelFontSize = s(
               0,
               showDatumLabels ? FONT_SIZE.datumLabel : 0
@@ -290,7 +295,7 @@ export const getters = (
             const valueX = isGrouped
               ? 0
               : s(0, (valueWidth - x1bw) * 0.5 + TEXT_MARGIN);
-            const baseGroupedValueY = -(dHeight * 0.5 + valueHeight);
+            const baseGroupedValueY = -(dHeight * 0.5 - valueYShift);
             const valueY = isGrouped
               ? s(
                   0,
@@ -367,7 +372,7 @@ export const getters = (
           const labelY =
             groupY -
             y1bw * (isGrouped ? dataKeys.length : 1) * 0.5 -
-            textTypeDims.groupLabel.height * 0.5;
+            textTypeDims.groupLabel.yShift * 0.5;
           const labelFontSize = s(0, shareDomain ? FONT_SIZE.groupLabel : 0);
           const labelStrokeWidth = getGroupLabelStrokeWidth(labelFontSize);
           const opacity = group.opacity ?? 1;
@@ -444,7 +449,7 @@ export const getters = (
               BASE_MARGIN * 0.5,
               -dWidth * 0.5 + labelWidth * 0.5 + BASE_MARGIN * 0.5
             );
-            const labelY = s(0, labelYShift);
+            const labelY = s(0, -labelYShift * 0.5);
             const labelFontSize = s(
               0,
               showDatumLabels ? FONT_SIZE.datumLabel : 0
@@ -459,7 +464,7 @@ export const getters = (
               : showDatumLabels
               ? labelX + labelWidth + valueWidth * 0.5 + BASE_MARGIN * 0.25
               : 0;
-            const valueY = s(valueHeight * 0.5, valueYShift);
+            const valueY = s(valueHeight * 0.5, -valueYShift * 0.5);
             const valueFontSize = showValues ? s(0, FONT_SIZE.datumValue) : 0;
             const valueFill = isGrouped ? groupLabelFill : labelFill;
             const opacity = datum.opacity ?? 1;

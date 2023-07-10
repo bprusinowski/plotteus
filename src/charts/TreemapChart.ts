@@ -178,7 +178,7 @@ export const getters = (
           const labelX = s(0, (labelWidth - dWidth) * 0.5 + TEXT_MARGIN);
           const labelY = s(
             0,
-            -(dHeight * 0.5 + textTypeDims.datumLabel.yShift)
+            -(dHeight * 0.5 + textTypeDims.datumLabel.yShift * 2)
           );
           const labelFontSize = s(
             0,
