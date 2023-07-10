@@ -1,4 +1,12 @@
-import { makeSvg, makeTooltip, Step, Svg } from "./components";
+import {
+  Step,
+  Svg,
+  createFontLoadObserver,
+  createResizeObserver,
+  createSvg,
+  makeTooltip,
+  prepareDiv,
+} from "./components";
 import {
   InputStep,
   InputStoryOptions,
@@ -6,13 +14,12 @@ import {
   TextTypeDims,
 } from "./types";
 import {
-  DEFAULT_FONT_FAMILY,
+  TextDims,
   deriveSubtlerColor,
   getDataValues,
   getTextDims,
   getTextTypeDims,
   max,
-  TextDims,
   unique,
 } from "./utils";
 
@@ -54,7 +61,7 @@ export const info = (inputSteps: InputStep[], svg: Svg): Info => {
  * @returns`Story` object.
  */
 const makeStory = (
-  div: HTMLDivElement,
+  inputDiv: HTMLDivElement,
   inputSteps: InputStep[],
   inputOptions?: InputStoryOptions
 ): {
@@ -71,21 +78,21 @@ const makeStory = (
     indicateProgress?: boolean
   ) => void;
 } => {
-  const { svgBackgroundColor = "#FFFFFF", fontFamily = DEFAULT_FONT_FAMILY } =
-    inputOptions ?? {};
+  const { svgBackgroundColor = "#FFFFFF" } = inputOptions ?? {};
   const options: StoryOptions = {
     svgBackgroundColor,
-    fontFamily,
   };
-  const svg = makeSvg(div, options);
-  const tooltip = makeTooltip(options);
+  const div = prepareDiv(inputDiv);
+  const svg = createSvg(div, options);
+  const tooltip = makeTooltip();
   const progressBarColor = deriveSubtlerColor(svgBackgroundColor);
-  const storyInfo = info(inputSteps, svg);
+  let storyInfo = info(inputSteps, svg);
 
-  // Previous key.
   let _key: string | null | undefined;
-  // Previous progress.
   let _t = 0;
+  let _width = 0;
+  let _height = 0;
+  let initialFontLoaded = false;
 
   let intsMap: Step.IntsMap | undefined;
 
@@ -94,14 +101,33 @@ const makeStory = (
       const { width, height } = svg.measure();
       prepareStepsIntsMap(width, height);
       render();
+
+      _width = width;
+      _height = height;
     });
   };
 
-  new ResizeObserver(() => {
+  createFontLoadObserver(div, () => {
+    if (initialFontLoaded) {
+      storyInfo = info(inputSteps, svg);
+      prepareStepsIntsMap(_width, _height);
+      render();
+    } else {
+      initialFontLoaded = true;
+    }
+  });
+
+  createResizeObserver(div, () => {
     const { width, height } = svg.measure();
-    prepareStepsIntsMap(width, height);
-    render();
-  }).observe(div);
+
+    if (width !== _width || height !== _height) {
+      prepareStepsIntsMap(width, height);
+      render();
+
+      _width = width;
+      _height = height;
+    }
+  });
 
   const prepareStepsIntsMap = (width: number, height: number): void => {
     const getters = Step.getters({
