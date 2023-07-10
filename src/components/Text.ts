@@ -103,7 +103,6 @@ export const render = ({
     .style("line-height", 1.5)
     .style("font-size", (d) => `${d.fontSize}px`)
     .style("font-weight", (d) => d.fontWeight)
-    .style("dominant-baseline", "hanging")
     .style("color", (d) => d.color)
     .text((d) => d.key);
 };
