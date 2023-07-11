@@ -15,6 +15,7 @@ export type Svg = {
     textType: TextType,
     options?: MeasureTextOptions
   ) => DOMRect;
+  destroy: () => void;
 };
 
 export type SVGSelection = Selection<
@@ -80,9 +81,14 @@ export const createSvg = (div: HTMLDivElement, options: StoryOptions): Svg => {
     };
   };
 
+  const destroy = (): void => {
+    selection.remove();
+  };
+
   return {
     selection,
     measure,
     measureText,
+    destroy,
   };
 };
