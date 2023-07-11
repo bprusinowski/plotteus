@@ -68,7 +68,7 @@ const makeStory = (
   /**
    * Renders a given step.
    *
-   * @param stepKey - Step key. Refers to one of the steps passed to the `makeStory` function.
+   * @param stepKey - Key of the step to render.
    * @param t - Value between 0 and 1, indicating step's progress.
    * @param indicateProgress - Whether to indicate step's progress.
    */
@@ -104,19 +104,16 @@ const makeStory = (
   window.onload = () => {
     requestAnimationFrame(() => {
       const { width, height } = svg.measure();
-      prepareStepsIntsMap(width, height);
-      render();
-
       _width = width;
       _height = height;
+      prepareAndRender();
     });
   };
 
-  const fontLoadOberver = createFontLoadObserver(div, () => {
+  const fontLoadObserver = createFontLoadObserver(div, () => {
     if (initialFontLoaded) {
       storyInfo = info(inputSteps, svg);
-      prepareStepsIntsMap(_width, _height);
-      render();
+      prepareAndRender();
     } else {
       initialFontLoaded = true;
     }
@@ -126,13 +123,16 @@ const makeStory = (
     const { width, height } = svg.measure();
 
     if (width !== _width || height !== _height) {
-      prepareStepsIntsMap(width, height);
-      render();
-
       _width = width;
       _height = height;
+      prepareAndRender();
     }
   });
+
+  const prepareAndRender = (): void => {
+    prepareStepsIntsMap(_width, _height);
+    render();
+  };
 
   const prepareStepsIntsMap = (width: number, height: number): void => {
     const getters = Step.getters({
@@ -176,8 +176,8 @@ const makeStory = (
   };
 
   const destroy = (): void => {
-    fontLoadOberver.disconnect();
-    resizeObserver.disconnect();
+    resizeObserver.destroy();
+    fontLoadObserver.destroy();
     svg.destroy();
   };
 

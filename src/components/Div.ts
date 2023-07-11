@@ -12,8 +12,10 @@ export const prepareDiv = (div: HTMLDivElement): HTMLDivElement => {
 export const createFontLoadObserver = (
   div: HTMLDivElement,
   callback: () => void
-): ResizeObserver => {
-  const node = select(div)
+): {
+  destroy: () => void;
+} => {
+  const selection = select(div)
     .selectAll(".plotteus-font-load-trigger")
     .data([null])
     .join("div")
@@ -29,21 +31,31 @@ export const createFontLoadObserver = (
     .style("pointer-events", "none")
     .style("white-space", "nowrap")
     .style("overflow", "hidden")
-    .text("Font load trigger")
-    .node() as HTMLDivElement;
+    .text("Font load trigger");
 
   const observer = new ResizeObserver(callback);
-  observer.observe(node);
+  observer.observe(selection.node() as HTMLDivElement);
 
-  return observer;
+  return {
+    destroy: () => {
+      observer.disconnect();
+      selection.remove();
+    },
+  };
 };
 
 export const createResizeObserver = (
   div: HTMLDivElement,
   callback: () => void
-): ResizeObserver => {
+): {
+  destroy: () => void;
+} => {
   const observer = new ResizeObserver(callback);
   observer.observe(div);
 
-  return observer;
+  return {
+    destroy: () => {
+      observer.disconnect();
+    },
+  };
 };
