@@ -14,7 +14,10 @@ export const createFontLoadObserver = (
   callback: () => void
 ): ResizeObserver => {
   const node = select(div)
-    .append("div")
+    .selectAll(".plotteus-font-load-trigger")
+    .data([null])
+    .join("div")
+    .attr("class", "plotteus-font-load-trigger")
     .attr("aria-hidden", "true")
     .style("z-index", -1)
     .style("position", "absolute")
