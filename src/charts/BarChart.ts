@@ -201,8 +201,9 @@ export const getters = (
           const labelY =
             groupY +
             BASE_MARGIN +
-            (shouldRotateLabels ? labelWidth * 0.5 : 0) -
-            textTypeDims.groupLabel.yShift;
+            (shouldRotateLabels
+              ? labelWidth * 0.5
+              : -textTypeDims.groupLabel.yShift);
           const labelFontSize = s(0, shareDomain ? FONT_SIZE.groupLabel : 0);
           const labelStrokeWidth = getGroupLabelStrokeWidth(labelFontSize);
           const labelRotate = shouldRotateLabels ? 90 : 0;
