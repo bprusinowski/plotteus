@@ -77,6 +77,11 @@ const makeStory = (
     t: number,
     indicateProgress?: boolean
   ) => void;
+  /**
+   * Destroys the Story. Handy when you want to create a new Story in the same container,
+   * as it removes all the elements created by the previous Story along with all the event listeners.
+   */
+  destroy: () => void;
 } => {
   const { svgBackgroundColor = "#FFFFFF" } = inputOptions ?? {};
   const options: StoryOptions = {
@@ -107,7 +112,7 @@ const makeStory = (
     });
   };
 
-  createFontLoadObserver(div, () => {
+  const fontLoadOberver = createFontLoadObserver(div, () => {
     if (initialFontLoaded) {
       storyInfo = info(inputSteps, svg);
       prepareStepsIntsMap(_width, _height);
@@ -117,7 +122,7 @@ const makeStory = (
     }
   });
 
-  createResizeObserver(div, () => {
+  const resizeObserver = createResizeObserver(div, () => {
     const { width, height } = svg.measure();
 
     if (width !== _width || height !== _height) {
@@ -170,8 +175,15 @@ const makeStory = (
     }
   };
 
+  const destroy = (): void => {
+    fontLoadOberver.disconnect();
+    resizeObserver.disconnect();
+    svg.destroy();
+  };
+
   return {
     render,
+    destroy,
   };
 };
 
