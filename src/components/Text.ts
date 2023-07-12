@@ -50,7 +50,7 @@ export const getter = ({
           break;
       }
 
-      return {
+      const g: G = {
         x: s(x, null, _g?.x),
         y: s(margin.top, null, _g?.y),
         width: s(textDims.width, null, _g?.width),
@@ -62,6 +62,8 @@ export const getter = ({
           getTextColor(svgBackgroundColor)
         ),
       };
+
+      return g;
     },
   };
 };

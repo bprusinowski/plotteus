@@ -17,8 +17,8 @@ import {
   TextDims,
   deriveSubtlerColor,
   getDataValues,
-  getTextDims,
   getTextTypeDims,
+  getTextsDims,
   max,
   unique,
 } from "./utils";
@@ -35,17 +35,18 @@ export const info = (inputSteps: InputStep[], svg: Svg): Info => {
   const textTypeDims = getTextTypeDims(svg);
   const groups = inputSteps.map((d) => d.groups).flat();
   const groupLabels = unique(groups.map((d) => d.key));
-  const groupLabelDims = getTextDims(groupLabels, svg, "groupLabel");
+  const groupLabelDims = getTextsDims(groupLabels, svg, "groupLabel");
+  const maxGroupLabelWidth =
+    max(Object.values(groupLabelDims).map((d) => d.width)) ?? 0;
   const datumLabels = unique(groups.flatMap((d) => d.data.map((d) => d.key)));
-  const datumLabelDims = getTextDims(datumLabels, svg, "datumLabel");
+  const datumLabelDims = getTextsDims(datumLabels, svg, "datumLabel");
   const datumValues = unique(inputSteps.flatMap(getDataValues));
-  const datumValueDims = getTextDims(datumValues, svg, "datumValue");
+  const datumValueDims = getTextsDims(datumValues, svg, "datumValue");
 
   return {
     textTypeDims,
     groupLabelDims,
-    maxGroupLabelWidth:
-      max(Object.values(groupLabelDims).map((d) => d.width)) ?? 0,
+    maxGroupLabelWidth,
     datumLabelDims,
     datumValueDims,
   };

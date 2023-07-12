@@ -53,16 +53,14 @@ export const getTextTypeDims = (svg: Svg): TextTypeDims => {
 
 export type TextDims = Record<string, DOMRect>;
 
-export const getTextDims = (
+export const getTextsDims = (
   labels: (string | number)[],
   svg: Svg,
   textType: TextType
 ): TextDims => {
-  const dims: TextDims = {};
-  labels.forEach((label) => {
-    dims[label] = svg.measureText(label, textType);
-  });
-
+  const dims: TextDims = Object.fromEntries(
+    labels.map((d) => [d, svg.measureText(d, textType)])
+  );
   return dims;
 };
 

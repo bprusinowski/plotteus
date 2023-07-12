@@ -123,7 +123,7 @@ export const getters = (
         const labelStrokeWidth = getGroupLabelStrokeWidth(labelFontSize);
         const opacity = group.data.opacity ?? 1;
 
-        return {
+        const g: Chart.G = {
           d,
           x: s(groupX, null, _g?.x),
           y: s(groupY, null, _g?.y),
@@ -137,6 +137,8 @@ export const getters = (
           fill: groupFill,
           opacity,
         };
+
+        return g;
       },
       data: [],
     };
@@ -194,7 +196,7 @@ export const getters = (
           const valueFill = labelFill;
           const opacity = datum.data.opacity ?? 1;
 
-          return {
+          const g: Datum.G = {
             d,
             clipPath,
             x,
@@ -214,6 +216,8 @@ export const getters = (
             valueFill,
             opacity,
           };
+
+          return g;
         },
       };
 

@@ -12,6 +12,7 @@ import {
   InputAxis,
   InputGroupValue,
   Layout,
+  isVerticalBarInputStep,
 } from "../types";
 import {
   FONT_SIZE,
@@ -58,17 +59,20 @@ export const info = (
   const baseInfo = Chart.baseInfo(svgBackgroundColor, inputStep, shareDomain);
   const type: ChartType = "bar";
   const maxValue = getMaxValue(inputStep);
-  const { x0bw } =
-    inputStep.layout === "vertical" || inputStep.layout === undefined
-      ? getVerticalScales({
-          isGrouped: chartSubtype === "grouped",
-          groupsKeys: baseInfo.groupsKeys,
-          dataKeys: baseInfo.dataKeys,
-          maxValue,
-          width,
-          height,
-        })
-      : { x0bw: undefined };
+  const isVertical = isVerticalBarInputStep(inputStep);
+  let shouldRotateLabels = false;
+
+  if (shareDomain && isVertical) {
+    const { x0bw } = getVerticalScales({
+      isGrouped: chartSubtype === "grouped",
+      groupsKeys: baseInfo.groupsKeys,
+      dataKeys: baseInfo.dataKeys,
+      maxValue,
+      width,
+      height,
+    });
+    shouldRotateLabels = storyInfo.maxGroupLabelWidth + 4 > x0bw;
+  }
 
   return {
     ...storyInfo,
@@ -79,17 +83,9 @@ export const info = (
     groups,
     minValue: 0,
     maxValue: getMaxValue(inputStep),
-    verticalAxis:
-      inputStep.layout === "vertical" || inputStep.layout === undefined
-        ? inputStep.verticalAxis
-        : undefined,
-    horizontalAxis:
-      inputStep.layout === "horizontal" ? inputStep.horizontalAxis : undefined,
-    // Add some padding between the group labels.
-    shouldRotateLabels:
-      shareDomain && x0bw !== undefined
-        ? storyInfo.maxGroupLabelWidth + 4 > x0bw
-        : false,
+    verticalAxis: isVertical ? inputStep.verticalAxis : undefined,
+    horizontalAxis: !isVertical ? inputStep.horizontalAxis : undefined,
+    shouldRotateLabels,
   };
 };
 
@@ -100,7 +96,6 @@ const getMaxValue = (step: BarInputStep): ExtremeValue => {
     case "stacked":
       step.groups.forEach((d) => {
         const groupSum = sum(d.data.map((d) => d.value));
-
         if (groupSum > valueMax) {
           valueMax = groupSum;
         }
@@ -209,7 +204,7 @@ export const getters = (
           const labelRotate = shouldRotateLabels ? 90 : 0;
           const opacity = group.opacity ?? 1;
 
-          return {
+          const g: Chart.G = {
             d,
             x: s(groupX, null, _g?.x),
             y: s(groupY, null, _g?.y),
@@ -223,6 +218,8 @@ export const getters = (
             fill: groupFill,
             opacity,
           };
+
+          return g;
         },
         data: [],
       };
@@ -316,7 +313,7 @@ export const getters = (
             const valueFill = isGrouped ? groupLabelFill : labelFill;
             const opacity = datum.opacity ?? 1;
 
-            return {
+            const g: Datum.G = {
               d,
               clipPath,
               x,
@@ -336,6 +333,8 @@ export const getters = (
               valueFill,
               opacity,
             };
+
+            return g;
           },
         };
 
@@ -378,7 +377,7 @@ export const getters = (
           const labelStrokeWidth = getGroupLabelStrokeWidth(labelFontSize);
           const opacity = group.opacity ?? 1;
 
-          return {
+          const g: Chart.G = {
             d,
             x: s(groupX, null, _g?.x),
             y: s(groupY, null, _g?.y),
@@ -392,6 +391,8 @@ export const getters = (
             fill: groupFill,
             opacity,
           };
+
+          return g;
         },
         data: [],
       };
@@ -470,7 +471,7 @@ export const getters = (
             const valueFill = isGrouped ? groupLabelFill : labelFill;
             const opacity = datum.opacity ?? 1;
 
-            return {
+            const g: Datum.G = {
               d,
               clipPath,
               x,
@@ -490,6 +491,8 @@ export const getters = (
               valueFill,
               opacity,
             };
+
+            return g;
           },
         };
 

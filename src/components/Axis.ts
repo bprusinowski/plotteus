@@ -186,11 +186,13 @@ export const getters = ({
           break;
       }
 
-      return {
+      const g: G = {
         x: s(x, null, _g?.x),
         y: s(y, null, _g?.y),
         opacity: s(0, 1),
       };
+
+      return g;
     },
     title: titleGetter,
     ticks: Tick.getters({
