@@ -98,7 +98,6 @@ const makeStory = (
   let _t = 0;
   let _width = 0;
   let _height = 0;
-  let initialFontLoaded = false;
 
   let intsMap: Step.IntsMap | undefined;
 
@@ -112,12 +111,8 @@ const makeStory = (
   };
 
   const fontLoadObserver = createFontLoadObserver(div, () => {
-    if (initialFontLoaded) {
-      storyInfo = info(inputSteps, svg);
-      prepareAndRender();
-    } else {
-      initialFontLoaded = true;
-    }
+    storyInfo = info(inputSteps, svg);
+    prepareAndRender();
   });
 
   const resizeObserver = createResizeObserver(div, () => {
