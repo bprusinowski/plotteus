@@ -85,7 +85,7 @@ export const getters = ({
         const lightLineColor = deriveSubtlerColor(svgBackgroundColor);
         const boldLineColor = deriveSubtlerColor(svgBackgroundColor, 3);
 
-        return {
+        const g: G = {
           x: isVerticalAxis ? x : y,
           y: isVerticalAxis ? y : x,
           size: isVerticalAxis ? width : height,
@@ -96,6 +96,8 @@ export const getters = ({
           boldLineColor,
           opacity: s(0, 1),
         };
+
+        return g;
       },
     };
 

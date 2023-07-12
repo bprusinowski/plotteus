@@ -48,25 +48,30 @@ export const info = (
 ): Info => {
   const { groups, shareDomain = false } = inputStep;
   const type: ChartType = "scatter";
+  const xValues = groups.flatMap((d) => d.data.map((d) => d.x));
+  const yValues = groups.flatMap((d) => d.data.map((d) => d.y));
 
   return {
     ...storyInfo,
     ...Chart.baseInfo(svgBackgroundColor, inputStep, shareDomain),
     type,
     groups,
-    minValue: getMinValue(inputStep),
-    maxValue: getMaxValue(inputStep),
+    minValue: getMinValue(xValues, yValues, inputStep),
+    maxValue: getMaxValue(xValues, yValues, inputStep),
     verticalAxis: inputStep.verticalAxis,
     horizontalAxis: inputStep.horizontalAxis,
   };
 };
 
 const getMinValue = (
+  xValues: number[],
+  yValues: number[],
   step: ScatterInputStep
-): { x: ExtremeValue; y: ExtremeValue } => {
-  const xValues = step.groups.flatMap((d) => d.data.map((d) => d.x));
+): {
+  x: ExtremeValue;
+  y: ExtremeValue;
+} => {
   const xMin = min(xValues) ?? 0;
-  const yValues = step.groups.flatMap((d) => d.data.map((d) => d.y));
   const yMin = min(yValues) ?? 0;
 
   return {
@@ -76,11 +81,14 @@ const getMinValue = (
 };
 
 const getMaxValue = (
+  xValues: number[],
+  yValues: number[],
   step: ScatterInputStep
-): { x: ExtremeValue; y: ExtremeValue } => {
-  const xValues = step.groups.flatMap((d) => d.data.map((d) => d.x));
+): {
+  x: ExtremeValue;
+  y: ExtremeValue;
+} => {
   const xMax = max(xValues) ?? 0;
-  const yValues = step.groups.flatMap((d) => d.data.map((d) => d.y));
   const yMax = max(yValues) ?? 0;
 
   return {
@@ -134,10 +142,11 @@ export const getters = (
     const maxX = xScale(max(allX) ?? 0);
     const minY = yScale(min(allY) ?? 0);
     const maxY = yScale(max(allY) ?? 0);
-    const xExtent = maxX - minX;
+    const halfXExtent = (maxX - minX) * 0.5;
+    const halfYExtent = (maxY - minY) * 0.5;
     const yExtent = maxY - minY;
-    const groupX = margin.left + xExtent / 2 + minX;
-    const groupY = margin.top + yExtent / 2 + minY;
+    const groupX = margin.left + halfXExtent + minX;
+    const groupY = margin.top + halfYExtent + minY;
     const groupGetters: Chart.Getter = {
       key,
       g: ({ s, _g }) => {
@@ -148,7 +157,7 @@ export const getters = (
         const labelStrokeWidth = getGroupLabelStrokeWidth(labelFontSize);
         const opacity = group.opacity ?? 1;
 
-        return {
+        const g: Chart.G = {
           d,
           x: s(groupX, null, _g?.x),
           y: s(groupY, null, _g?.y),
@@ -162,6 +171,8 @@ export const getters = (
           fill: groupFill,
           opacity,
         };
+
+        return g;
       },
       data: [],
     };
@@ -169,8 +180,8 @@ export const getters = (
     for (const datum of group.data) {
       const { key, x, y, fill } = datum;
 
-      const datumX = groupX + xScale(x) - xExtent / 2 - minX;
-      const datumY = groupY + yScale(y) - yExtent / 2 - minY;
+      const datumX = groupX + xScale(x) - halfXExtent - minX;
+      const datumY = groupY + yScale(y) - halfYExtent - minY;
       const datumFill = fill ?? colorMap.get(key, group.key, shareDomain);
       const datumGetters: Datum.Getter = {
         key,
@@ -212,7 +223,7 @@ export const getters = (
           const valueFill = "black";
           const opacity = datum.opacity ?? 1;
 
-          return {
+          const g: Datum.G = {
             d,
             clipPath,
             x,
@@ -232,6 +243,8 @@ export const getters = (
             valueFill,
             opacity,
           };
+
+          return g;
         },
       };
 

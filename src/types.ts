@@ -33,21 +33,37 @@ type BaseInputStep = {
   cartoonize?: boolean;
 };
 
-export type BarInputStep = BaseInputStep & {
+export type BarInputStep = VerticalBarInputStep | HorizontalBarInputStep;
+
+export type VerticalBarInputStep = BaseInputStep & {
   chartType: "bar";
   chartSubtype?: BarChartSubtype;
   valueScale?: InputScale;
   groups: InputGroupValue[];
-} & (
-    | {
-        layout?: "vertical";
-        verticalAxis?: InputAxis;
-      }
-    | {
-        layout: "horizontal";
-        horizontalAxis?: InputAxis;
-      }
-  );
+  layout?: "vertical";
+  verticalAxis?: InputAxis;
+};
+
+export const isVerticalBarInputStep = (
+  step: BarInputStep
+): step is VerticalBarInputStep => {
+  return step.layout !== "horizontal";
+};
+
+export type HorizontalBarInputStep = BaseInputStep & {
+  chartType: "bar";
+  chartSubtype?: BarChartSubtype;
+  valueScale?: InputScale;
+  groups: InputGroupValue[];
+  layout: "horizontal";
+  horizontalAxis?: InputAxis;
+};
+
+export const isHorizontalBarInputStep = (
+  step: BarInputStep
+): step is HorizontalBarInputStep => {
+  return step.layout === "horizontal";
+};
 
 export type BeeswarmInputStep = BaseInputStep & {
   chartType: "beeswarm";

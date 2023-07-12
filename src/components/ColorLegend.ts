@@ -213,7 +213,7 @@ export const getters = ({
       key,
       rowIndex,
       g: ({ s, _g }) => {
-        return {
+        const g: G = {
           x: s(margin.left + x, null, _g?.x),
           y: s(height + margin.top + y, null, _g?.y),
           labelX: isTitle ? 0 : R * 2,
@@ -226,6 +226,8 @@ export const getters = ({
           fill: color,
           fillOpacity: s(0, 1),
         };
+
+        return g;
       },
     });
   }
