@@ -179,7 +179,6 @@ const makeStory = (
   const destroy = (): void => {
     resizeObserver.destroy();
     fontLoadObserver.destroy();
-    svg.destroy();
   };
 
   return {
