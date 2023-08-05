@@ -57,6 +57,10 @@ export const info = (
   };
 };
 
+export const yExtent = (): Chart.YExtent => {
+  return;
+};
+
 export const updateDims = (dims: Dimensions) => {
   const { BASE_MARGIN } = dims;
   dims.addBottom(BASE_MARGIN);

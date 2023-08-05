@@ -110,6 +110,11 @@ const getMaxValue = (step: BarInputStep): ExtremeValue => {
   return getExtremeValue(step.valueScale?.maxValue, valueMax);
 };
 
+export const yExtent = (inputStep: BarInputStep): Chart.YExtent => {
+  const maxValue = getMaxValue(inputStep);
+  return [0, maxValue.actual];
+};
+
 export const updateDims = (info: Info, dims: Dimensions, svg: Svg) => {
   const { subtype, layout, maxValue, shouldRotateLabels, maxGroupLabelWidth } =
     info;

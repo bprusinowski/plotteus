@@ -248,7 +248,13 @@ export type Resolved = Generic.Resolved<
   { titles: Text.Resolved[]; ticks: Tick.Resolved[] }
 >;
 
-export const resolve = ({ ints, t }: { ints: Int[]; t: number }) => {
+export const resolve = ({
+  ints,
+  t,
+}: {
+  ints: Int[];
+  t: number;
+}): Resolved[] => {
   return Generic.resolve<G, Resolved, Int>()({
     ints,
     t,

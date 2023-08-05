@@ -35,7 +35,13 @@ export const baseInfo = (
   );
   const showValues = inputStep.showValues ?? false;
 
-  return { groupsKeys, dataKeys, shareDomain, showValues, svgBackgroundColor };
+  return {
+    groupsKeys,
+    dataKeys,
+    shareDomain,
+    showValues,
+    svgBackgroundColor,
+  };
 };
 
 export const info = (
@@ -64,6 +70,28 @@ export const info = (
 };
 
 export type Info = ReturnType<typeof info>;
+
+export type YExtent = [number, number] | undefined;
+
+export const yExtent = (inputStep: InputStep): YExtent => {
+  switch (inputStep.chartType) {
+    case "bar":
+      return BarChart.yExtent(inputStep);
+    case "beeswarm":
+      return BeeswarmChart.yExtent(inputStep);
+    case "bubble":
+      return BubbleChart.yExtent();
+    case "pie":
+      return PieChart.yExtent();
+    case "scatter":
+      return ScatterChart.yExtent(inputStep);
+    case "treemap":
+      return TreemapChart.yExtent();
+    default:
+      const _exhaustiveCheck: never = inputStep;
+      return _exhaustiveCheck;
+  }
+};
 
 export const updateDims = (info: Info, dims: Dimensions, svg: Svg) => {
   switch (info.type) {

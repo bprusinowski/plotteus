@@ -73,6 +73,23 @@ export const info = (
   };
 };
 
+export const yExtent = (inputStep: BeeswarmInputStep): Chart.YExtent => {
+  const { layout, positionScale } = inputStep;
+
+  if (layout === "horizontal") {
+    return;
+  }
+
+  const positions = inputStep.groups.flatMap((g) => {
+    return g.data.map((d) => d.position);
+  });
+
+  return [
+    positionScale?.minValue ?? min(positions) ?? 0,
+    positionScale?.maxValue ?? max(positions) ?? 0,
+  ];
+};
+
 export const updateDims = (dims: Dimensions) => {
   const { BASE_MARGIN } = dims;
   dims.addTop(BASE_MARGIN).addBottom(BASE_MARGIN);

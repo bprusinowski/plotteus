@@ -1,3 +1,4 @@
+export * as Annotation from "./Annotation";
 export * as Axis from "./Axis";
 export * as AxisTick from "./AxisTick";
 export * as ColorLegend from "./ColorLegend";

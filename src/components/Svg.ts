@@ -52,12 +52,14 @@ export const createSvg = (div: HTMLDivElement, options: StoryOptions): Svg => {
   ): DOMRect => {
     const { width } = measure();
     const {
-      maxWidth = width,
       paddingLeft = 0,
       paddingTop = 0,
       paddingRight = 0,
       paddingBottom = 0,
     } = options ?? {};
+    const maxWidth = options?.maxWidth
+      ? Math.min(width, options.maxWidth)
+      : width;
     const root = select(div)
       .append("div")
       .attr("aria-hidden", "true")

@@ -29,6 +29,7 @@ export type Info = {
   maxGroupLabelWidth: number;
   datumLabelDims: TextDims;
   datumValueDims: TextDims;
+  annotationDims: TextDims;
 };
 
 export const info = (inputSteps: InputStep[], svg: Svg): Info => {
@@ -42,6 +43,20 @@ export const info = (inputSteps: InputStep[], svg: Svg): Info => {
   const datumLabelDims = getTextsDims(datumLabels, svg, "datumLabel");
   const datumValues = unique(inputSteps.flatMap(getDataValues));
   const datumValueDims = getTextsDims(datumValues, svg, "datumValue");
+  const annotationDims: TextDims = Object.fromEntries(
+    inputSteps.flatMap((d) =>
+      (d.annotations ?? []).map((d) => [
+        d.key,
+        svg.measureText(d.key, "annotationLabel", {
+          maxWidth: d.maxWidth ?? undefined,
+          paddingLeft: 4,
+          paddingTop: 2,
+          paddingRight: 4,
+          paddingBottom: 2,
+        }),
+      ])
+    )
+  );
 
   return {
     textTypeDims,
@@ -49,6 +64,7 @@ export const info = (inputSteps: InputStep[], svg: Svg): Info => {
     maxGroupLabelWidth,
     datumLabelDims,
     datumValueDims,
+    annotationDims,
   };
 };
 
