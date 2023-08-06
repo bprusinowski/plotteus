@@ -179,11 +179,21 @@ export type InputDatumXY = BaseInputDatum & {
 export type InputAnnotation = {
   key: string;
   type: "line";
-  layout: "horizontal";
-  y: number;
+  text?: string;
+  textAnchor?: Anchor;
+  fill?: string;
+  size?: number;
   maxWidth?: number;
-  autoMargin?: boolean;
-};
+} & (
+  | {
+      layout: "horizontal";
+      y: number;
+    }
+  | {
+      layout: "vertical";
+      x: number;
+    }
+);
 
 export type Anchor = "start" | "middle" | "end";
 

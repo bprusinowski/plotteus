@@ -65,7 +65,17 @@ export const info = (
   };
 };
 
-export const yExtent = (inputStep: ScatterInputStep): Chart.YExtent => {
+export const xExtent = (inputStep: ScatterInputStep): Chart.Extent => {
+  const { groups } = inputStep;
+  const xValues = groups.flatMap((d) => d.data.map((d) => d.x));
+  const yValues = groups.flatMap((d) => d.data.map((d) => d.y));
+  const minValue = getMinValue(xValues, yValues, inputStep);
+  const maxValue = getMaxValue(xValues, yValues, inputStep);
+
+  return [minValue.x.actual, maxValue.x.actual];
+};
+
+export const yExtent = (inputStep: ScatterInputStep): Chart.Extent => {
   const { groups } = inputStep;
   const xValues = groups.flatMap((d) => d.data.map((d) => d.x));
   const yValues = groups.flatMap((d) => d.data.map((d) => d.y));

@@ -110,9 +110,20 @@ const getMaxValue = (step: BarInputStep): ExtremeValue => {
   return getExtremeValue(step.valueScale?.maxValue, valueMax);
 };
 
-export const yExtent = (inputStep: BarInputStep): Chart.YExtent => {
-  const maxValue = getMaxValue(inputStep);
-  return [0, maxValue.actual];
+export const xExtent = (inputStep: BarInputStep): Chart.Extent => {
+  if (inputStep.layout === "horizontal") {
+    const maxValue = getMaxValue(inputStep);
+
+    return [0, maxValue.actual];
+  }
+};
+
+export const yExtent = (inputStep: BarInputStep): Chart.Extent => {
+  if (inputStep.layout === undefined || inputStep.layout === "vertical") {
+    const maxValue = getMaxValue(inputStep);
+
+    return [0, maxValue.actual];
+  }
 };
 
 export const updateDims = (info: Info, dims: Dimensions, svg: Svg) => {

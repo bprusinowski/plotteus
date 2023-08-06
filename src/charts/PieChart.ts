@@ -49,7 +49,11 @@ export const info = (
   };
 };
 
-export const yExtent = (): Chart.YExtent => {
+export const xExtent = (): Chart.Extent => {
+  return;
+};
+
+export const yExtent = (): Chart.Extent => {
   return;
 };
 
@@ -64,13 +68,8 @@ export const getters = (
 ): Chart.Getter[] => {
   const { groups, maxValue, shareDomain, showValues, svgBackgroundColor } =
     info;
-  const {
-    showDatumLabels,
-    dims: { width, height, size, margin },
-    textTypeDims,
-    colorMap,
-    cartoonize,
-  } = props;
+  const { showDatumLabels, dims, textTypeDims, colorMap, cartoonize } = props;
+  const { width, height, size, margin } = dims;
   const root = getHierarchyRoot({ groups, size: maxValue.k * size });
   const groupsGetters: Chart.Getter[] = [];
   const maxValueShift = maxValue.kc * size * 0.5;

@@ -57,7 +57,11 @@ export const info = (
   };
 };
 
-export const yExtent = (): Chart.YExtent => {
+export const xExtent = (): Chart.Extent => {
+  return;
+};
+
+export const yExtent = (): Chart.Extent => {
   return;
 };
 

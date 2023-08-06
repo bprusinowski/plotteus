@@ -11,7 +11,7 @@ import { ColorMap } from "../colors";
 import * as Generic from "../components/Generic";
 import { Svg } from "../components/Svg";
 import { Tooltip } from "../components/Tooltip";
-import { Dimensions, ResolvedDimensions } from "../dims";
+import { Dimensions } from "../dims";
 import { InputStep, TextTypeDims } from "../types";
 import { FONT_WEIGHT, stateOrderComparator, unique } from "../utils";
 import * as Datum from "./Datum";
@@ -71,9 +71,29 @@ export const info = (
 
 export type Info = ReturnType<typeof info>;
 
-export type YExtent = [number, number] | undefined;
+export type Extent = [number, number] | undefined;
 
-export const yExtent = (inputStep: InputStep): YExtent => {
+export const xExtent = (inputStep: InputStep): Extent => {
+  switch (inputStep.chartType) {
+    case "bar":
+      return BarChart.xExtent(inputStep);
+    case "beeswarm":
+      return BeeswarmChart.xExtent(inputStep);
+    case "bubble":
+      return BubbleChart.xExtent();
+    case "pie":
+      return PieChart.xExtent();
+    case "scatter":
+      return ScatterChart.xExtent(inputStep);
+    case "treemap":
+      return TreemapChart.xExtent();
+    default:
+      const _exhaustiveCheck: never = inputStep;
+      return _exhaustiveCheck;
+  }
+};
+
+export const yExtent = (inputStep: InputStep): Extent => {
   switch (inputStep.chartType) {
     case "bar":
       return BarChart.yExtent(inputStep);
@@ -133,7 +153,7 @@ export type Getter = Generic.Getter<G, { data: Datum.Getter[] }>;
 export type GetterProps = {
   showDatumLabels: boolean;
   svg: Svg;
-  dims: ResolvedDimensions;
+  dims: Dimensions;
   textTypeDims: TextTypeDims;
   colorMap: ColorMap;
   cartoonize: boolean;

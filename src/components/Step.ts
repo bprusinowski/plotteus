@@ -56,43 +56,14 @@ export const getters = ({
     } = step;
 
     const dims = new Dimensions(width, height);
+    const xExtent = Chart.xExtent(step);
     const yExtent = Chart.yExtent(step);
-
-    // Need to take max annotation width into account before calculating chart info,
-    // because bar chart determines whether or not to rotate the labels based on the
-    // width of the chart.
-    let annotationMaxWidth: number | undefined;
-    if (annotations && yExtent) {
-      const anyAutoMargin = annotations.some((d) => d.autoMargin);
-
-      if (anyAutoMargin) {
-        const maxWidth = max(
-          annotations.map((d) => {
-            return annotationDims[d.key].width;
-          })
-        );
-
-        if (maxWidth !== undefined) {
-          annotationMaxWidth = maxWidth;
-          dims.addRight(annotationMaxWidth + dims.BASE_MARGIN);
-        }
-      }
-    }
-
-    const chartInfo = Chart.info(storyInfo, svgBackgroundColor, step, dims);
-    if (annotationMaxWidth !== undefined) {
-      dims.addRight(-(annotationMaxWidth + dims.BASE_MARGIN));
-    }
-    const colorLegendInfo = ColorLegend.info(step, chartInfo, colorMap);
-    const verticalAxisInfo = Axis.info("vertical", chartInfo);
-    const horizontalAxisInfo = Axis.info("horizontal", chartInfo);
 
     let titleGetter: Text.Getter | undefined;
     if (title !== undefined) {
-      const resolvedDims = dims.resolve();
       const titleDims = svg.measureText(title, "title", {
-        paddingLeft: resolvedDims.margin.left,
-        paddingRight: resolvedDims.margin.right,
+        paddingLeft: dims.margin.left,
+        paddingRight: dims.margin.right,
       });
       titleGetter = Text.getter({
         svg,
@@ -100,7 +71,7 @@ export const getters = ({
         text: title,
         type: "title",
         anchor: titleAnchor,
-        resolvedDims,
+        dims,
         textDims: titleDims,
       });
       Text.updateDims({
@@ -118,10 +89,9 @@ export const getters = ({
 
     let subtitleGetter: Text.Getter | undefined;
     if (subtitle !== undefined) {
-      const resolvedDims = dims.resolve();
       const subtitleDims = svg.measureText(subtitle, "subtitle", {
-        paddingLeft: resolvedDims.margin.left,
-        paddingRight: resolvedDims.margin.right,
+        paddingLeft: dims.margin.left,
+        paddingRight: dims.margin.right,
       });
       subtitleGetter = Text.getter({
         svg,
@@ -129,7 +99,7 @@ export const getters = ({
         text: subtitle,
         type: "subtitle",
         anchor: subtitleAnchor,
-        resolvedDims,
+        dims,
         textDims: subtitleDims,
       });
       Text.updateDims({
@@ -145,6 +115,53 @@ export const getters = ({
       dims.addTop(dims.BASE_MARGIN);
     }
 
+    // Need to take max annotation width into account before calculating chart info,
+    // because bar chart determines whether or not to rotate the labels based on the
+    // width of the chart.
+    let annotationMaxWidth: number | undefined;
+    const horizontalAnnotations = annotations?.filter(
+      (d) => d.layout === "horizontal"
+    );
+
+    if (horizontalAnnotations?.length && yExtent) {
+      const maxWidth = max(
+        horizontalAnnotations.map((d) => {
+          return annotationDims[d.key].width;
+        })
+      );
+
+      if (maxWidth !== undefined && maxWidth > 0) {
+        annotationMaxWidth = maxWidth;
+        dims.addRight(annotationMaxWidth + dims.BASE_MARGIN);
+      }
+    }
+
+    let annotationMaxHeight: number | undefined;
+    const verticalAnnotations = annotations?.filter(
+      (d) => d.layout === "vertical"
+    );
+
+    if (verticalAnnotations?.length && xExtent) {
+      const maxHeight = max(
+        verticalAnnotations.map((d) => {
+          return annotationDims[d.key].height;
+        })
+      );
+
+      if (maxHeight !== undefined && maxHeight > 0) {
+        annotationMaxHeight = maxHeight;
+        dims.addTop(annotationMaxHeight + dims.BASE_MARGIN);
+      }
+    }
+
+    const chartInfo = Chart.info(storyInfo, svgBackgroundColor, step, dims);
+    if (annotationMaxWidth !== undefined) {
+      dims.addRight(-(annotationMaxWidth + dims.BASE_MARGIN));
+    }
+    const colorLegendInfo = ColorLegend.info(step, chartInfo, colorMap);
+    const verticalAxisInfo = Axis.info("vertical", chartInfo);
+    const horizontalAxisInfo = Axis.info("horizontal", chartInfo);
+
     let colorLegendsGetters: ColorLegend.Getter[] | undefined;
     if (colorLegendInfo.show) {
       colorLegendsGetters = ColorLegend.getters({
@@ -154,7 +171,7 @@ export const getters = ({
         itemHeight: textTypeDims.legendItem.height,
         svg,
         svgBackgroundColor,
-        dims: dims.resolve(),
+        dims,
       });
       ColorLegend.updateDims({
         dims,
@@ -170,7 +187,7 @@ export const getters = ({
         paddingLeft: dims.BASE_MARGIN,
         paddingRight: dims.BASE_MARGIN,
       });
-      const ticksCount = Axis.getTicksCount(dims.resolve().height);
+      const ticksCount = Axis.getTicksCount(dims.height);
       Axis.updateDims({
         type: "vertical",
         dims,
@@ -195,7 +212,7 @@ export const getters = ({
         paddingLeft: dims.BASE_MARGIN,
         paddingRight: dims.BASE_MARGIN,
       });
-      const ticksCount = Axis.getTicksCount(dims.resolve().width);
+      const ticksCount = Axis.getTicksCount(dims.width);
       const width = Axis.getWidth({
         svg,
         ticksCount,
@@ -215,15 +232,13 @@ export const getters = ({
         tickFormat,
         addTopMargin,
       });
-      const resolvedDims = dims.resolve();
 
       horizontalAxisGetters = Axis.getters({
         type: "horizontal",
         title,
         titleMargin: {
           top: dims.BASE_MARGIN * 1.5 + AxisTick.SIZE + AxisTick.LABEL_MARGIN,
-          right:
-            resolvedDims.margin.right + resolvedDims.margin.left - width * 0.5,
+          right: dims.margin.right + dims.margin.left - width * 0.5,
           bottom: 0,
           left: 0,
         },
@@ -246,8 +261,6 @@ export const getters = ({
       _maxHorizontalAxisValue = undefined;
     }
 
-    // Need to update the chart dims again to make sure ticks are not overlapping
-    // with the annotations.
     if (annotationMaxWidth !== undefined) {
       dims.addRight(annotationMaxWidth + dims.BASE_MARGIN);
     }
@@ -256,7 +269,7 @@ export const getters = ({
     if (verticalAxisInfo.show) {
       const { title, tickFormat, minValue, maxValue, addTopMargin } =
         verticalAxisInfo;
-      const ticksCount = Axis.getTicksCount(dims.resolve().height);
+      const ticksCount = Axis.getTicksCount(dims.height);
       const width = Axis.getWidth({
         svg,
         ticksCount,
@@ -311,7 +324,7 @@ export const getters = ({
     const groupsGetters = Chart.getters(chartInfo, {
       showDatumLabels,
       svg,
-      dims: dims.resolve(),
+      dims,
       textTypeDims,
       colorMap,
       cartoonize,
@@ -322,9 +335,8 @@ export const getters = ({
     }
 
     let annotationsGetters: Annotation.Getter[] | undefined;
-    if (annotations && yExtent) {
-      const resolvedDims = dims.resolve();
-      const info = Annotation.info(yExtent, resolvedDims);
+    if (annotations) {
+      const info = Annotation.info(xExtent, yExtent, dims);
       annotationsGetters = Annotation.getters({
         info,
         annotations,

@@ -1,5 +1,5 @@
 import { Selection } from "d3-selection";
-import { Dimensions, ResolvedDimensions } from "../dims";
+import { Dimensions } from "../dims";
 import { Anchor, TextType } from "../types";
 import { FONT_SIZE, FONT_WEIGHT, getTextColor, hexToRgb } from "../utils";
 import * as Generic from "./Generic";
@@ -23,7 +23,7 @@ export const getter = ({
   anchor,
   svg,
   svgBackgroundColor,
-  resolvedDims: { fullWidth, margin },
+  dims: { fullWidth, margin },
   textDims,
 }: {
   text: string;
@@ -31,7 +31,7 @@ export const getter = ({
   anchor: Anchor;
   svg: Svg;
   svgBackgroundColor: string;
-  resolvedDims: ResolvedDimensions;
+  dims: Dimensions;
   textDims: DOMRect;
 }): Getter => {
   return {

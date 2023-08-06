@@ -1,7 +1,7 @@
 import { ScaleLinear, scaleLinear } from "d3-scale";
 import { Selection } from "d3-selection";
 import { getPathData } from "../coords";
-import { Dimensions, ResolvedDimensions } from "../dims";
+import { Dimensions } from "../dims";
 import { InputAnnotation } from "../types";
 import { TextDims, deriveSubtlerColor, getTextColor, hexToRgb } from "../utils";
 import * as Generic from "./Generic";
@@ -9,16 +9,24 @@ import { Svg } from "./Svg";
 import * as Text from "./Text";
 
 export type Info = {
-  getY: ScaleLinear<number, number>;
+  getX: ScaleLinear<number, number> | undefined;
+  getY: ScaleLinear<number, number> | undefined;
 };
 
 export const info = (
-  yExtent: [number, number],
-  resolvedDims: ResolvedDimensions
+  xExtent: [number, number] | undefined,
+  yExtent: [number, number] | undefined,
+  dims: Dimensions
 ): Info => {
-  const getY = scaleLinear().domain(yExtent).range([resolvedDims.height, 0]);
+  const getX = xExtent
+    ? scaleLinear().domain(xExtent).range([0, dims.width])
+    : undefined;
+  const getY = yExtent
+    ? scaleLinear().domain(yExtent).range([dims.height, 0])
+    : undefined;
 
   return {
+    getX,
     getY,
   };
 };
@@ -49,57 +57,120 @@ export const getters = ({
   svg: Svg;
   svgBackgroundColor: string;
 }): Getter[] => {
-  const { getY } = info;
-  const resolvedDims = dims.resolve();
+  const { getX, getY } = info;
 
-  return annotations.map(({ key, y: inputY }) => {
-    const y = dims.margin.top + getY(inputY);
-    const textDims = annotationDims[key];
-    const fill = deriveSubtlerColor(
-      getTextColor(svgBackgroundColor) === "black" ? "#000000" : "#FFFFFF"
-    );
-    const color = getTextColor(fill) === "black" ? "#000000" : "#FFFFFF";
+  return annotations
+    .filter((d) => {
+      return (
+        (d.layout === "horizontal" && getY) || (d.layout === "vertical" && getX)
+      );
+    })
+    .map((d) => {
+      const {
+        key,
+        text,
+        layout,
+        textAnchor: inputTextAnchor = "end",
+        fill: inputFill,
+        size = 3,
+      } = d;
+      const isHorizontal = layout === "horizontal";
+      const textAnchor = !isHorizontal
+        ? inputTextAnchor === "end"
+          ? "start"
+          : inputTextAnchor === "start"
+          ? "end"
+          : "middle"
+        : inputTextAnchor;
+      const textDims = annotationDims[key];
+      const {
+        width,
+        height,
+        fullWidth,
+        fullHeight,
+        left,
+        top,
+        right,
+        bottom,
+        BASE_MARGIN,
+      } = dims;
+      const x = isHorizontal ? left + width * 0.5 : left + getX!(d.x);
+      const y = isHorizontal
+        ? top + getY!(d.y)
+        : top + height * 0.5 - textDims.height * 0.5 - BASE_MARGIN;
+      const fill =
+        inputFill ??
+        deriveSubtlerColor(
+          getTextColor(svgBackgroundColor) === "black" ? "#000000" : "#FFFFFF"
+        );
+      const color = getTextColor(fill) === "black" ? "#000000" : "#FFFFFF";
 
-    const labelGetter = key
-      ? Text.getter({
-          type: "annotationLabel",
-          text: key,
-          anchor: "end",
-          svg,
-          svgBackgroundColor: fill,
-          resolvedDims: {
-            ...resolvedDims,
-            margin: {
-              ...resolvedDims.margin,
-              top: y - textDims.height,
-            },
-          },
-          textDims,
-        })
-      : undefined;
+      const labelGetter = text
+        ? Text.getter({
+            type: "annotationLabel",
+            text,
+            anchor: isHorizontal ? "end" : textAnchor,
+            svg,
+            svgBackgroundColor: fill,
+            dims: {
+              ...dims,
+              fullWidth:
+                textAnchor === "middle" && !isHorizontal
+                  ? fullWidth + (x - fullWidth * 0.5) * 2
+                  : fullWidth,
+              margin: {
+                ...dims.margin,
+                top:
+                  y -
+                  (isHorizontal
+                    ? textAnchor === "middle"
+                      ? textDims.height * 0.5
+                      : textAnchor === "start"
+                      ? textDims.height
+                      : 0
+                    : textDims.height +
+                      height * 0.5 -
+                      textDims.height * 0.5 +
+                      BASE_MARGIN),
+                left: x,
+                right:
+                  textAnchor === "end" && !isHorizontal ? fullWidth - x : right,
+              },
+            } as Dimensions,
+            textDims,
+          })
+        : undefined;
 
-    return {
-      key,
-      g: ({ s }) => {
-        const g: G = {
-          d: getPathData({
-            type: "bar",
+      return {
+        key,
+        g: ({ s }) => {
+          const g: G = {
+            d:
+              layout === "horizontal"
+                ? getPathData({
+                    type: "bar",
+                    width,
+                    height: size,
+                    cartoonize: false,
+                  })
+                : getPathData({
+                    type: "bar",
+                    width: size,
+                    height: height + textDims.height + BASE_MARGIN * 2,
+                    cartoonize: false,
+                  }),
+            x,
+            y,
             width: dims.width,
-            height: 3,
-            cartoonize: false,
-          }),
-          x: dims.margin.left + dims.width * 0.5,
-          y,
-          width: dims.width,
-          fill: s(`rgba(${hexToRgb(fill)}, 0)`, fill),
-          color: s(`rgba(${hexToRgb(color)}, 0)`, color),
-        };
+            fill: s(`rgba(${hexToRgb(fill)}, 0)`, fill),
+            color: s(`rgba(${hexToRgb(color)}, 0)`, color),
+          };
 
-        return g;
-      },
-      label: labelGetter,
-    };
-  });
+          return g;
+        },
+        label: labelGetter,
+      };
+    });
 };
 
 export type Int = Generic.Int<G, { labels: Text.Int[] }>;
@@ -163,10 +234,10 @@ export const render = ({
   resolved: Resolved[];
 }): void => {
   selection
-    .selectAll<SVGGElement, Resolved>(".annotation")
+    .selectAll<SVGGElement, Resolved>(".plotteus-annotation")
     .data(resolved, (d) => d.key)
     .join("g")
-    .attr("class", "annotation")
+    .attr("class", "plotteus-annotation")
     .call((g) =>
       g
         .selectAll("path")

@@ -1,7 +1,7 @@
 import { scaleLinear } from "d3-scale";
 import { Selection } from "d3-selection";
 import { HALF_FONT_K } from "../charts/utils";
-import { ResolvedDimensions } from "../dims";
+import { Dimensions } from "../dims";
 import { AxisType } from "../types";
 import {
   FONT_SIZE,
@@ -49,7 +49,7 @@ export const getters = ({
   _minValue: number | undefined;
   maxValue: number;
   _maxValue: number | undefined;
-  dims: ResolvedDimensions;
+  dims: Dimensions;
   svgBackgroundColor: string;
   tickHeight: number;
   tickFormat: (d: number) => string;

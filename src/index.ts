@@ -47,8 +47,8 @@ export const info = (inputSteps: InputStep[], svg: Svg): Info => {
     inputSteps.flatMap((d) =>
       (d.annotations ?? []).map((d) => [
         d.key,
-        svg.measureText(d.key, "annotationLabel", {
-          maxWidth: d.maxWidth ?? undefined,
+        svg.measureText(d.text ?? "", "annotationLabel", {
+          maxWidth: d.maxWidth ?? 100,
           paddingLeft: 4,
           paddingTop: 2,
           paddingRight: 4,
