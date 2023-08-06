@@ -1,10 +1,10 @@
-import { Axis, AxisTick, ColorLegend, Svg, Text, Tooltip } from ".";
+import { Annotation, Axis, AxisTick, ColorLegend, Svg, Text, Tooltip } from ".";
 import * as Story from "..";
 import * as Chart from "../charts/Chart";
 import { ColorMap } from "../colors";
 import { Dimensions } from "../dims";
 import { InputStep, StoryOptions } from "../types";
-import { stateOrderComparator } from "../utils";
+import { max, stateOrderComparator } from "../utils";
 
 export type Getter = {
   key: string;
@@ -14,6 +14,7 @@ export type Getter = {
   colorLegends: ColorLegend.Getter[] | undefined;
   verticalAxis: Axis.Getter | undefined;
   horizontalAxis: Axis.Getter | undefined;
+  annotations: Annotation.Getter[] | undefined;
 };
 
 export const getters = ({
@@ -31,7 +32,7 @@ export const getters = ({
   width: number;
   height: number;
 }): Getter[] => {
-  const { textTypeDims } = storyInfo;
+  const { textTypeDims, annotationDims } = storyInfo;
   const { svgBackgroundColor } = storyOptions;
   const getters: Getter[] = [];
   let _minHorizontalAxisValue: number | undefined;
@@ -51,20 +52,18 @@ export const getters = ({
       legendAnchor = "middle",
       showDatumLabels = false,
       cartoonize = false,
+      annotations,
     } = step;
 
     const dims = new Dimensions(width, height);
-    const chartInfo = Chart.info(storyInfo, svgBackgroundColor, step, dims);
-    const colorLegendInfo = ColorLegend.info(step, chartInfo, colorMap);
-    const verticalAxisInfo = Axis.info("vertical", chartInfo);
-    const horizontalAxisInfo = Axis.info("horizontal", chartInfo);
+    const xExtent = Chart.xExtent(step);
+    const yExtent = Chart.yExtent(step);
 
     let titleGetter: Text.Getter | undefined;
     if (title !== undefined) {
-      const resolvedDims = dims.resolve();
       const titleDims = svg.measureText(title, "title", {
-        paddingLeft: resolvedDims.margin.left,
-        paddingRight: resolvedDims.margin.right,
+        paddingLeft: dims.margin.left,
+        paddingRight: dims.margin.right,
       });
       titleGetter = Text.getter({
         svg,
@@ -72,7 +71,7 @@ export const getters = ({
         text: title,
         type: "title",
         anchor: titleAnchor,
-        resolvedDims,
+        dims,
         textDims: titleDims,
       });
       Text.updateDims({
@@ -90,10 +89,9 @@ export const getters = ({
 
     let subtitleGetter: Text.Getter | undefined;
     if (subtitle !== undefined) {
-      const resolvedDims = dims.resolve();
       const subtitleDims = svg.measureText(subtitle, "subtitle", {
-        paddingLeft: resolvedDims.margin.left,
-        paddingRight: resolvedDims.margin.right,
+        paddingLeft: dims.margin.left,
+        paddingRight: dims.margin.right,
       });
       subtitleGetter = Text.getter({
         svg,
@@ -101,7 +99,7 @@ export const getters = ({
         text: subtitle,
         type: "subtitle",
         anchor: subtitleAnchor,
-        resolvedDims,
+        dims,
         textDims: subtitleDims,
       });
       Text.updateDims({
@@ -117,6 +115,53 @@ export const getters = ({
       dims.addTop(dims.BASE_MARGIN);
     }
 
+    // Need to take max annotation width into account before calculating chart info,
+    // because bar chart determines whether or not to rotate the labels based on the
+    // width of the chart.
+    let annotationMaxWidth: number | undefined;
+    const horizontalAnnotations = annotations?.filter(
+      (d) => d.layout === "horizontal"
+    );
+
+    if (horizontalAnnotations?.length && yExtent) {
+      const maxWidth = max(
+        horizontalAnnotations.map((d) => {
+          return annotationDims[d.key].width;
+        })
+      );
+
+      if (maxWidth !== undefined && maxWidth > 0) {
+        annotationMaxWidth = maxWidth;
+        dims.addRight(annotationMaxWidth + dims.BASE_MARGIN);
+      }
+    }
+
+    let annotationMaxHeight: number | undefined;
+    const verticalAnnotations = annotations?.filter(
+      (d) => d.layout === "vertical"
+    );
+
+    if (verticalAnnotations?.length && xExtent) {
+      const maxHeight = max(
+        verticalAnnotations.map((d) => {
+          return annotationDims[d.key].height;
+        })
+      );
+
+      if (maxHeight !== undefined && maxHeight > 0) {
+        annotationMaxHeight = maxHeight;
+        dims.addTop(annotationMaxHeight + dims.BASE_MARGIN);
+      }
+    }
+
+    const chartInfo = Chart.info(storyInfo, svgBackgroundColor, step, dims);
+    if (annotationMaxWidth !== undefined) {
+      dims.addRight(-(annotationMaxWidth + dims.BASE_MARGIN));
+    }
+    const colorLegendInfo = ColorLegend.info(step, chartInfo, colorMap);
+    const verticalAxisInfo = Axis.info("vertical", chartInfo);
+    const horizontalAxisInfo = Axis.info("horizontal", chartInfo);
+
     let colorLegendsGetters: ColorLegend.Getter[] | undefined;
     if (colorLegendInfo.show) {
       colorLegendsGetters = ColorLegend.getters({
@@ -126,7 +171,7 @@ export const getters = ({
         itemHeight: textTypeDims.legendItem.height,
         svg,
         svgBackgroundColor,
-        dims: dims.resolve(),
+        dims,
       });
       ColorLegend.updateDims({
         dims,
@@ -142,7 +187,7 @@ export const getters = ({
         paddingLeft: dims.BASE_MARGIN,
         paddingRight: dims.BASE_MARGIN,
       });
-      const ticksCount = Axis.getTicksCount(dims.resolve().height);
+      const ticksCount = Axis.getTicksCount(dims.height);
       Axis.updateDims({
         type: "vertical",
         dims,
@@ -167,7 +212,7 @@ export const getters = ({
         paddingLeft: dims.BASE_MARGIN,
         paddingRight: dims.BASE_MARGIN,
       });
-      const ticksCount = Axis.getTicksCount(dims.resolve().width);
+      const ticksCount = Axis.getTicksCount(dims.width);
       const width = Axis.getWidth({
         svg,
         ticksCount,
@@ -187,15 +232,13 @@ export const getters = ({
         tickFormat,
         addTopMargin,
       });
-      const resolvedDims = dims.resolve();
 
       horizontalAxisGetters = Axis.getters({
         type: "horizontal",
         title,
         titleMargin: {
           top: dims.BASE_MARGIN * 1.5 + AxisTick.SIZE + AxisTick.LABEL_MARGIN,
-          right:
-            resolvedDims.margin.right + resolvedDims.margin.left - width * 0.5,
+          right: dims.margin.right + dims.margin.left - width * 0.5,
           bottom: 0,
           left: 0,
         },
@@ -218,11 +261,15 @@ export const getters = ({
       _maxHorizontalAxisValue = undefined;
     }
 
+    if (annotationMaxWidth !== undefined) {
+      dims.addRight(annotationMaxWidth + dims.BASE_MARGIN);
+    }
+
     let verticalAxisGetters: Axis.Getter | undefined;
     if (verticalAxisInfo.show) {
       const { title, tickFormat, minValue, maxValue, addTopMargin } =
         verticalAxisInfo;
-      const ticksCount = Axis.getTicksCount(dims.resolve().height);
+      const ticksCount = Axis.getTicksCount(dims.height);
       const width = Axis.getWidth({
         svg,
         ticksCount,
@@ -277,11 +324,28 @@ export const getters = ({
     const groupsGetters = Chart.getters(chartInfo, {
       showDatumLabels,
       svg,
-      dims: dims.resolve(),
+      dims,
       textTypeDims,
       colorMap,
       cartoonize,
     });
+
+    if (annotationMaxWidth !== undefined) {
+      dims.addRight(-annotationMaxWidth - dims.BASE_MARGIN);
+    }
+
+    let annotationsGetters: Annotation.Getter[] | undefined;
+    if (annotations) {
+      const info = Annotation.info(xExtent, yExtent, dims);
+      annotationsGetters = Annotation.getters({
+        info,
+        annotations,
+        annotationDims,
+        dims,
+        svg,
+        svgBackgroundColor,
+      });
+    }
 
     getters.push({
       key,
@@ -291,6 +355,7 @@ export const getters = ({
       horizontalAxis: horizontalAxisGetters,
       verticalAxis: verticalAxisGetters,
       groups: groupsGetters,
+      annotations: annotationsGetters,
     });
   }
 
@@ -304,6 +369,7 @@ export type Int = {
   colorLegends: ColorLegend.Int[];
   horizontalAxes: Axis.Int[];
   verticalAxes: Axis.Int[];
+  annotations: Annotation.Int[];
 };
 
 export type IntsMap = Map<string, Int>;
@@ -322,6 +388,7 @@ export const intsMap = ({
   let _colorLegendInts: ColorLegend.Int[] | undefined;
   let _verticalAxisInts: Axis.Int[] | undefined;
   let _horizontalAxisInts: Axis.Int[] | undefined;
+  let _annotationInts: Annotation.Int[] | undefined;
 
   steps.forEach((step, i) => {
     const {
@@ -332,6 +399,7 @@ export const intsMap = ({
       colorLegends,
       horizontalAxis,
       verticalAxis,
+      annotations,
     } = step;
     const _stepGetters: Getter | undefined = steps[i - 1];
 
@@ -375,6 +443,12 @@ export const intsMap = ({
       _ints: _groupInts,
     });
 
+    const annotationInts = Annotation.ints({
+      getters: annotations,
+      _getters: _stepGetters?.annotations,
+      _ints: _annotationInts,
+    });
+
     intsMap.set(key, {
       titles: (_titleInts = titlesInts),
       subtitles: (_subtitleInts = subtitlesInts),
@@ -383,6 +457,7 @@ export const intsMap = ({
       colorLegends: (_colorLegendInts = colorLegendsInts),
       horizontalAxes: (_horizontalAxisInts = horizontalAxesInts),
       verticalAxes: (_verticalAxisInts = verticalAxesInts),
+      annotations: (_annotationInts = annotationInts),
     });
   });
 
@@ -396,9 +471,10 @@ export type Resolved = {
   colors: ColorLegend.Resolved[];
   horizontalAxes: Axis.Resolved[];
   verticalAxes: Axis.Resolved[];
+  annotations: Annotation.Resolved[];
 };
 
-export const resolve = (ints: Int, t: number) => {
+export const resolve = (ints: Int, t: number): Resolved => {
   const {
     titles,
     subtitles,
@@ -406,6 +482,7 @@ export const resolve = (ints: Int, t: number) => {
     colorLegends,
     horizontalAxes,
     verticalAxes,
+    annotations,
   } = ints;
 
   return {
@@ -415,6 +492,7 @@ export const resolve = (ints: Int, t: number) => {
     colors: ColorLegend.resolve({ ints: colorLegends, t }),
     horizontalAxes: Axis.resolve({ ints: horizontalAxes, t }),
     verticalAxes: Axis.resolve({ ints: verticalAxes, t }),
+    annotations: Annotation.resolve({ ints: annotations, t }),
   };
 };
 
@@ -433,8 +511,15 @@ export const render = ({
   finished: boolean;
   indicateProgress: boolean;
 }) => {
-  const { titles, subtitles, colors, horizontalAxes, verticalAxes, groups } =
-    resolved;
+  const {
+    titles,
+    subtitles,
+    colors,
+    horizontalAxes,
+    verticalAxes,
+    groups,
+    annotations,
+  } = resolved;
 
   Text.render({
     selection: svg.selection,
@@ -469,6 +554,11 @@ export const render = ({
     resolved: groups,
     svg,
     tooltip: finished ? tooltip : undefined,
+  });
+
+  Annotation.render({
+    resolved: annotations,
+    selection: svg.selection,
   });
 
   if (finished) {

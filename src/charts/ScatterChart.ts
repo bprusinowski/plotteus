@@ -50,17 +50,39 @@ export const info = (
   const type: ChartType = "scatter";
   const xValues = groups.flatMap((d) => d.data.map((d) => d.x));
   const yValues = groups.flatMap((d) => d.data.map((d) => d.y));
+  const minValue = getMinValue(xValues, yValues, inputStep);
+  const maxValue = getMaxValue(xValues, yValues, inputStep);
 
   return {
     ...storyInfo,
     ...Chart.baseInfo(svgBackgroundColor, inputStep, shareDomain),
     type,
     groups,
-    minValue: getMinValue(xValues, yValues, inputStep),
-    maxValue: getMaxValue(xValues, yValues, inputStep),
+    minValue,
+    maxValue,
     verticalAxis: inputStep.verticalAxis,
     horizontalAxis: inputStep.horizontalAxis,
   };
+};
+
+export const xExtent = (inputStep: ScatterInputStep): Chart.Extent => {
+  const { groups } = inputStep;
+  const xValues = groups.flatMap((d) => d.data.map((d) => d.x));
+  const yValues = groups.flatMap((d) => d.data.map((d) => d.y));
+  const minValue = getMinValue(xValues, yValues, inputStep);
+  const maxValue = getMaxValue(xValues, yValues, inputStep);
+
+  return [minValue.x.actual, maxValue.x.actual];
+};
+
+export const yExtent = (inputStep: ScatterInputStep): Chart.Extent => {
+  const { groups } = inputStep;
+  const xValues = groups.flatMap((d) => d.data.map((d) => d.x));
+  const yValues = groups.flatMap((d) => d.data.map((d) => d.y));
+  const minValue = getMinValue(xValues, yValues, inputStep);
+  const maxValue = getMaxValue(xValues, yValues, inputStep);
+
+  return [minValue.y.actual, maxValue.y.actual];
 };
 
 const getMinValue = (

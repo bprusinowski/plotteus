@@ -154,7 +154,6 @@ export const getters = ({
   maxValue: number;
   _maxValue: number | undefined;
 }): Getter => {
-  const resolvedDims = dims.resolve();
   const ticks = scaleLinear().domain([minValue, maxValue]).ticks(ticksCount);
   const titleDims = svg.measureText(title, "axisTitle", {
     paddingLeft: dims.BASE_MARGIN,
@@ -167,7 +166,10 @@ export const getters = ({
         anchor: type === "vertical" ? "start" : "end",
         svg,
         svgBackgroundColor,
-        resolvedDims: { ...resolvedDims, margin: titleMargin },
+        dims: {
+          ...dims,
+          margin: titleMargin,
+        } as Dimensions,
         textDims: titleDims,
       })
     : undefined;
@@ -204,7 +206,7 @@ export const getters = ({
       _maxValue,
       tickHeight,
       tickFormat,
-      dims: resolvedDims,
+      dims,
       svgBackgroundColor,
     }),
   };
@@ -248,7 +250,13 @@ export type Resolved = Generic.Resolved<
   { titles: Text.Resolved[]; ticks: Tick.Resolved[] }
 >;
 
-export const resolve = ({ ints, t }: { ints: Int[]; t: number }) => {
+export const resolve = ({
+  ints,
+  t,
+}: {
+  ints: Int[];
+  t: number;
+}): Resolved[] => {
   return Generic.resolve<G, Resolved, Int>()({
     ints,
     t,

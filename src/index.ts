@@ -29,6 +29,7 @@ export type Info = {
   maxGroupLabelWidth: number;
   datumLabelDims: TextDims;
   datumValueDims: TextDims;
+  annotationDims: TextDims;
 };
 
 export const info = (inputSteps: InputStep[], svg: Svg): Info => {
@@ -42,6 +43,20 @@ export const info = (inputSteps: InputStep[], svg: Svg): Info => {
   const datumLabelDims = getTextsDims(datumLabels, svg, "datumLabel");
   const datumValues = unique(inputSteps.flatMap(getDataValues));
   const datumValueDims = getTextsDims(datumValues, svg, "datumValue");
+  const annotationDims: TextDims = Object.fromEntries(
+    inputSteps.flatMap((d) =>
+      (d.annotations ?? []).map((d) => [
+        d.key,
+        svg.measureText(d.text ?? "", "annotationLabel", {
+          maxWidth: d.maxWidth ?? 100,
+          paddingLeft: 4,
+          paddingTop: 2,
+          paddingRight: 4,
+          paddingBottom: 2,
+        }),
+      ])
+    )
+  );
 
   return {
     textTypeDims,
@@ -49,6 +64,7 @@ export const info = (inputSteps: InputStep[], svg: Svg): Info => {
     maxGroupLabelWidth,
     datumLabelDims,
     datumValueDims,
+    annotationDims,
   };
 };
 
@@ -98,7 +114,6 @@ const makeStory = (
   let _t = 0;
   let _width = 0;
   let _height = 0;
-  let initialFontLoaded = false;
 
   let intsMap: Step.IntsMap | undefined;
 
@@ -112,12 +127,8 @@ const makeStory = (
   };
 
   const fontLoadObserver = createFontLoadObserver(div, () => {
-    if (initialFontLoaded) {
-      storyInfo = info(inputSteps, svg);
-      prepareAndRender();
-    } else {
-      initialFontLoaded = true;
-    }
+    storyInfo = info(inputSteps, svg);
+    prepareAndRender();
   });
 
   const resizeObserver = createResizeObserver(div, () => {

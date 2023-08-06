@@ -28,6 +28,9 @@ type BaseInputStep = {
   showValues?: boolean;
   showDatumLabels?: boolean;
 
+  /** Annotations. */
+  annotations?: InputAnnotation[];
+
   /** Appearance. */
   palette?: PaletteName;
   cartoonize?: boolean;
@@ -173,6 +176,25 @@ export type InputDatumXY = BaseInputDatum & {
   y: number;
 };
 
+export type InputAnnotation = {
+  key: string;
+  type: "line";
+  text?: string;
+  textAnchor?: Anchor;
+  fill?: string;
+  size?: number;
+  maxWidth?: number;
+} & (
+  | {
+      layout: "horizontal";
+      y: number;
+    }
+  | {
+      layout: "vertical";
+      x: number;
+    }
+);
+
 export type Anchor = "start" | "middle" | "end";
 
 // Charts.
@@ -207,7 +229,8 @@ export type TextType =
   | "axisTick"
   | "groupLabel"
   | "datumLabel"
-  | "datumValue";
+  | "datumValue"
+  | "annotationLabel";
 
 export type TextTypeDims = {
   [type in TextType]: {

@@ -1,5 +1,5 @@
 import { HALF_FONT_K } from "./charts/utils";
-import { Svg } from "./components";
+import { MeasureTextOptions, Svg } from "./components";
 import { InputStep, State, TextType, TextTypeDims } from "./types";
 
 export const unique = <T>(array: T[]): T[] => {
@@ -28,6 +28,7 @@ export const FONT_SIZE: Record<TextType, number> = {
   groupLabel: 14,
   datumLabel: 11,
   datumValue: 11,
+  annotationLabel: 13,
 };
 
 export const FONT_WEIGHT: Record<TextType, number> = {
@@ -40,6 +41,7 @@ export const FONT_WEIGHT: Record<TextType, number> = {
   groupLabel: 400,
   datumLabel: 600,
   datumValue: 400,
+  annotationLabel: 400,
 };
 
 export const getTextTypeDims = (svg: Svg): TextTypeDims => {
@@ -56,10 +58,11 @@ export type TextDims = Record<string, DOMRect>;
 export const getTextsDims = (
   labels: (string | number)[],
   svg: Svg,
-  textType: TextType
+  textType: TextType,
+  options?: MeasureTextOptions
 ): TextDims => {
   const dims: TextDims = Object.fromEntries(
-    labels.map((d) => [d, svg.measureText(d, textType)])
+    labels.map((d) => [d, svg.measureText(d, textType, options)])
   );
   return dims;
 };

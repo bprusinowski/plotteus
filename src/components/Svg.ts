@@ -3,8 +3,11 @@ import { StoryOptions, TextType } from "../types";
 import { FONT_SIZE, FONT_WEIGHT } from "../utils";
 
 export type MeasureTextOptions = {
+  maxWidth?: number;
   paddingLeft?: number;
+  paddingTop?: number;
   paddingRight?: number;
+  paddingBottom?: number;
 };
 
 export type Svg = {
@@ -47,7 +50,15 @@ export const createSvg = (div: HTMLDivElement, options: StoryOptions): Svg => {
     options?: MeasureTextOptions
   ): DOMRect => {
     const { width } = measure();
-    const { paddingLeft = 0, paddingRight = 0 } = options ?? {};
+    const {
+      paddingLeft = 0,
+      paddingTop = 0,
+      paddingRight = 0,
+      paddingBottom = 0,
+    } = options ?? {};
+    const maxWidth = options?.maxWidth
+      ? Math.min(width, options.maxWidth)
+      : width;
     const root = select(div)
       .append("div")
       .attr("aria-hidden", "true")
@@ -58,13 +69,15 @@ export const createSvg = (div: HTMLDivElement, options: StoryOptions): Svg => {
       .style("opacity", 0)
       .style("pointer-events", "none")
       .style("box-sizing", "border-box")
-      .style("max-width", `${width}px`)
-      .style("padding-left", `${paddingLeft}px`)
-      .style("padding-right", `${paddingRight}px`);
+      .style("max-width", `${maxWidth}px`);
     const node = root
       .append("div")
       .style("width", "fit-content")
       .style("height", "fit-content")
+      .style("padding-left", `${paddingLeft}px`)
+      .style("padding-top", `${paddingTop}px`)
+      .style("padding-right", `${paddingRight}px`)
+      .style("padding-bottom", `${paddingBottom}px`)
       .style("line-height", 1.5)
       .style("font-size", `${FONT_SIZE[textType]}px`)
       .style("font-weight", FONT_WEIGHT[textType])
@@ -75,8 +88,8 @@ export const createSvg = (div: HTMLDivElement, options: StoryOptions): Svg => {
 
     return {
       ...rect,
-      width: rect.width + 1,
-      height: rect.height + 1,
+      width: Math.ceil(rect.width),
+      height: Math.ceil(rect.height),
     };
   };
 

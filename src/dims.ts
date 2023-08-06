@@ -5,16 +5,6 @@ export type Margin = {
   left: number;
 };
 
-export type ResolvedDimensions = {
-  fullWidth: number;
-  width: number;
-  fullHeight: number;
-  height: number;
-  size: number;
-  margin: Margin;
-  BASE_MARGIN: number;
-};
-
 export class Dimensions {
   public BASE_MARGIN = 16;
 
@@ -35,16 +25,8 @@ export class Dimensions {
     this.height = height - this.top - this.bottom;
   }
 
-  resolve(): ResolvedDimensions {
-    return {
-      fullWidth: this.fullWidth,
-      width: this.width,
-      fullHeight: this.fullHeight,
-      height: this.height,
-      size: Math.min(this.width, this.height),
-      margin: this.margin,
-      BASE_MARGIN: this.BASE_MARGIN,
-    };
+  get size(): number {
+    return Math.min(this.width, this.height);
   }
 
   get margin(): Margin {

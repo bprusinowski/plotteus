@@ -1,5 +1,5 @@
 import { Selection } from "d3-selection";
-import { Dimensions, ResolvedDimensions } from "../dims";
+import { Dimensions } from "../dims";
 import { Anchor, TextType } from "../types";
 import { FONT_SIZE, FONT_WEIGHT, getTextColor, hexToRgb } from "../utils";
 import * as Generic from "./Generic";
@@ -23,7 +23,7 @@ export const getter = ({
   anchor,
   svg,
   svgBackgroundColor,
-  resolvedDims: { fullWidth, margin },
+  dims: { fullWidth, margin },
   textDims,
 }: {
   text: string;
@@ -31,7 +31,7 @@ export const getter = ({
   anchor: Anchor;
   svg: Svg;
   svgBackgroundColor: string;
-  resolvedDims: ResolvedDimensions;
+  dims: Dimensions;
   textDims: DOMRect;
 }): Getter => {
   return {
@@ -50,6 +50,9 @@ export const getter = ({
           break;
       }
 
+      const color =
+        getTextColor(svgBackgroundColor) === "black" ? "#000000" : "#FFFFFF";
+
       const g: G = {
         x: s(x, null, _g?.x),
         y: s(margin.top, null, _g?.y),
@@ -57,10 +60,7 @@ export const getter = ({
         height: s(textDims.height, null, _g?.height),
         fontSize: FONT_SIZE[type],
         fontWeight: FONT_WEIGHT[type],
-        color: s(
-          `rgba(${hexToRgb(svgBackgroundColor)}, 0)`,
-          getTextColor(svgBackgroundColor)
-        ),
+        color: s(`rgba(${hexToRgb(color)}, 0)`, color),
       };
 
       return g;

@@ -1,7 +1,7 @@
 import * as Chart from "../charts/Chart";
 import { HALF_FONT_K } from "../charts/utils";
 import { ColorMap } from "../colors";
-import { Dimensions, ResolvedDimensions } from "../dims";
+import { Dimensions } from "../dims";
 import { Anchor, InputDatum, InputStep } from "../types";
 import { FONT_SIZE, FONT_WEIGHT, getTextColor, max } from "../utils";
 import * as Generic from "./Generic";
@@ -75,7 +75,7 @@ export const getters = ({
   itemHeight: number;
   svg: Svg;
   svgBackgroundColor: string;
-  dims: ResolvedDimensions;
+  dims: Dimensions;
 }): Getter[] => {
   const getters: Getter[] = [];
   const colorsWithCoords: {
