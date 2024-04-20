@@ -22,7 +22,6 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
-    "test": "vitest",
     "build": "rm -rf ./dist && rollup -c",
     "lint": "eslint"
   },
@@ -40,21 +39,22 @@
     "d3-shape": "^3.2.0"
   },
   "devDependencies": {
-    "@rollup/plugin-node-resolve": "^15.0.2",
-    "@rollup/plugin-terser": "^0.4.3",
-    "@rollup/plugin-typescript": "^11.1.1",
-    "@types/d3-force": "^3.0.4",
-    "@types/d3-hierarchy": "^3.1.0",
-    "@types/d3-interpolate": "^3.0.1",
-    "@types/d3-path": "^3.0.0",
-    "@types/d3-scale": "^4.0.2",
-    "@types/d3-selection": "^3.0.3",
-    "@types/d3-shape": "^3.1.0",
-    "@typescript-eslint/parser": "^5.59.7",
-    "jsdom": "^22.1.0",
-    "prettier": "^2.8.8",
-    "rollup": "^3.23.0",
-    "typescript": "^5.0.4",
-    "vitest": "^0.31.1"
+    "@anymud/bun-plugin-dts": "^1.0.2",
+    "@happy-dom/global-registrator": "^14.7.1",
+    "@rollup/plugin-node-resolve": "^15.2.3",
+    "@rollup/plugin-terser": "^0.4.4",
+    "@rollup/plugin-typescript": "^11.1.6",
+    "@types/bun": "^1.1.0",
+    "@types/d3-force": "^3.0.9",
+    "@types/d3-hierarchy": "^3.1.7",
+    "@types/d3-interpolate": "^3.0.4",
+    "@types/d3-path": "^3.1.0",
+    "@types/d3-scale": "^4.0.8",
+    "@types/d3-selection": "^3.0.10",
+    "@types/d3-shape": "^3.1.6",
+    "@typescript-eslint/parser": "^7.7.0",
+    "prettier": "^3.2.5",
+    "rollup": "^4.15.0",
+    "typescript": "^5.4.5"
   }
 }

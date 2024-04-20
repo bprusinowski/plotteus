@@ -1,4 +1,4 @@
-import { describe, expect, test } from "vitest";
+import { describe, expect, test } from "bun:test";
 import { Text } from ".";
 import { setup } from "../../tests/helpers";
 import { FONT_SIZE, FONT_WEIGHT } from "../utils";
@@ -68,10 +68,12 @@ describe("Text", () => {
           t: 0.5,
         })[0];
 
-        expect(r).toContain({
-          fontSize: FONT_SIZE.title,
-          fontWeight: FONT_WEIGHT.title,
-        });
+        expect(r).toEqual(
+          expect.objectContaining({
+            fontSize: FONT_SIZE.title,
+            fontWeight: FONT_WEIGHT.title,
+          })
+        );
       });
 
       test("1", () => {
@@ -152,13 +154,15 @@ describe("Text", () => {
           t: 0.5,
         })[0];
 
-        expect(r).toContain({
-          fontSize:
-            FONT_SIZE.title - (FONT_SIZE.title - FONT_SIZE.datumLabel) * 0.5,
-          fontWeight:
-            FONT_WEIGHT.title -
-            (FONT_WEIGHT.title - FONT_WEIGHT.datumLabel) * 0.5,
-        });
+        expect(r).toEqual(
+          expect.objectContaining({
+            fontSize:
+              FONT_SIZE.title - (FONT_SIZE.title - FONT_SIZE.datumLabel) * 0.5,
+            fontWeight:
+              FONT_WEIGHT.title -
+              (FONT_WEIGHT.title - FONT_WEIGHT.datumLabel) * 0.5,
+          })
+        );
       });
 
       test("1", () => {
@@ -206,10 +210,12 @@ describe("Text", () => {
           t: 0.5,
         })[0];
 
-        expect(r).toContain({
-          fontSize: FONT_SIZE.datumLabel,
-          fontWeight: FONT_WEIGHT.datumLabel,
-        });
+        expect(r).toEqual(
+          expect.objectContaining({
+            fontSize: FONT_SIZE.datumLabel,
+            fontWeight: FONT_WEIGHT.datumLabel,
+          })
+        );
       });
 
       test("1", () => {
