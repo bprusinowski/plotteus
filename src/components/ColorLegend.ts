@@ -148,9 +148,9 @@ export const getters = ({
 
       // Move items up.
       colorsWithCoords
-        .filter((d) => d.rowIndex <= rowIndex)
-        .forEach((d) => {
-          d.y -= itemHeight;
+        .filter((colorWithCoords) => colorWithCoords.rowIndex <= rowIndex)
+        .forEach((colorWithCoords) => {
+          colorWithCoords.y -= itemHeight;
         });
 
       rowIndex++;
@@ -166,9 +166,9 @@ export const getters = ({
 
         // Move row's items to the left.
         colorsWithCoords
-          .filter((d) => d.rowIndex === rowIndex)
-          .forEach((d) => {
-            d.x -= (itemWidth + itemMargin) * 0.5;
+          .filter((colorWithCoords) => colorWithCoords.rowIndex === rowIndex)
+          .forEach((colorWithCoords) => {
+            colorWithCoords.x -= (itemWidth + itemMargin) * 0.5;
           });
 
         break;
@@ -177,9 +177,9 @@ export const getters = ({
 
         // Move row's items to the left.
         colorsWithCoords
-          .filter((d) => d.rowIndex === rowIndex)
-          .forEach((d) => {
-            d.x -= itemWidth + itemMargin;
+          .filter((colorWithCoords) => colorWithCoords.rowIndex === rowIndex)
+          .forEach((colorWithCoords) => {
+            colorWithCoords.x -= itemWidth + itemMargin;
           });
 
         break;
@@ -293,7 +293,7 @@ export const updateDims = ({
   getters: Getter[];
   itemHeight: number;
 }): void => {
-  const rows = max(getters.map((d) => d.rowIndex)) ?? -1;
+  const rows = max(getters.map((getter) => getter.rowIndex)) ?? -1;
   const height = (rows + 1) * itemHeight;
   dims.addBottom(height).addBottom(dims.BASE_MARGIN);
 };

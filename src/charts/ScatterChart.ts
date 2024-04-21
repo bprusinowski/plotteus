@@ -48,8 +48,8 @@ export const info = (
 ): Info => {
   const { groups, shareDomain = false } = inputStep;
   const type: ChartType = "scatter";
-  const xValues = groups.flatMap((d) => d.data.map((d) => d.x));
-  const yValues = groups.flatMap((d) => d.data.map((d) => d.y));
+  const xValues = groups.flatMap((group) => group.data.map((d) => d.x));
+  const yValues = groups.flatMap((group) => group.data.map((d) => d.y));
   const minValue = getMinValue(xValues, yValues, inputStep);
   const maxValue = getMaxValue(xValues, yValues, inputStep);
 
@@ -67,8 +67,8 @@ export const info = (
 
 export const xExtent = (inputStep: ScatterInputStep): Chart.Extent => {
   const { groups } = inputStep;
-  const xValues = groups.flatMap((d) => d.data.map((d) => d.x));
-  const yValues = groups.flatMap((d) => d.data.map((d) => d.y));
+  const xValues = groups.flatMap((group) => group.data.map((d) => d.x));
+  const yValues = groups.flatMap((group) => group.data.map((d) => d.y));
   const minValue = getMinValue(xValues, yValues, inputStep);
   const maxValue = getMaxValue(xValues, yValues, inputStep);
 
@@ -77,8 +77,8 @@ export const xExtent = (inputStep: ScatterInputStep): Chart.Extent => {
 
 export const yExtent = (inputStep: ScatterInputStep): Chart.Extent => {
   const { groups } = inputStep;
-  const xValues = groups.flatMap((d) => d.data.map((d) => d.x));
-  const yValues = groups.flatMap((d) => d.data.map((d) => d.y));
+  const xValues = groups.flatMap((group) => group.data.map((d) => d.x));
+  const yValues = groups.flatMap((group) => group.data.map((d) => d.y));
   const minValue = getMinValue(xValues, yValues, inputStep);
   const maxValue = getMaxValue(xValues, yValues, inputStep);
 
@@ -150,13 +150,12 @@ export const getters = (
     width,
     height,
   });
-  const groupsGetters: Chart.Getter[] = [];
   const groupFill = deriveSubtlerColor(svgBackgroundColor);
   const groupLabelFill = getTextColor(svgBackgroundColor);
   const groupLabelStroke = svgBackgroundColor;
   const datumStroke = svgBackgroundColor;
 
-  for (const group of groups) {
+  return groups.map((group) => {
     const { key } = group;
     const allX = group.data.map((d) => d.x);
     const allY = group.data.map((d) => d.y);
@@ -166,7 +165,6 @@ export const getters = (
     const maxY = yScale(max(allY) ?? 0);
     const halfXExtent = (maxX - minX) * 0.5;
     const halfYExtent = (maxY - minY) * 0.5;
-    const yExtent = maxY - minY;
     const groupX = margin.left + halfXExtent + minX;
     const groupY = margin.top + halfYExtent + minY;
     const groupGetters: Chart.Getter = {
@@ -273,10 +271,8 @@ export const getters = (
       groupGetters.data.push(datumGetters);
     }
 
-    groupsGetters.push(groupGetters);
-  }
-
-  return groupsGetters;
+    return groupGetters;
+  });
 };
 
 const getScales = ({

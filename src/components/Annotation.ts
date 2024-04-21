@@ -60,12 +60,13 @@ export const getters = ({
   const { getX, getY } = info;
 
   return annotations
-    .filter((d) => {
+    .filter((annotation) => {
       return (
-        (d.layout === "horizontal" && getY) || (d.layout === "vertical" && getX)
+        (annotation.layout === "horizontal" && getY) ||
+        (annotation.layout === "vertical" && getX)
       );
     })
-    .map((d) => {
+    .map((annotation) => {
       const {
         key,
         text,
@@ -73,30 +74,20 @@ export const getters = ({
         textAnchor: inputTextAnchor = "end",
         fill: inputFill,
         size = 3,
-      } = d;
+      } = annotation;
       const isHorizontal = layout === "horizontal";
       const textAnchor = !isHorizontal
         ? inputTextAnchor === "end"
           ? "start"
           : inputTextAnchor === "start"
-          ? "end"
-          : "middle"
+            ? "end"
+            : "middle"
         : inputTextAnchor;
       const textDims = annotationDims[key];
-      const {
-        width,
-        height,
-        fullWidth,
-        fullHeight,
-        left,
-        top,
-        right,
-        bottom,
-        BASE_MARGIN,
-      } = dims;
-      const x = isHorizontal ? left + width * 0.5 : left + getX!(d.x);
+      const { width, height, fullWidth, left, top, right, BASE_MARGIN } = dims;
+      const x = isHorizontal ? left + width * 0.5 : left + getX!(annotation.x);
       const y = isHorizontal
-        ? top + getY!(d.y)
+        ? top + getY!(annotation.y)
         : top + height * 0.5 - textDims.height * 0.5 - BASE_MARGIN;
       const fill =
         inputFill ??
@@ -126,8 +117,8 @@ export const getters = ({
                     ? textAnchor === "middle"
                       ? textDims.height * 0.5
                       : textAnchor === "start"
-                      ? textDims.height
-                      : 0
+                        ? textDims.height
+                        : 0
                     : textDims.height +
                       height * 0.5 -
                       textDims.height * 0.5 +
@@ -185,7 +176,7 @@ export const ints = ({
     _getters,
     _ints,
     modifyInt: ({ getter, int, _updateInt }) => {
-      const _getter = _getters?.find((d) => d.key === getter.key);
+      const _getter = _getters?.find((_getter) => _getter.key === getter.key);
       const _labelGetter = _getter?.label;
 
       return {

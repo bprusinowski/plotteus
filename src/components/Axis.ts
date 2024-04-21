@@ -224,7 +224,7 @@ export const ints = ({
     _getters,
     _ints,
     modifyInt: ({ getter, int, _updateInt }) => {
-      const _getter = _getters?.find((d) => d.key === getter.key);
+      const _getter = _getters?.find((_getter) => _getter.key === getter.key);
       const _titleGetter = _getter?.title;
       const _tickGetters = _getter?.ticks;
 
@@ -366,8 +366,8 @@ export const getWidth = ({
     .domain([minValue, maxValue])
     .nice()
     .ticks(ticksCount);
-  const ticksWidths = ticks.map((d) => {
-    return svg.measureText(tickFormat(d), "axisTick").width;
+  const ticksWidths = ticks.map((tick) => {
+    return svg.measureText(tickFormat(tick), "axisTick").width;
   });
 
   return max(ticksWidths) as number;

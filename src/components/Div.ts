@@ -32,7 +32,6 @@ export const createFontLoadObserver = (
     .style("white-space", "nowrap")
     .style("overflow", "hidden")
     .text("Font load trigger");
-
   const observer = new ResizeObserver(callback);
   observer.observe(selection.node() as HTMLDivElement);
 

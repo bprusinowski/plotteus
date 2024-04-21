@@ -61,10 +61,9 @@ export const getTextsDims = (
   textType: TextType,
   options?: MeasureTextOptions
 ): TextDims => {
-  const dims: TextDims = Object.fromEntries(
-    labels.map((d) => [d, svg.measureText(d, textType, options)])
-  );
-  return dims;
+  return Object.fromEntries(
+    labels.map((label) => [label, svg.measureText(label, textType, options)])
+  ) as TextDims;
 };
 
 export const getDataValues = (step: InputStep): number[] => {
@@ -73,11 +72,13 @@ export const getDataValues = (step: InputStep): number[] => {
     case "bubble":
     case "pie":
     case "treemap":
-      return step.groups.flatMap((d) => d.data.map((d) => d.value));
+      return step.groups.flatMap((group) => group.data.map((d) => d.value));
     case "beeswarm":
-      return step.groups.flatMap((d) => d.data.map((d) => d.position));
+      return step.groups.flatMap((group) => group.data.map((d) => d.position));
     case "scatter":
-      return step.groups.flatMap((d) => d.data.flatMap((d) => [d.x, d.y]));
+      return step.groups.flatMap((group) =>
+        group.data.flatMap((d) => [d.x, d.y])
+      );
     default:
       const _exhaustiveCheck: never = step;
       return _exhaustiveCheck;
@@ -153,6 +154,7 @@ export const darken = (hex: string, percent: number): string => {
 };
 
 export const deriveSubtlerColor = (hex: string, k: number = 1): string => {
-  const textColor = getTextColor(hex);
-  return textColor === "white" ? brighten(hex, 0.2 * k) : darken(hex, 0.08 * k);
+  return getTextColor(hex) === "white"
+    ? brighten(hex, 0.2 * k)
+    : darken(hex, 0.08 * k);
 };

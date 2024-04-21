@@ -45,8 +45,8 @@ export const getExtremeValue = (
 export const getMaxValue = (
   step: BubbleInputStep | PieInputStep | TreemapInputStep
 ): ExtremeValue => {
-  const values = step.groups.flatMap((d) =>
-    d.data.reduce((acc, d) => acc + d.value, 0)
+  const values = step.groups.flatMap((group) =>
+    group.data.reduce((acc, d) => acc + d.value, 0)
   );
   const valueMax = max(values) ?? 0;
 
@@ -71,12 +71,12 @@ export const getHierarchyRoot = ({
   size: number;
 }): HierarchyRoot => {
   const root = hierarchy({
-    children: groups.map((d) => ({
-      key: d.key,
-      opacity: d.opacity,
-      children: d.data,
+    children: groups.map((group) => ({
+      key: group.key,
+      opacity: group.opacity,
+      children: group.data,
     })),
-  }).sum((d) => Math.max(0, (d as any).value));
+  }).sum((group) => Math.max(0, (group as any).value));
   const descendants = root.descendants();
   const leaves = descendants.filter((d) => !d.children);
   leaves.forEach((d: any, i) => (d.index = i));

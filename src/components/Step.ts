@@ -74,13 +74,7 @@ export const getters = ({
         dims,
         textDims: titleDims,
       });
-      Text.updateDims({
-        dims,
-        svg,
-        textType: "title",
-        text: title,
-        textDims: titleDims,
-      });
+      Text.updateDims({ dims, textDims: titleDims });
 
       if (subtitle !== undefined) {
         dims.addTop(dims.BASE_MARGIN * 0.2);
@@ -102,13 +96,7 @@ export const getters = ({
         dims,
         textDims: subtitleDims,
       });
-      Text.updateDims({
-        dims,
-        svg,
-        textType: "subtitle",
-        text: subtitle,
-        textDims: subtitleDims,
-      });
+      Text.updateDims({ dims, textDims: subtitleDims });
     }
 
     if (title || subtitle) {
@@ -120,13 +108,13 @@ export const getters = ({
     // width of the chart.
     let annotationMaxWidth: number | undefined;
     const horizontalAnnotations = annotations?.filter(
-      (d) => d.layout === "horizontal"
+      (annotation) => annotation.layout === "horizontal"
     );
 
     if (horizontalAnnotations?.length && yExtent) {
       const maxWidth = max(
-        horizontalAnnotations.map((d) => {
-          return annotationDims[d.key].width;
+        horizontalAnnotations.map((annotation) => {
+          return annotationDims[annotation.key].width;
         })
       );
 
@@ -138,13 +126,13 @@ export const getters = ({
 
     let annotationMaxHeight: number | undefined;
     const verticalAnnotations = annotations?.filter(
-      (d) => d.layout === "vertical"
+      (annotation) => annotation.layout === "vertical"
     );
 
     if (verticalAnnotations?.length && xExtent) {
       const maxHeight = max(
-        verticalAnnotations.map((d) => {
-          return annotationDims[d.key].height;
+        verticalAnnotations.map((annotation) => {
+          return annotationDims[annotation.key].height;
         })
       );
 
@@ -374,13 +362,7 @@ export type Int = {
 
 export type IntsMap = Map<string, Int>;
 
-export const intsMap = ({
-  steps,
-  svg,
-}: {
-  steps: Getter[];
-  svg: Svg;
-}): IntsMap => {
+export const intsMap = ({ steps }: { steps: Getter[] }): IntsMap => {
   const intsMap: IntsMap = new Map();
   let _titleInts: Text.Int[] | undefined;
   let _subtitleInts: Text.Int[] | undefined;

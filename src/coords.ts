@@ -195,8 +195,8 @@ const getCircleCoords = ({
   // when rectangle is a preceding shape.
   const rotateByRadians = 45 * (Math.PI / 180);
 
-  return coords.map((d) => {
-    const { c1, c2, e } = d;
+  return coords.map((coord) => {
+    const { c1, c2, e } = coord;
     const sin = Math.sin(rotateByRadians);
     const cos = Math.cos(rotateByRadians);
 
@@ -329,7 +329,6 @@ const getPieCoords = ({
 
 const coordsToPathData = (coords: BezierPoint[]): string => {
   const ctx = path();
-
   ctx.moveTo(coords[0].e.x, coords[0].e.y);
   coords.slice(1).forEach(({ c1, c2, e }) => {
     ctx.bezierCurveTo(c1.x, c1.y, c2.x, c2.y, e.x, e.y);
