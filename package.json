@@ -22,7 +22,8 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
-    "build": "rm -rf ./dist && rollup -c",
+    "build": "rollup -c",
+    "dev": "rollup -c -w",
     "lint": "eslint"
   },
   "type": "module",
@@ -36,7 +37,8 @@
     "d3-path": "^3.1.0",
     "d3-scale": "^4.0.2",
     "d3-selection": "^3.0.0",
-    "d3-shape": "^3.2.0"
+    "d3-shape": "^3.2.0",
+    "rollup-plugin-delete": "^2.0.0"
   },
   "devDependencies": {
     "@anymud/bun-plugin-dts": "^1.0.2",
