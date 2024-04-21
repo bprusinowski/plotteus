@@ -78,7 +78,8 @@ export const getters = (
       // Skip groups with no data.
       return !(
         isNaN(group.r) ||
-        group.children?.reduce((acc, d) => (acc += d.r), 0) === 0
+        !group.children ||
+        group.children.reduce((acc, d) => (acc += d.r), 0) === 0
       );
     })
     .map((group) => {

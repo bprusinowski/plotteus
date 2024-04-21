@@ -107,7 +107,8 @@ export const getters = (
       // Skip groups with no data.
       return !(
         group.value === 0 ||
-        group.children?.reduce((acc, d) => (acc += d.value), 0) === 0
+        !group.children ||
+        group.children.reduce((acc, d) => (acc += d.value), 0) === 0
       );
     })
     .map((group) => {
