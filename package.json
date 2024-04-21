@@ -23,6 +23,7 @@
   "types": "dist/index.d.ts",
   "scripts": {
     "build": "rollup -c",
+    "dev": "rollup -c -w",
     "lint": "eslint"
   },
   "type": "module",
