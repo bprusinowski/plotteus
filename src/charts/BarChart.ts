@@ -94,15 +94,17 @@ const getMaxValue = (step: BarInputStep): ExtremeValue => {
 
   switch (step.chartSubtype) {
     case "stacked":
-      step.groups.forEach((d) => {
-        const groupSum = sum(d.data.map((d) => d.value));
+      step.groups.forEach((group) => {
+        const groupSum = sum(group.data.map((d) => d.value));
         if (groupSum > valueMax) {
           valueMax = groupSum;
         }
       });
       break;
     default:
-      const values = step.groups.flatMap((d) => d.data.map((d) => d.value));
+      const values = step.groups.flatMap((group) =>
+        group.data.map((d) => d.value)
+      );
       valueMax = max(values) ?? 0;
       break;
   }
@@ -184,8 +186,6 @@ export const getters = (
   const groupLabelStroke = svgBackgroundColor;
   const datumStroke = svgBackgroundColor;
 
-  const groupsGetters: Chart.Getter[] = [];
-
   if (isVertical) {
     const { x0Scale, x0bw, x1Scale, x1bw, yScale } = getVerticalScales({
       isGrouped,
@@ -196,7 +196,7 @@ export const getters = (
       height,
     });
 
-    for (const group of groups) {
+    return groups.map((group) => {
       const { key } = group;
       const groupX0 = x0Scale(key) as number;
       const groupX = margin.left + groupX0 + x0bw * 0.5;
@@ -357,10 +357,8 @@ export const getters = (
         groupGetters.data.push(datumGetters);
       }
 
-      groupsGetters.push(groupGetters);
-    }
-
-    return groupsGetters;
+      return groupGetters;
+    });
   } else {
     const { xScale, y0Scale, y0bw, y1Scale, y1bw } = getHorizontalScales({
       isGrouped,
@@ -374,7 +372,7 @@ export const getters = (
         : 0,
     });
 
-    for (const group of groups) {
+    return groups.map((group) => {
       const { key } = group;
       const groupX = margin.left;
       const groupY0 = y0Scale(key) as number;
@@ -480,8 +478,8 @@ export const getters = (
                 ? labelX + (labelWidth + valueWidth + BASE_MARGIN) * 0.5
                 : s(0, (dWidth + valueWidth + BASE_MARGIN) * 0.5)
               : showDatumLabels
-              ? labelX + labelWidth + valueWidth * 0.5 + BASE_MARGIN * 0.25
-              : 0;
+                ? labelX + labelWidth + valueWidth * 0.5 + BASE_MARGIN * 0.25
+                : 0;
             const valueY = s(valueHeight * 0.5, -valueYShift * 0.5);
             const valueFontSize = showValues ? s(0, FONT_SIZE.datumValue) : 0;
             const valueFill = isGrouped ? groupLabelFill : labelFill;
@@ -515,10 +513,8 @@ export const getters = (
         groupGetters.data.push(datumGetters);
       }
 
-      groupsGetters.push(groupGetters);
-    }
-
-    return groupsGetters;
+      return groupGetters;
+    });
   }
 };
 

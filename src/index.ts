@@ -23,51 +23,6 @@ import {
   unique,
 } from "./utils";
 
-export type Info = {
-  textTypeDims: TextTypeDims;
-  groupLabelDims: TextDims;
-  maxGroupLabelWidth: number;
-  datumLabelDims: TextDims;
-  datumValueDims: TextDims;
-  annotationDims: TextDims;
-};
-
-export const info = (inputSteps: InputStep[], svg: Svg): Info => {
-  const textTypeDims = getTextTypeDims(svg);
-  const groups = inputSteps.map((d) => d.groups).flat();
-  const groupLabels = unique(groups.map((d) => d.key));
-  const groupLabelDims = getTextsDims(groupLabels, svg, "groupLabel");
-  const maxGroupLabelWidth =
-    max(Object.values(groupLabelDims).map((d) => d.width)) ?? 0;
-  const datumLabels = unique(groups.flatMap((d) => d.data.map((d) => d.key)));
-  const datumLabelDims = getTextsDims(datumLabels, svg, "datumLabel");
-  const datumValues = unique(inputSteps.flatMap(getDataValues));
-  const datumValueDims = getTextsDims(datumValues, svg, "datumValue");
-  const annotationDims: TextDims = Object.fromEntries(
-    inputSteps.flatMap((d) =>
-      (d.annotations ?? []).map((d) => [
-        d.key,
-        svg.measureText(d.text ?? "", "annotationLabel", {
-          maxWidth: d.maxWidth ?? 100,
-          paddingLeft: 4,
-          paddingTop: 2,
-          paddingRight: 4,
-          paddingBottom: 2,
-        }),
-      ])
-    )
-  );
-
-  return {
-    textTypeDims,
-    groupLabelDims,
-    maxGroupLabelWidth,
-    datumLabelDims,
-    datumValueDims,
-    annotationDims,
-  };
-};
-
 /**
  * Creates a new `Story` object.
  *
@@ -96,16 +51,16 @@ const makeStory = (
   ) => void;
   /**
    * Destroys the Story. Handy when you want to create a new Story in the same container,
-   * as it removes all the elements created by the previous Story along with all the event listeners.
+   * as it removes all the elements created by the previous Story along with all event listeners.
    */
   destroy: () => void;
 } => {
   const { svgBackgroundColor = "#FFFFFF" } = inputOptions ?? {};
-  const options: StoryOptions = {
+  const storyOptions: StoryOptions = {
     svgBackgroundColor,
   };
   const div = prepareDiv(inputDiv);
-  const svg = createSvg(div, options);
+  const svg = createSvg(div, storyOptions);
   const tooltip = makeTooltip();
   const progressBarColor = deriveSubtlerColor(svgBackgroundColor);
   let storyInfo = info(inputSteps, svg);
@@ -149,13 +104,13 @@ const makeStory = (
   const prepareStepsIntsMap = (width: number, height: number): void => {
     const getters = Step.getters({
       storyInfo,
-      storyOptions: options,
+      storyOptions,
       steps: inputSteps,
       svg,
       width,
       height,
     });
-    intsMap = Step.intsMap({ steps: getters, svg });
+    intsMap = Step.intsMap({ steps: getters });
   };
 
   const render = (
@@ -174,7 +129,6 @@ const makeStory = (
         // Interactions with the story (e.g. hovering) are only allowed for the finished state.
         const finished = t === 0 || t === 1;
         const resolved = Step.resolve(ints, t);
-
         Step.render({
           resolved,
           svg,
@@ -195,6 +149,53 @@ const makeStory = (
   return {
     render,
     destroy,
+  };
+};
+
+export type Info = {
+  textTypeDims: TextTypeDims;
+  groupLabelDims: TextDims;
+  maxGroupLabelWidth: number;
+  datumLabelDims: TextDims;
+  datumValueDims: TextDims;
+  annotationDims: TextDims;
+};
+
+export const info = (inputSteps: InputStep[], svg: Svg): Info => {
+  const textTypeDims = getTextTypeDims(svg);
+  const groups = inputSteps.map((inputStep) => inputStep.groups).flat();
+  const groupLabels = unique(groups.map((group) => group.key));
+  const groupLabelDims = getTextsDims(groupLabels, svg, "groupLabel");
+  const maxGroupLabelWidth =
+    max(Object.values(groupLabelDims).map((dims) => dims.width)) ?? 0;
+  const datumLabels = unique(
+    groups.flatMap((group) => group.data.map((d) => d.key))
+  );
+  const datumLabelDims = getTextsDims(datumLabels, svg, "datumLabel");
+  const datumValues = unique(inputSteps.flatMap(getDataValues));
+  const datumValueDims = getTextsDims(datumValues, svg, "datumValue");
+  const annotationDims: TextDims = Object.fromEntries(
+    inputSteps.flatMap((inputStep) =>
+      (inputStep.annotations ?? []).map(({ key, text, maxWidth }) => [
+        key,
+        svg.measureText(text ?? "", "annotationLabel", {
+          maxWidth: maxWidth ?? 100,
+          paddingLeft: 4,
+          paddingTop: 2,
+          paddingRight: 4,
+          paddingBottom: 2,
+        }),
+      ])
+    )
+  );
+
+  return {
+    textTypeDims,
+    groupLabelDims,
+    maxGroupLabelWidth,
+    datumLabelDims,
+    datumValueDims,
+    annotationDims,
   };
 };
 

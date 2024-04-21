@@ -29,9 +29,9 @@ export const baseInfo = (
   inputStep: InputStep,
   shareDomain: boolean
 ): BaseInfo => {
-  const groupsKeys = inputStep.groups.map((d) => d.key);
+  const groupsKeys = inputStep.groups.map((group) => group.key);
   const dataKeys = unique(
-    inputStep.groups.flatMap((d) => d.data.map((d) => d.key))
+    inputStep.groups.flatMap((group) => group.data.map((d) => d.key))
   );
   const showValues = inputStep.showValues ?? false;
 
@@ -191,7 +191,9 @@ export const ints = ({
     _getters,
     _ints,
     modifyInt: ({ getter, int, exiting, _updateInt }) => {
-      const _data = _getters?.find((d) => d.key === getter.key)?.data;
+      const _data = _getters?.find(
+        (_getter) => _getter.key === getter.key
+      )?.data;
       const newInt: Int = {
         ...int,
         data: [],
@@ -203,8 +205,8 @@ export const ints = ({
         Datum.Int
       >["getPreviousInt"] = ({ getter }) => {
         return _ints
-          ?.flatMap((d) => d.data)
-          .find((d) => d.teleportKey === getter.teleportFrom);
+          ?.flatMap((_int) => _int.data)
+          .find((_datumInt) => _datumInt.teleportKey === getter.teleportFrom);
       };
 
       newInt.data = Datum.ints({
@@ -219,15 +221,14 @@ export const ints = ({
   });
 
   const allDataTeleportFrom = getters
-    .map((d) => d.data)
-    .flat()
-    .filter((d) => d.teleportFrom !== undefined)
-    .map((d) => d.teleportFrom) as string[];
+    .flatMap((getter) => getter.data)
+    .filter((datumGetter) => datumGetter.teleportFrom !== undefined)
+    .map((datumGetter) => datumGetter.teleportFrom) as string[];
 
   // Remove teleported data from original groups.
   ints.forEach((groupInts) => {
-    groupInts.data = groupInts.data.filter((datumInts) => {
-      return !allDataTeleportFrom.includes(datumInts.teleportKey);
+    groupInts.data = groupInts.data.filter((datumInt) => {
+      return !allDataTeleportFrom.includes(datumInt.teleportKey);
     });
   });
 

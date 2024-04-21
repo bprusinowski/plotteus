@@ -48,8 +48,8 @@ export const info = (
     positionScale,
   } = inputStep;
   const type: ChartType = "beeswarm";
-  const positions = inputStep.groups.flatMap((g) => {
-    return g.data.map((d) => d.position);
+  const positions = inputStep.groups.flatMap((group) => {
+    return group.data.map((d) => d.position);
   });
   const [minValue, maxValue] = [
     positionScale?.minValue ?? min(positions) ?? 0,
@@ -80,8 +80,8 @@ export const xExtent = (inputStep: BeeswarmInputStep): Chart.Extent => {
     return;
   }
 
-  const positions = inputStep.groups.flatMap((g) => {
-    return g.data.map((d) => d.position);
+  const positions = inputStep.groups.flatMap((group) => {
+    return group.data.map((d) => d.position);
   });
 
   return [
@@ -97,8 +97,8 @@ export const yExtent = (inputStep: BeeswarmInputStep): Chart.Extent => {
     return;
   }
 
-  const positions = inputStep.groups.flatMap((g) => {
-    return g.data.map((d) => d.position);
+  const positions = inputStep.groups.flatMap((group) => {
+    return group.data.map((d) => d.position);
   });
 
   return [
@@ -139,8 +139,6 @@ export const getters = (
   const groupLabelStroke = svgBackgroundColor;
   const datumStroke = svgBackgroundColor;
 
-  const groupsGetters: Chart.Getter[] = [];
-
   if (layout === "horizontal") {
     const { xScale, yScale, ybw } = getHorizontalScales({
       groupsKeys,
@@ -150,7 +148,7 @@ export const getters = (
       height,
     });
 
-    for (const group of groups) {
+    return groups.map((group) => {
       const { key } = group;
       const positions = group.data.map((d) => d.position);
       const [minGroupX, maxGroupX] = [
@@ -266,8 +264,8 @@ export const getters = (
         groupGetters.data.push(datumGetters);
       }
 
-      groupsGetters.push(groupGetters);
-    }
+      return groupGetters;
+    });
   } else {
     const { xScale, xBw, yScale } = getVerticalScales({
       groupsKeys,
@@ -277,7 +275,7 @@ export const getters = (
       height,
     });
 
-    for (const group of groups) {
+    return groups.map((group) => {
       const { key } = group;
       const positions = group.data.map((d) => d.position);
       const [minGroupY, maxGroupY] = [
@@ -397,11 +395,9 @@ export const getters = (
         groupGetters.data.push(datumGetters);
       }
 
-      groupsGetters.push(groupGetters);
-    }
+      return groupGetters;
+    });
   }
-
-  return groupsGetters;
 };
 
 const getVerticalScales = ({

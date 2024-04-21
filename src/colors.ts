@@ -43,8 +43,8 @@ const tableauPalette = [
   "#BAB0AC",
 ];
 
-export const getPalette = (d: PaletteName): string[] => {
-  switch (d) {
+export const getPalette = (paletteName: PaletteName): string[] => {
+  switch (paletteName) {
     case "default":
       return defaultPalette;
     case "pastel":
@@ -69,13 +69,13 @@ export class ColorMap {
     const palette = getPalette(this.palette);
     const colorMap = new Map<string, string>();
     let i = this.lastUsedPaletteColorIndex;
-    keys.forEach((d) => {
-      if (customColorsMap.has(d)) {
-        colorMap.set(d, customColorsMap.get(d) as string);
-      } else if (this.colorMap.has(d)) {
-        colorMap.set(d, this.colorMap.get(d) as string);
+    keys.forEach((key) => {
+      if (customColorsMap.has(key)) {
+        colorMap.set(key, customColorsMap.get(key) as string);
+      } else if (this.colorMap.has(key)) {
+        colorMap.set(key, this.colorMap.get(key) as string);
       } else {
-        colorMap.set(d, palette[i % palette.length]);
+        colorMap.set(key, palette[i % palette.length]);
         i++;
       }
     });
@@ -83,9 +83,9 @@ export class ColorMap {
     this.lastUsedPaletteColorIndex = i;
   }
 
-  public setPalette(d: PaletteName): void {
-    this.palette = d;
-    const colors = getPalette(d);
+  public setPalette(paletteName: PaletteName): void {
+    this.palette = paletteName;
+    const colors = getPalette(paletteName);
     let i = 0;
     this.colorMap.forEach((_, k) => {
       this.colorMap.set(k, colors[i % colors.length]);

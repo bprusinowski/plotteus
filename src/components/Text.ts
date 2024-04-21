@@ -21,7 +21,6 @@ export const getter = ({
   text,
   type,
   anchor,
-  svg,
   svgBackgroundColor,
   dims: { fullWidth, margin },
   textDims,
@@ -111,15 +110,9 @@ export const render = ({
 
 export const updateDims = ({
   dims,
-  svg,
-  textType,
-  text,
   textDims,
 }: {
   dims: Dimensions;
-  svg: Svg;
-  textType: TextType;
-  text: string;
   textDims: DOMRect;
 }): void => {
   const { height } = textDims;

@@ -55,20 +55,20 @@ export const ints =
     modifyInt = ({ int }) => int as TInt,
     getPreviousInt,
   }: IntsProps<G, TGetter, TInt>): TInt[] => {
-    const keys = getters.map((d) => d.key);
-    const exitingGetters = _getters?.filter((d) => !keys.includes(d.key)) ?? [];
+    const keys = getters.map((getter) => getter.key);
+    const exitingGetters =
+      _getters?.filter((_getter) => !keys.includes(_getter.key)) ?? [];
     const allGetters = getters.concat(exitingGetters);
     const ints: TInt[] = allGetters.map((getter) => {
       const exiting = !keys.includes(getter.key);
       const _int =
         getPreviousInt?.({ getter }) ??
-        _ints?.find((d) => d.key === getter.key);
+        _ints?.find((_int) => _int.key === getter.key);
       const { state, i, _updateInt } = getInts({
         _int,
         exiting,
         g: getter.g,
       });
-
       const int: Int<G> = {
         key: getter.key,
         state,
