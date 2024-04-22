@@ -53,9 +53,9 @@
     "@types/d3-scale": "^4.0.8",
     "@types/d3-selection": "^3.0.10",
     "@types/d3-shape": "^3.1.6",
-    "@typescript-eslint/parser": "^7.7.0",
+    "@typescript-eslint/parser": "^7.7.1",
     "prettier": "^3.2.5",
-    "rollup": "^4.15.0",
+    "rollup": "^4.16.2",
     "rollup-plugin-delete": "^2.0.0",
     "typescript": "^5.4.5"
   }
